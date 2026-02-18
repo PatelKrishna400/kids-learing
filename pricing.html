@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Plans - WonderKids</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --danger: #FF6B6B;
+            --dark: #2D3436;
+            --light: #F9F9F9;
+        }
+
+        body {
+            background-color: var(--light);
+            font-family: 'Fredoka', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pricing-hero {
+            background: linear-gradient(135deg, var(--primary), #a29bfe);
+            padding: 80px 20px;
+            text-align: center;
+            color: white;
+            border-bottom-left-radius: 50% 20px;
+            border-bottom-right-radius: 50% 20px;
+        }
+
+        .pricing-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .pricing-container {
+            max-width: 1200px;
+            margin: -50px auto 50px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .price-card {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: 3px solid transparent;
+        }
+
+        .price-card:hover {
+            transform: translateY(-15px);
+            border-color: var(--primary);
+        }
+
+        .price-card.featured {
+            transform: scale(1.05);
+            border-color: var(--secondary);
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.2);
+        }
+
+        .price-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .badge {
+            background: var(--secondary);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            transform: rotate(45deg);
+            width: 120px;
+        }
+
+        .price-header h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .price-amount span {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .features-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #555;
+        }
+
+        .features-list li i {
+            color: var(--secondary);
+        }
+
+        .buy-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-weight: 700;
+            transition: filter 0.2s;
+        }
+
+        .buy-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .buy-btn.secondary {
+            background: var(--secondary);
+        }
+
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pricing-hero">
+        <a href="index.html" class="back-home"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+        <h1>Simple Pricing for Super Parents! 🚀</h1>
+        <p>Choose a plan that fits your child's learning journey.</p>
+    </div>
+
+    <div class="pricing-container">
+        <!-- Weekly Plan -->
+        <div class="price-card">
+            <div class="price-header">
+                <h3>Weekly Fun</h3>
+                <div class="price-amount">₹80<span>/week</span></div>
+                <p>Perfect for a quick learning boost!</p>
+            </div>
+            <ul class="features-list">
+                <li><i class="fa-solid fa-check"></i> Unlimited Learning Shorts</li>
+                <li><i class="fa-solid fa-check"></i> Interactive Mini-Games</li>
+                <li><i class="fa-solid fa-check"></i> Basic Progress Report</li>
+                <li><i class="fa-solid fa-check"></i> No Ads Forever</li>
+            </ul>
+            <a href="#" class="buy-btn">Start Weekly Plan</a>
+        </div>
+
+        <!-- Monthly Plan -->
+        <div class="price-card featured">
+            <div class="badge">Most Popular</div>
+            <div class="price-header">
+                <h3>Monthly Master</h3>
+                <div class="price-amount">₹250<span>/month</span></div>
+                <p>Our most popular choice for consistent growth.</p>
+            </div>
+            <ul class="features-list">
+                <li><i class="fa-solid fa-check"></i> Everything in Weekly</li>
+                <li><i class="fa-solid fa-check"></i> Detailed Parental Dashboard</li>
+                <li><i class="fa-solid fa-check"></i> Custom Difficulty Levels</li>
+                <li><i class="fa-solid fa-check"></i> Priority Support</li>
+            </ul>
+            <a href="#" class="buy-btn secondary">Go Monthly</a>
+        </div>
+
+        <!-- Yearly Plan -->
+        <div class="price-card">
+            <div class="price-header">
+                <h3>Yearly Legend</h3>
+                <div class="price-amount">₹3000<span>/year</span></div>
+                <p>Best value for long-term learning success.</p>
+            </div>
+            <ul class="features-list">
+                <li><i class="fa-solid fa-check"></i> Everything in Monthly</li>
+                <li><i class="fa-solid fa-flag-checkered"></i> 2 Months FREE included</li>
+                <li><i class="fa-solid fa-award"></i> Exclusive Completion Badges</li>
+                <li><i class="fa-solid fa-star"></i> Early access to new games</li>
+            </ul>
+            <a href="#" class="buy-btn">Get Yearly Legend</a>
+        </div>
+    </div>
+</body>
+
+</html>

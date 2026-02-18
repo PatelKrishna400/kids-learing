@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WonderKids - Fun Learning Adventure</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-rocket"></i> WonderKids
+            </a>
+            <div class="nav-links">
+                <a href="#home" class="active">Home</a>
+                <a href="#features">Features</a>
+                <a href="shorts.html">E-Learning</a>
+                <a href="pricing.html">Pricing</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="nav-buttons">
+                <div class="coin-display">
+                    <i class="fa-solid fa-coins"></i> <span id="userCoins">50</span>
+                </div>
+                <a href="parents.html" class="btn-secondary" style="font-size: 0.9rem; border: 1px solid #ddd;"><i
+                        class="fa-solid fa-shield-cat"></i> Parents Panel</a>
+                <a href="#" class="btn-secondary" id="loginBtn">Log In</a>
+                <a href="#" class="btn-primary" id="signupBtn">Sign Up Free</a>
+            </div>
+            <div class="hamburger">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <header id="home" class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <span class="badge">#1 Learning Platform for Kids</span>
+                <h1>Unlock Your Child's <span class="highlight">Potential</span> Through Play</h1>
+                <p>Interactive games, coding challenges, and creative lessons designed to make learning fun and
+                    effective for kids ages 4-12.</p>
+                <div class="hero-btns">
+                    <a href="shorts.html" class="btn-primary btn-lg">Start Learning Now <i
+                            class="fa-solid fa-arrow-right"></i></a>
+                    <a href="https://www.youtube.com/watch?v=S9V94NfX-iA" target="_blank" class="btn-outline btn-lg"><i
+                            class="fa-solid fa-play"></i> Watch Demo</a>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <strong>10k+</strong>
+                        <span>Happy Students</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>500+</strong>
+                        <span>Fun Lessons</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>4.9/5</strong>
+                        <span>Parent Rating</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-card card-1">
+                    <i class="fa-solid fa-star"></i>
+                    <span>Math Whiz!</span>
+                </div>
+                <div class="floating-card card-2">
+                    <i class="fa-solid fa-paintbrush"></i>
+                    <span>Colour Fill</span>
+                </div>
+                <div class="floating-card card-3">
+                    <i class="fa-solid fa-palette"></i>
+                    <span>Art</span>
+                </div>
+                <div class="hero-blob"></div>
+                <!-- In a real scenario, this would be an image/illustration -->
+                <div class="hero-character-placeholder">
+                    <div class="character-head"></div>
+                    <div class="character-body"></div>
+                </div>
+            </div>
+        </div>
+        <div class="wave-bottom">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="#ffffff" fill-opacity="1"
+                    d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+                </path>
+            </svg>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="subtitle">Why Choose Us?</span>
+                <h2>Learning Made <span class="highlight">Awesome</span></h2>
+                <p>We combine education with entertainment to keep kids engaged and eager to learn more every day.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card clickable" id="gamifiedLearningCard">
+                    <div class="icon-box color-1">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <h3>Gamified Learning</h3>
+                    <p>Earn badges, points, and rewards as you complete lessons and master new skills.</p>
+                    <button class="btn-primary btn-sm mt-10">Select Level <i class="fa-solid fa-play"></i></button>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box color-2">
+                        <i class="fa-solid fa-fill-drip"></i>
+                    </div>
+                    <h3>Colour Fill</h3>
+                    <p>Express creativity by filling beautiful sketches with a vibrant palette of colours.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box color-3">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <h3>Interactive Stories</h3>
+                    <p>Immerse in magical stories that teach reading comprehension and vocabulary.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box color-4">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3>Progress Tracking</h3>
+                    <p>Parents can easily monitor progress and see exactly what their child is learning.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- More sections could be added here (Games Showcase, Testimonials, etc.) -->
+
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Start the Adventure?</h2>
+                <p>Join thousands of happy parents and kids today. First month is on us!</p>
+                <a href="#" class="btn-white btn-lg">Get Started for Free</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="#" class="logo footer-logo">
+                        <i class="fa-solid fa-rocket"></i> WonderKids
+                    </a>
+                    <p>Making education fun, accessible, and effective for the next generation of thinkers and creators.
+                    </p>
+                    <div class="social-links">
+                        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Browse Games</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">For Schools</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="admin.html" style="color: var(--primary); font-weight: 700;"><i
+                                    class="fa-solid fa-wand-magic-sparkles"></i> Creator Panel</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Stay Updated</h4>
+                    <p>Subscribe for the latest games and learning tips.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WonderKids Learning Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="gameModal" class="modal-overlay">
+        <div class="game-modal">
+            <div class="modal-header">
+                <h2>Select Game Level 🎮</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="level-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/341/341258.png" alt="Level 1" width="60">
+                    <div class="level-info">
+                        <h4>Alphabet Master</h4>
+                        <p>Speak & Write Letters (A-D)</p>
+                    </div>
+                    <button class="btn-primary play-level-btn" data-cost="10">Play (10 <i
+                            class="fa-solid fa-coins"></i>)</button>
+                </div>
+                <div class="level-card locked">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2912/2912761.png" alt="Locked" width="60">
+                    <div class="level-info">
+                        <h4>Dragon Cave</h4>
+                        <p>Unlock at Level 5</p>
+                    </div>
+                    <button class="btn-outline" disabled><i class="fa-solid fa-lock"></i> Locked</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Game Logic
+        let coins = 50;
+        const coinDisplay = document.getElementById('userCoins');
+        const gameModal = document.getElementById('gameModal');
+        const gamifiedCard = document.getElementById('gamifiedLearningCard');
+        const closeBtn = document.querySelector('.close-modal');
+
+        gamifiedCard.addEventListener('click', () => {
+            gameModal.classList.add('active');
+        });
+
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            gameModal.classList.remove('active');
+        });
+
+        gameModal.addEventListener('click', (e) => {
+            if (e.target === gameModal) {
+                gameModal.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.play-level-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const cost = parseInt(this.dataset.cost);
+                if (coins >= cost) {
+                    coins -= cost;
+                    coinDisplay.innerText = coins;
+                    alert("🪙 10 Coins deducted! Entering Alphabet Master...");
+                    window.location.href = "alphabet-game.html";
+                } else {
+                    alert("❌ Not enough coins! You need 10 coins to play.");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

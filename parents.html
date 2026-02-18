@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parents Dashboard - WonderKids</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --parent-primary: #6C5CE7;
+            --parent-bg: #f0f2f5;
+        }
+
+        body {
+            background-color: var(--parent-bg);
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .parents-nav {
+            background: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .parents-logo {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--parent-primary);
+            text-decoration: none;
+        }
+
+        .child-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--parent-bg);
+            padding: 8px 20px;
+            border-radius: 30px;
+        }
+
+        .child-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+        }
+
+        .welcome-section h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .welcome-section p {
+            color: #666;
+            margin: 5px 0 0;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-blue {
+            background: rgba(108, 92, 231, 0.1);
+            color: #6C5CE7;
+        }
+
+        .icon-green {
+            background: rgba(78, 205, 196, 0.1);
+            color: #4ECDC4;
+        }
+
+        .icon-orange {
+            background: rgba(255, 107, 107, 0.1);
+            color: #FF6B6B;
+        }
+
+        .icon-yellow {
+            background: rgba(255, 230, 109, 0.1);
+            color: #f39c12;
+        }
+
+        .stat-info h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .stat-info .value {
+            margin: 5px 0 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        /* Main Content Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .chart-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        /* Performance Bar Graph Simulation */
+        .performance-graph {
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            padding-top: 20px;
+        }
+
+        .bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 100%;
+            background: #eee;
+            border-radius: 10px;
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: var(--parent-primary);
+            transition: height 1s ease-out;
+            border-radius: 10px;
+        }
+
+        .bar-label {
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: 700;
+        }
+
+        /* Subject Progress */
+        .subject-progress {
+            background: white;
+            padding: 30px;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .subject-item {
+            margin-bottom: 25px;
+        }
+
+        .subject-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .progress-track {
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+
+        .activity-card {
+            background: white;
+            padding: 30px;
+            border-radius: 40px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .timeline {
+            margin-top: 20px;
+            position: relative;
+            padding-left: 20px;
+            border-left: 2px dashed #eee;
+        }
+
+        .timeline-item {
+            padding-bottom: 25px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid white;
+        }
+
+        .timeline-time {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .timeline-content span {
+            color: var(--secondary);
+        }
+
+        .back-btn {
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="parents-nav">
+        <a href="index.html" class="parents-logo"><i class="fa-solid fa-shield-cat"></i> Parents Shield</a>
+        <div class="child-selector">
+            <div class="child-avatar"><i class="fa-solid fa-user-ninja"></i></div>
+            <strong>Kid Explorer</strong>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+
+        <section class="welcome-section">
+            <h1>Hello, Parental Guide! 👋</h1>
+            <p>Here's how **Kid Explorer** is doing this week.</p>
+        </section>
+
+        <!-- Key Metrics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fa-solid fa-hourglass-start"></i></div>
+                <div class="stat-info">
+                    <h4>Learning Time</h4>
+                    <p class="value">4.5 Hrs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fa-solid fa-check-double"></i></div>
+                <div class="stat-info">
+                    <h4>Quizzes Solved</h4>
+                    <p class="value">28</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-yellow"><i class="fa-solid fa-coins"></i></div>
+                <div class="stat-info">
+                    <h4>Coins Earned</h4>
+                    <p class="value">450</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-orange"><i class="fa-solid fa-fire"></i></div>
+                <div class="stat-info">
+                    <h4>Daily Streak</h4>
+                    <p class="value">5 Days</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Mastery Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Focus Score</h3>
+                    <select style="border:none; background: #f8f9fa; padding: 5px 15px; border-radius: 10px;">
+                        <option>This Week</option>
+                        <option>Last Month</option>
+                    </select>
+                </div>
+                <div class="performance-graph">
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 40%; background: #a29bfe;"></div>
+                        </div>
+                        <span class="bar-label">Mon</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 65%; background: #a29bfe;"></div>
+                        </div>
+                        <span class="bar-label">Tue</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 85%; background: #a29bfe;"></div>
+                        </div>
+                        <span class="bar-label">Wed</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 50%; background: #a29bfe;"></div>
+                        </div>
+                        <span class="bar-label">Thu</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 90%; background: var(--parent-primary);"></div>
+                        </div>
+                        <span class="bar-label">Fri</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 20%; background: #eee;"></div>
+                        </div>
+                        <span class="bar-label">Sat</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar">
+                            <div class="bar-fill" style="height: 20%; background: #eee;"></div>
+                        </div>
+                        <span class="bar-label">Sun</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Performance -->
+            <div class="subject-progress">
+                <h3>Skill Mastery 🎓</h3>
+                <div class="subject-item">
+                    <div class="subject-info"><span>Mathematics</span><span>85%</span></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 85%; background: #6C5CE7;"></div>
+                    </div>
+                </div>
+                <div class="subject-item">
+                    <div class="subject-info"><span>Alphabet Master</span><span>100% ★</span></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 100%; background: #4ECDC4;"></div>
+                    </div>
+                </div>
+                <div class="subject-item">
+                    <div class="subject-info"><span>Science Exploration</span><span>40%</span></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 40%; background: #FF6B6B;"></div>
+                    </div>
+                </div>
+                <div class="subject-item">
+                    <div class="subject-info"><span>Art & Creativity</span><span>72%</span></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 72%; background: #FFE66D;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-card">
+            <h3>Recent Milestones ⭐️</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-time">Today, 2:45 PM</div>
+                    <div class="timeline-content">Completed **Alphabet Master** Level D! Won <span>50 Coins</span> 🪙
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">Yesterday, 4:10 PM</div>
+                    <div class="timeline-content">Watched "Solar System Adventure" video short.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">2 Days ago</div>
+                    <div class="timeline-content">Solved 10 Math Quizzes with <span>Perfect Score</span> 🎯</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

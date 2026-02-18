@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Master - WonderKids Games</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6C5CE7, #a29bfe);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            color: var(--dark);
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 40px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .level-indicator {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--dark);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .letter-display {
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin: 20px 0;
+            text-shadow: 4px 4px 0px rgba(255, 107, 107, 0.1);
+        }
+
+        .instruction {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .game-step {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 20px;
+            background: #f8f9fa;
+            border: 2px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .game-step.active {
+            border-color: var(--secondary);
+            background: #e3fcf9;
+        }
+
+        .game-step.done {
+            border-color: #4ECDC4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .alphabet-input {
+            width: 80px;
+            height: 80px;
+            font-size: 3rem;
+            text-align: center;
+            border: 3px solid #ddd;
+            border-radius: 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .mic-btn.listening {
+            background: #ff4757;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 15px rgba(255, 71, 87, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+            }
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            font-weight: 700;
+            min-height: 1.5em;
+        }
+
+        .next-btn {
+            background: var(--secondary);
+            padding: 15px 40px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            display: none;
+            margin: 20px auto 0;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .voice-btn {
+            background: var(--purple);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-home"><i class="fa-solid fa-arrow-left"></i> Back</a>
+
+    <div class="game-container">
+        <div class="level-indicator">Level <span id="currentLevel">A</span></div>
+
+        <div class="letter-display" id="letterDisplay">A</div>
+
+        <div class="voice-btn" onclick="speakLetter()">
+            <i class="fa-solid fa-volume-high"></i> Listen Letter
+        </div>
+
+        <div class="instruction">Master the Alphabet!</div>
+
+        <!-- Step 1: Write -->
+        <div class="game-step" id="writeStep">
+            <p><strong>Step 1:</strong> Type the letter</p>
+            <input type="text" maxlength="1" class="alphabet-input" id="letterInput" placeholder="?">
+        </div>
+
+        <!-- Step 2: Speak -->
+        <div class="game-step" id="speakStep">
+            <p><strong>Step 2:</strong> Press and say it!</p>
+            <button class="mic-btn" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
+            <p id="transcript" style="margin-top:10px; font-style: italic; color: #888;">(Click to speak)</p>
+        </div>
+
+        <div class="status-msg" id="statusMsg"></div>
+
+        <button class="next-btn" id="nextBtn">Unlock Next Level! 🚀</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        const levels = ['A', 'B', 'C', 'D'];
+        let currentIndex = 0;
+        let written = false;
+        let spoken = false;
+
+        const letterDisplay = document.getElementById('letterDisplay');
+        const currentLevelSpan = document.getElementById('currentLevel');
+        const letterInput = document.getElementById('letterInput');
+        const micBtn = document.getElementById('micBtn');
+        const statusMsg = document.getElementById('statusMsg');
+        const nextBtn = document.getElementById('nextBtn');
+        const transcriptText = document.getElementById('transcript');
+
+        const writeStep = document.getElementById('writeStep');
+        const speakStep = document.getElementById('speakStep');
+
+        function speakLetter() {
+            const utterance = new SpeechSynthesisUtterance(levels[currentIndex]);
+            utterance.pitch = 1.2;
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Logic for Writing
+        letterInput.addEventListener('input', () => {
+            if (letterInput.value.toUpperCase() === levels[currentIndex]) {
+                written = true;
+                writeStep.classList.add('done');
+                statusMsg.innerText = "Great writing! Now let's say it.";
+                statusMsg.style.color = "var(--secondary)";
+                checkCompletion();
+            }
+        });
+
+        // Logic for Speaking (Web Speech API)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        // Phonetic mappings to help detection for single letters
+        const phoneticMap = {
+            'A': ['A', 'EY', 'AY', 'HAY', 'HEY', 'ACE'],
+            'B': ['B', 'BEE', 'BE', 'BEEA'],
+            'C': ['C', 'SEE', 'SEA', 'SI'],
+            'D': ['D', 'DEE', 'DI', 'TEA']
+        };
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            micBtn.addEventListener('click', () => {
+                try {
+                    recognition.start();
+                    micBtn.classList.add('listening');
+                    transcriptText.innerText = "Listening... Speak now!";
+                    statusMsg.innerText = "Listening...";
+                } catch (e) {
+                    console.log("Recognition already started or error: ", e);
+                }
+            });
+
+            recognition.onresult = (event) => {
+                const result = event.results[0][0].transcript.toUpperCase().trim();
+                transcriptText.innerText = `You said: "${result}"`;
+                micBtn.classList.remove('listening');
+
+                const targetLetter = levels[currentIndex];
+                const acceptedSounds = phoneticMap[targetLetter] || [targetLetter];
+
+                // Matches if result IS the letter, OR starts with it, OR matches phonetic map
+                const isMatch = result === targetLetter ||
+                    result.startsWith(targetLetter) ||
+                    acceptedSounds.some(sound => result.includes(sound));
+
+                if (isMatch) {
+                    spoken = true;
+                    speakStep.classList.add('done');
+                    statusMsg.innerText = "Perfect pronunciation! 🎉";
+                    statusMsg.style.color = "var(--secondary)";
+                    checkCompletion();
+                } else {
+                    statusMsg.innerText = `I heard "${result}", try saying "${targetLetter}" again!`;
+                    statusMsg.style.color = "var(--danger)";
+                }
+            };
+
+            recognition.onspeechend = () => {
+                recognition.stop();
+                micBtn.classList.remove('listening');
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+            };
+
+            recognition.onerror = (event) => {
+                micBtn.classList.remove('listening');
+                console.error("Speech Error: ", event.error);
+                if (event.error === 'not-allowed') {
+                    transcriptText.innerText = "Mic blocked! Please allow microphone access.";
+                    statusMsg.innerText = "Check your browser mic permissions! 🔓";
+                } else {
+                    transcriptText.innerText = "Error: " + event.error;
+                    statusMsg.innerText = "Try clicking the mic again.";
+                }
+            };
+        } else {
+            transcriptText.innerText = "Speech not supported in this browser. Try Chrome!";
+            statusMsg.innerText = "Oops! Mic works best in Chrome/Edge.";
+        }
+
+        function checkCompletion() {
+            if (written && spoken) {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                nextBtn.style.display = 'block';
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            currentIndex++;
+            if (currentIndex < levels.length) {
+                // Reset for next level
+                const nextLevel = levels[currentIndex];
+                currentLevelSpan.innerText = nextLevel;
+                letterDisplay.innerText = nextLevel;
+                letterInput.value = '';
+                written = false;
+                spoken = false;
+                writeStep.classList.remove('done');
+                speakStep.classList.remove('done');
+                nextBtn.style.display = 'none';
+                statusMsg.innerText = "Level Up! " + nextLevel + " is next!";
+                transcriptText.innerText = "(Click to speak)";
+                speakLetter();
+            } else {
+                statusMsg.innerText = "Master! You completed all levels! 🎓";
+                nextBtn.innerText = "Back to Home";
+                nextBtn.onclick = () => window.location.href = "index.html";
+            }
+        });
+
+        // Initial voice
+        setTimeout(speakLetter, 500);
+
+    </script>
+</body>
+
+</html>
