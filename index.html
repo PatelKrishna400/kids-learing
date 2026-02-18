@@ -24,7 +24,6 @@
                 <a href="#home" class="active">Home</a>
                 <a href="#features">Features</a>
                 <a href="shorts.html">E-Learning</a>
-                <a href="pricing.html">Pricing</a>
                 <a href="#contact">Contact</a>
             </div>
             <div class="nav-buttons">
@@ -114,28 +113,20 @@
                     </div>
                     <h3>Gamified Learning</h3>
                     <p>Earn badges, points, and rewards as you complete lessons and master new skills.</p>
-                    <button class="btn-primary btn-sm mt-10">Select Level <i class="fa-solid fa-play"></i></button>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card clickable" id="colorFillCard">
                     <div class="icon-box color-2">
                         <i class="fa-solid fa-fill-drip"></i>
                     </div>
                     <h3>Colour Fill</h3>
                     <p>Express creativity by filling beautiful sketches with a vibrant palette of colours.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card clickable" id="storiesCard">
                     <div class="icon-box color-3">
                         <i class="fa-solid fa-book-open"></i>
                     </div>
                     <h3>Interactive Stories</h3>
                     <p>Immerse in magical stories that teach reading comprehension and vocabulary.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon-box color-4">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-                    <h3>Progress Tracking</h3>
-                    <p>Parents can easily monitor progress and see exactly what their child is learning.</p>
                 </div>
             </div>
         </div>
@@ -253,6 +244,26 @@
             if (e.target === gameModal) {
                 gameModal.classList.remove('active');
             }
+        });
+
+        const colorFillCard = document.getElementById('colorFillCard');
+
+        colorFillCard.addEventListener('click', () => {
+            const cost = 10;
+            if (coins >= cost) {
+                coins -= cost;
+                coinDisplay.innerText = coins;
+                alert("🎨 10 Coins deducted! Welcome to Colour Fill Magic.");
+                window.location.href = "color-fill.html";
+            } else {
+                alert("❌ Not enough coins! You need 10 coins to start coloring.");
+            }
+        });
+
+        const storiesCard = document.getElementById('storiesCard');
+
+        storiesCard.addEventListener('click', () => {
+            window.location.href = "stories.html";
         });
 
         document.querySelectorAll('.play-level-btn').forEach(btn => {

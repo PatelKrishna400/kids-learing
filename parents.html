@@ -299,16 +299,68 @@
             gap: 8px;
             margin-bottom: 20px;
         }
+
+        /* Pricing in Parents Panel */
+        .pricing-section {
+            margin-top: 60px;
+            padding: 40px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .parent-price-card {
+            padding: 30px;
+            border-radius: 30px;
+            border: 2px solid #f0f0f0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .parent-price-card:hover {
+            border-color: var(--parent-primary);
+            transform: translateY(-5px);
+        }
+
+        .price-val {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--parent-primary);
+            margin: 15px 0;
+        }
+
+        .price-features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .price-features li {
+            margin: 10px 0;
+        }
     </style>
 </head>
 
 <body>
     <nav class="parents-nav">
         <a href="index.html" class="parents-logo"><i class="fa-solid fa-shield-cat"></i> Parents Shield</a>
-        <div class="child-selector">
-            <div class="child-avatar"><i class="fa-solid fa-user-ninja"></i></div>
-            <strong>Kid Explorer</strong>
-            <i class="fa-solid fa-chevron-down"></i>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="#stats" style="text-decoration:none; color: #666; font-weight: 600;">Stats</a>
+            <a href="#pricing" style="text-decoration:none; color: #666; font-weight: 600;">Pricing & Tickets</a>
+            <div class="child-selector">
+                <div class="child-avatar"><i class="fa-solid fa-user-ninja"></i></div>
+                <strong>Kid Explorer</strong>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
         </div>
     </nav>
 
@@ -321,7 +373,33 @@
         </section>
 
         <!-- Key Metrics -->
-        <div class="stats-grid">
+        <div class="stats-grid" id="stats">
+            <div class="stat-card" style="cursor: pointer; background: #fff5f5; border: 2px dashed #FF6B6B;"
+                onclick="earnAdTicket()">
+                <div class="stat-icon" style="background: rgba(255, 107, 107, 0.1); color: #FF6B6B;"><i
+                        class="fa-solid fa-ticket-simple"></i></div>
+                <div class="stat-info">
+                    <h4>Unlock Level</h4>
+                    <p class="value" style="color: #FF6B6B;">Watch Ad (+1 🎫)</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-blue" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;"><i
+                        class="fa-solid fa-ticket"></i></div>
+                <div class="stat-info">
+                    <h4>Total Tickets</h4>
+                    <p class="value" id="ticketCount">3</p>
+                </div>
+            </div>
+            <div class="stat-card" style="cursor: pointer; background: #f0f7ff; border: 2px dashed #3498db;"
+                onclick="inviteFriend()">
+                <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: #3498db;"><i
+                        class="fa-solid fa-users-plus"></i></div>
+                <div class="stat-info">
+                    <h4>Refer & Win</h4>
+                    <p class="value" style="color: #3498db;">+100 🎫</p>
+                </div>
+            </div>
             <div class="stat-card">
                 <div class="stat-icon icon-blue"><i class="fa-solid fa-hourglass-start"></i></div>
                 <div class="stat-info">
@@ -457,7 +535,116 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pricing Section -->
+        <div class="pricing-section" id="pricing">
+            <div style="text-align:center; margin-bottom: 30px;">
+                <h2 style="font-family: 'Fredoka', sans-serif; font-size: 2rem;">Subscription Plans 🚀</h2>
+                <p style="color: #666;">Choose a plan to unlock premium features for your child.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="parent-price-card">
+                    <h3>Weekly Spark</h3>
+                    <div class="price-val">₹80</div>
+                    <ul class="price-features">
+                        <li>50 Daily Coins</li>
+                        <li><strong>100 Unlock Tickets</strong> 🎫</li>
+                        <li>Basic Progress Reports</li>
+                    </ul>
+                    <button class="btn-primary plan-btn" style="width: 100%;" data-tickets="100">Choose Plan</button>
+                </div>
+                <div class="parent-price-card" style="border-color: var(--parent-primary);">
+                    <div
+                        style="background:var(--parent-primary); color:white; padding: 2px 10px; border-radius: 10px; font-size: 0.7rem; display: inline-block; margin-bottom: 10px;">
+                        BEST VALUE</div>
+                    <h3>Monthly Magic</h3>
+                    <div class="price-val">₹250</div>
+                    <ul class="price-features">
+                        <li>100 Daily Coins</li>
+                        <li><strong>300 Unlock Tickets</strong> 🎫</li>
+                        <li>Advanced AI Analytics</li>
+                    </ul>
+                    <button class="btn-primary plan-btn" style="width: 100%;" data-tickets="300">Choose Plan</button>
+                </div>
+                <div class="parent-price-card">
+                    <h3>Yearly Hero</h3>
+                    <div class="price-val">₹3000</div>
+                    <ul class="price-features">
+                        <li>500 Daily Coins</li>
+                        <li><strong>3500 Unlock Tickets</strong> 🎫</li>
+                        <li>Personalized Tutor</li>
+                    </ul>
+                    <button class="btn-primary plan-btn" style="width: 100%;" data-tickets="3500">Choose Plan</button>
+                </div>
+            </div>
+        </div>
     </div>
+    <script>
+        function earnAdTicket() {
+            // Mock Ad Experience
+            const confirmAd = confirm("📺 Play a short ad to earn 1 Level-Unlock Ticket for your child?");
+            if (confirmAd) {
+                alert("✨ Ad completed! 1 Ticket has been added to the balance.");
+                const ticketVal = document.getElementById('ticketCount');
+                if (ticketVal) {
+                    let currentNum = parseInt(ticketVal.innerText);
+                    ticketVal.innerText = (currentNum + 1);
+                }
+            }
+        }
+
+        // Plan Purchase Logic
+        document.querySelectorAll('.plan-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (this.innerText === "Choose Plan") {
+                    // Step 1: Change to Buy
+                    this.innerText = "Confirm Buy";
+                    this.style.background = "#2ecc71"; // Green color for buy
+                    this.style.borderColor = "#2ecc71";
+
+                    // Reset other buttons
+                    document.querySelectorAll('.plan-btn').forEach(other => {
+                        if (other !== this) {
+                            other.innerText = "Choose Plan";
+                            other.style.background = "";
+                            other.style.borderColor = "";
+                        }
+                    });
+                } else {
+                    // Step 2: Actually Buy (Mocking payment)
+                    const ticketsToAdd = parseInt(this.dataset.tickets);
+                    const confirmPurchase = confirm(`💳 Confirm purchase of ${ticketsToAdd} Tickets?`);
+
+                    if (confirmPurchase) {
+                        alert(`🎉 Success! ${ticketsToAdd} Tickets added to your child's account.`);
+                        const ticketVal = document.getElementById('ticketCount');
+                        if (ticketVal) {
+                            let currentNum = parseInt(ticketVal.innerText);
+                            ticketVal.innerText = (currentNum + ticketsToAdd);
+                        }
+                        // Reset button
+                        this.innerText = "Choose Plan";
+                        this.style.background = "";
+                        this.style.borderColor = "";
+                    }
+                }
+            });
+        });
+
+        function inviteFriend() {
+            const friendEmail = prompt("👫 Enter your friend's email to invite them to WonderKids:");
+            if (friendEmail && friendEmail.includes('@')) {
+                alert(`🚀 Invitation sent to ${friendEmail}! \n\n✨ You've earned 100 Bonus Tickets for the referral!`);
+                const ticketVal = document.getElementById('ticketCount');
+                if (ticketVal) {
+                    let currentNum = parseInt(ticketVal.innerText);
+                    ticketVal.innerText = (currentNum + 100);
+                }
+            } else if (friendEmail) {
+                alert("❌ Please enter a valid email address.");
+            }
+        }
+    </script>
 </body>
 
 </html>

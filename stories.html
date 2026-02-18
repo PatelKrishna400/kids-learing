@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Map - WonderKids</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #a29bfe;
+            margin: 0;
+            font-family: 'Fredoka', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .map-container {
+            width: 100%;
+            min-height: 200vh;
+            background: linear-gradient(#a29bfe, #6c5ce7);
+            position: relative;
+            padding: 100px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* The Winding Path */
+        .path-svg {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .story-node {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 120px;
+            border: 5px solid #FFE66D;
+        }
+
+        .story-node:nth-child(even) {
+            transform: translateX(100px);
+        }
+
+        .story-node:nth-child(odd) {
+            transform: translateX(-100px);
+        }
+
+        .story-node:hover {
+            transform: scale(1.1) rotate(5deg);
+            background: #FFE66D;
+            color: var(--dark);
+        }
+
+        .story-node.locked {
+            background: #eee;
+            color: #aaa;
+            border-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        .story-node.locked i {
+            font-size: 1.5rem;
+        }
+
+        .node-label {
+            position: absolute;
+            top: 110%;
+            width: 150px;
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            color: var(--dark);
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        /* Story Player Fullscreen */
+        #storyPlayer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: white;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .player-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+
+        .player-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            font-size: 1.8rem;
+            line-height: 1.6;
+            text-align: center;
+            background: #fff;
+        }
+
+        .player-footer {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .infinite-loader {
+            padding: 40px;
+            color: white;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Quiz Overlay */
+        #quizOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(162, 155, 254, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .quiz-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #f0effc;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back home</a>
+
+    <div class="map-container" id="storyMap">
+        <!-- Path Nodes (Initial) -->
+        <div class="story-node"
+            onclick="openStory(1, 'The Brave Robot', 'Once upon a time, there was a little robot named Pip who wanted to explore the moon...')">
+            1
+            <div class="node-label">The Brave Robot</div>
+        </div>
+
+        <div class="story-node"
+            onclick="openStory(2, 'The Flying Whale', 'Deep in the cotton-candy clouds lived a giant blue whale whose fins were actually wings...')">
+            2
+            <div class="node-label">The Flying Whale</div>
+        </div>
+
+        <div class="story-node locked">
+            <i class="fa-solid fa-lock"></i>
+            <div class="node-label">Locked Story</div>
+        </div>
+
+        <div class="story-node locked">
+            <i class="fa-solid fa-lock"></i>
+            <div class="node-label">Locked Story</div>
+        </div>
+
+        <div id="loader" class="infinite-loader">
+            <i class="fa-solid fa-cloud"></i> Discovering more stories...
+        </div>
+    </div>
+
+    <!-- Fullscreen Player -->
+    <div id="storyPlayer">
+        <div class="player-header">
+            <h2 id="storyTitle">Story Title</h2>
+            <button class="btn-primary" onclick="closeStory()"><i class="fa-solid fa-xmark"></i> Finish Story</button>
+        </div>
+        <div class="player-content" id="storyBody">
+            Once upon a time...
+        </div>
+        <div class="player-footer">
+            <button class="btn-secondary" onclick="speakStory()"><i class="fa-solid fa-volume-high"></i> Listen with
+                AI</button>
+            <button class="btn-primary" id="nextPageBtn" onclick="showQuiz()">Next: Quiz Time! <i
+                    class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+        <div id="quizOverlay">
+            <div class="quiz-card">
+                <h3 style="margin-bottom: 20px; color: var(--primary);">Quick Quiz! 🧠</h3>
+                <p id="quizQuestion" style="font-size: 1.2rem; margin-bottom: 20px;">What was the robot's name?</p>
+                <div id="quizOptions">
+                    <!-- Options injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fullscreen Story Logic
+        let currentStoryId = null;
+        let unlockedLevels = 2; // Start with 2 unlocked
+
+        const storiesData = {
+            1: {
+                question: "What was the robot's name?",
+                options: ["Pip", "Pop", "Zap"],
+                answer: "Pip"
+            },
+            2: {
+                question: "Where did the whale live?",
+                options: ["Ocean", "Clouds", "Forest"],
+                answer: "Clouds"
+            }
+        };
+
+        function openStory(id, title, content) {
+            currentStoryId = id;
+            document.getElementById('storyTitle').innerText = title;
+            document.getElementById('storyBody').innerHTML = content;
+            document.getElementById('storyPlayer').style.display = 'flex';
+            document.getElementById('quizOverlay').style.display = 'none';
+
+            // Enter Fullscreen if possible
+            if (document.documentElement.requestFullscreen) {
+                document.getElementById('storyPlayer').requestFullscreen();
+            }
+        }
+
+        function showQuiz() {
+            const data = storiesData[currentStoryId];
+            if (!data) {
+                alert("Quiz coming soon for this level!");
+                closeStory();
+                return;
+            }
+
+            document.getElementById('quizQuestion').innerText = data.question;
+            const optionsDiv = document.getElementById('quizOptions');
+            optionsDiv.innerHTML = '';
+
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optionsDiv.appendChild(btn);
+            });
+
+            document.getElementById('quizOverlay').style.display = 'flex';
+        }
+
+        function checkAnswer(selected) {
+            const data = storiesData[currentStoryId];
+            if (selected === data.answer) {
+                alert("✨ Perfect! Correct answer.");
+                unlockNextLevel();
+                closeStory();
+            } else {
+                alert("❌ Oops! Try again.");
+            }
+        }
+
+        function unlockNextLevel() {
+            if (currentStoryId === unlockedLevels) {
+                unlockedLevels++;
+                const nodes = document.querySelectorAll('.story-node');
+                const nextNode = nodes[unlockedLevels - 1]; // Node index starts at 0
+                if (nextNode && nextNode.classList.contains('locked')) {
+                    nextNode.classList.remove('locked');
+                    nextNode.innerHTML = unlockedLevels;
+
+                    const nextId = unlockedLevels;
+                    const nextTitle = `Adventure ${nextId}`;
+                    const nextText = `Welcome to level ${nextId}! Your journey across the magical world continues with even bigger surprises...`;
+
+                    nextNode.onclick = () => openStory(nextId, nextTitle, nextText);
+
+                    // Add dummy quiz for newly unlocked level
+                    storiesData[nextId] = {
+                        question: `Which level did you just unlock?`,
+                        options: [`Level ${nextId}`, `Level ${nextId - 1}`, `Level 1`],
+                        answer: `Level ${nextId}`
+                    };
+                }
+            }
+        }
+
+        function closeStory() {
+            document.getElementById('storyPlayer').style.display = 'none';
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+            window.speechSynthesis.cancel();
+        }
+
+        function speakStory() {
+            const text = document.getElementById('storyBody').innerText;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Infinite Scroll Mock
+        let nodeCount = 4;
+        window.addEventListener('scroll', () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+                addNewNode();
+            }
+        });
+
+        function addNewNode() {
+            nodeCount++;
+            const map = document.getElementById('storyMap');
+            const loader = document.getElementById('loader');
+
+            const newNode = document.createElement('div');
+            newNode.className = 'story-node locked';
+            newNode.innerHTML = `<i class="fa-solid fa-lock"></i><div class="node-label">Story ${nodeCount}</div>`;
+
+            map.insertBefore(newNode, loader);
+        }
+    </script>
+</body>
+
+</html>
