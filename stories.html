@@ -198,37 +198,84 @@
             transition: all 0.2s;
         }
 
-        .option-btn:hover {
-            border-color: var(--primary);
-            background: #f0effc;
-        }
-
-        /* Ramayan Theme */
+        /* Themes for different stories */
         body.theme-ramayan {
             background: #ff7f50;
         }
 
         .theme-ramayan .map-container {
-            background: linear-gradient(rgba(255, 127, 80, 0.8), rgba(255, 159, 67, 0.8)),
-                url('https://images.unsplash.com/photo-1590059530536-cc4340798132?q=80&w=2000&auto=format&fit=crop');
-            /* Forest background */
-            background-blend-mode: overlay;
+            background: linear-gradient(rgba(255, 127, 80, 0.8), rgba(255, 159, 67, 0.8)), url('https://images.unsplash.com/photo-1590059530536-cc4340798132?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
             background-attachment: fixed;
         }
 
         .theme-ramayan .story-node {
             border-color: #ff9f43;
-            background: #fff;
             color: #ff7f50;
         }
 
-        .theme-ramayan .story-node:hover {
-            background: #ff9f43;
-            color: white;
+        body.theme-mahabharat {
+            background: #ee5253;
         }
 
-        .player-ramayan {
+        .theme-mahabharat .map-container {
+            background: linear-gradient(rgba(238, 82, 82, 0.8), rgba(255, 107, 107, 0.8)), url('https://images.unsplash.com/photo-1592394017393-559648943675?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .theme-mahabharat .story-node {
+            border-color: #ff6b6b;
+            color: #ee5253;
+        }
+
+        body.theme-krishna {
+            background: #4834d4;
+        }
+
+        .theme-krishna .map-container {
+            background: linear-gradient(rgba(72, 52, 212, 0.8), rgba(104, 109, 224, 0.8)), url('https://images.unsplash.com/photo-1587397845856-e6cf49176c70?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .theme-krishna .story-node {
+            border-color: #686de0;
+            color: #4834d4;
+        }
+
+        body.theme-legends {
+            background: #f0932b;
+        }
+
+        .theme-legends .map-container {
+            background: linear-gradient(rgba(240, 147, 43, 0.8), rgba(255, 190, 118, 0.8)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .theme-legends .story-node {
+            border-color: #ffbe76;
+            color: #f0932b;
+        }
+
+        body.theme-fables {
+            background: #009432;
+        }
+
+        .theme-fables .map-container {
+            background: linear-gradient(rgba(0, 148, 50, 0.8), rgba(163, 203, 56, 0.8)), url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .theme-fables .story-node {
+            border-color: #A3CB38;
+            color: #009432;
+        }
+
+        .player-ramayan,
+        .player-mahabharat {
             background: #fff9f0 !important;
             border: 15px solid #ff9f43;
             border-image: url('https://www.transparenttextures.com/patterns/gold-scale.png') 30 round;
@@ -237,6 +284,11 @@
 </head>
 
 <body class="theme-default">
+    <div class="coin-display"
+        style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: white; border: 2px solid #333; padding: 8px 12px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <i class="fa-solid fa-coins" style="color: #f1c40f;"></i> <span id="userCoins">50</span>
+    </div>
+
     <a href="index.html" class="back-btn" id="categoryBackLink"><i class="fa-solid fa-arrow-left"></i> Back to
         Palace</a>
 
@@ -281,30 +333,261 @@
         // Story Database
         const storyMasterData = {
             'ramayan': {
-                title: "The Epic Ramayan",
-                theme: "theme-ramayan",
+                title: "The Epic Ramayan", theme: "theme-ramayan",
                 levels: [
-                    {
-                        id: 1,
-                        name: "Introduction of Ramayan",
-                        icon: "fa-om",
-                        content: `Long ago in the kingdom of Ayodhya, lived a wise King named Dasharatha. He had four sons, and the eldest was Prince Rama. Rama was known for his truth and bravery. This story is about his journey of courage and goodness, where he, alongside his brother Lakshmana and wife Sita, showed the world the power of dharma!`,
-                        quiz: {
-                            question: "Who was the eldest son of King Dasharatha?",
-                            options: ["Rama", "Lakshmana", "Bharata"],
-                            answer: "Rama"
-                        }
-                    },
-                    { id: 2, name: "The Gurukul Days", icon: "fa-book", locked: true },
-                    { id: 3, name: "Sita's Swayamvar", icon: "fa-ring", locked: true }
+                    // Chapter 1: Beginning
+                    { id: 1, name: "Introduction to the Ramayan", content: "The Ramayan is one of the world's greatest stories from ancient India. It tells the journey of Prince Rama, a hero who fought for truth, goodness, and love. It teaches us about being a good person, a loyal friend, and a brave leader.", quiz: { question: "What is the Ramayan about?", options: ["Journey of Rama", "A Space Adventure", "Deep Sea Fish"], answer: "Journey of Rama" } },
+                    { id: 2, name: "Sage Valmiki Writes the Ramayan", content: "A long time ago, a holy sage named Valmiki was inspired by a bird's song and a divine vision. He wrote down the story of Rama in a beautiful poem called the Ramayan, so children for thousands of years could learn from it!", quiz: { question: "Who wrote the Ramayan?", options: ["Sage Valmiki", "Sage Vyasa", "Sage Agastya"], answer: "Sage Valmiki" } },
+                    { id: 3, name: "The Kingdom of Ayodhya", content: "Ayodhya was a magical and peaceful kingdom on the banks of the river Sarayu. It was famous for its golden palaces, happy people, and the wise rule of the Ikshvaku kings. It was called the 'City that cannot be defeated'!", quiz: { question: "On which river's bank is Ayodhya located?", options: ["Sarayu", "Ganges", "Yamuna"], answer: "Sarayu" } },
+                    { id: 4, name: "King Dasharatha and His Queens", content: "King Dasharatha was a brave and kind ruler. He had three queens: Kausalya, Kaikeyi, and Sumitra. They lived happily in the palace but they had one wish—they wanted children to fill the palace with laughter.", quiz: { question: "How many queens did King Dasharatha have?", options: ["Three", "Two", "Four"], answer: "Three" } },
+                    { id: 5, name: "The Putrakameshti Yagna", content: "To fulfill their wish for children, the King performed a special holy prayer called the Putrakameshti Yagna. A divine being appeared from the fire and gave the King a bowl of magical sweet pudding for the queens to eat.", quiz: { question: "What was the special prayer called?", options: ["Putrakameshti Yagna", "Ashwamedha Yagna", "Ganesh Pooja"], answer: "Putrakameshti Yagna" } },
+                    { id: 6, name: "Birth of Rama", content: "On a bright afternoon, Kausalya gave birth to Prince Rama. He was as beautiful as the moon and brought incredible joy to the entire kingdom. He was the eldest of the four brothers.", quiz: { question: "Who was Rama's mother?", options: ["Kausalya", "Kaikeyi", "Sumitra"], answer: "Kausalya" } },
+                    { id: 7, name: "Birth of Lakshmana & Shatrughna", content: "Soon after Rama, Queen Sumitra gave birth to twins: Lakshmana and Shatrughna. Lakshmana became Rama's closest friend even as a baby, always staying by his side to protect him.", quiz: { question: "Who were the twin brothers?", options: ["Lakshmana & Shatrughna", "Rama & Bharata", "Lava & Kusha"], answer: "Lakshmana & Shatrughna" } },
+                    { id: 8, name: "Birth of Bharata", content: "Queen Kaikeyi gave birth to Prince Bharata. He was a noble and kind prince who loved all his brothers dearly. The palace was now full of the sounds of four little princes playing together.", quiz: { question: "Who was Bharata's mother?", options: ["Kaikeyi", "Kausalya", "Sumitra"], answer: "Kaikeyi" } },
+                    { id: 9, name: "Childhood of the Four Princes", content: "The four brothers grew up together in Ayodhya. They learned to ride horses, use bows and arrows, and play games. Most importantly, they learned to love and respect each other above everything else.", quiz: { question: "What was the most important thing the brothers learned?", options: ["Respect & Love", "How to fight", "How to cook"], answer: "Respect & Love" } },
+                    { id: 10, name: "Education under Sage Vishwamitra", content: "When the princes were teenagers, the great Sage Vishwamitra came to the palace. He asked Rama and Lakshmana to come with him to the forest to learn advanced skills and protect the sages from monsters.", quiz: { question: "Who took Rama to the forest for education?", options: ["Sage Vishwamitra", "Sage Valmiki", "Sage Vashistha"], answer: "Sage Vishwamitra" } },
+
+                    // Locked placeholders for the rest of the 100 levels
+                    { id: 11, name: "Rama kills demon Tataka", locked: true },
+                    { id: 12, name: "Protection of the Yagna", locked: true },
+                    { id: 13, name: "Journey to Mithila", locked: true },
+                    { id: 14, name: "Kingdom of Mithila", locked: true },
+                    { id: 15, name: "King Janaka", locked: true },
+                    { id: 16, name: "Introduction of Sita", locked: true },
+                    { id: 17, name: "The Shiva Bow Challenge", locked: true },
+                    { id: 18, name: "Rama breaks the bow", locked: true },
+                    { id: 19, name: "Marriage of Rama and Sita", locked: true },
+                    { id: 20, name: "Return to Ayodhya", locked: true },
+                    { id: 21, name: "Dasharatha decides to crown Rama", locked: true },
+                    { id: 22, name: "Queen Kaikeyi’s two wishes", locked: true },
+                    { id: 23, name: "Rama accepts exile", locked: true },
+                    { id: 24, name: "Sita chooses to go", locked: true },
+                    { id: 25, name: "Lakshmana joins them", locked: true },
+                    { id: 26, name: "Sad farewell to Ayodhya", locked: true },
+                    { id: 27, name: "Bharata’s sorrow", locked: true },
+                    { id: 28, name: "Bharata refuses the throne", locked: true },
+                    { id: 29, name: "Rama’s sandals on the throne", locked: true },
+                    { id: 30, name: "Life in the forest", locked: true },
+                    { id: 31, name: "Meeting sages", locked: true },
+                    { id: 32, name: "Building a hut", locked: true },
+                    { id: 33, name: "Demon attacks", locked: true },
+                    { id: 34, name: "Surpanakha meets Rama", locked: true },
+                    { id: 35, name: "Lakshmana cuts nose", locked: true },
+                    { id: 36, name: "Ravana plans revenge", locked: true },
+                    { id: 37, name: "Golden deer trick", locked: true },
+                    { id: 38, name: "Lakshmana Rekha", locked: true },
+                    { id: 39, name: "Ravana kidnaps Sita", locked: true },
+                    { id: 40, name: "Jatayu fights Ravana", locked: true },
+                    { id: 41, name: "Rama mourns Jatayu", locked: true },
+                    { id: 42, name: "Meeting Shabari", locked: true },
+                    { id: 43, name: "Rama tastes berries", locked: true },
+                    { id: 44, name: "Meeting Sugriva", locked: true },
+                    { id: 45, name: "Story of Vali", locked: true },
+                    { id: 46, name: "Rama helps Sugriva", locked: true },
+                    { id: 47, name: "Monkey army formed", locked: true },
+                    { id: 48, name: "Entry of Hanuman", locked: true },
+                    { id: 49, name: "Hanuman’s promise", locked: true },
+                    { id: 50, name: "Searching all directions", locked: true },
+                    { id: 51, name: "Hanuman grows giant", locked: true },
+                    { id: 52, name: "Jump across ocean", locked: true },
+                    { id: 53, name: "Arrival in Lanka", locked: true },
+                    { id: 54, name: "Hanuman meets Sita", locked: true },
+                    { id: 55, name: "Giving Rama’s ring", locked: true },
+                    { id: 56, name: "Burning Lanka", locked: true },
+                    { id: 57, name: "Return with good news", locked: true },
+                    { id: 58, name: "Building Ram Setu", locked: true },
+                    { id: 59, name: "Army crosses ocean", locked: true },
+                    { id: 60, name: "Battle begins", locked: true },
+                    { id: 61, name: "Ravana’s mighty army", locked: true },
+                    { id: 62, name: "Indrajit’s powers", locked: true },
+                    { id: 63, name: "Lakshmana injured", locked: true },
+                    { id: 64, name: "Sanjeevani mountain", locked: true },
+                    { id: 65, name: "Hanuman saves Lakshmana", locked: true },
+                    { id: 66, name: "Kumbhakarna enters war", locked: true },
+                    { id: 67, name: "Fierce battle scenes", locked: true },
+                    { id: 68, name: "Rama vs Ravana", locked: true },
+                    { id: 69, name: "Ravana defeated", locked: true },
+                    { id: 70, name: "Rescue of Sita", locked: true },
+                    { id: 71, name: "Return to Ayodhya", locked: true },
+                    { id: 72, name: "Celebration of Diwali", locked: true },
+                    { id: 73, name: "Rama crowned king", locked: true },
+                    { id: 74, name: "Beginning of Ram Rajya", locked: true },
+                    { id: 75, name: "People question Sita", locked: true },
+                    { id: 76, name: "Sita’s forest exile", locked: true },
+                    { id: 77, name: "Birth of Lava and Kusha", locked: true },
+                    { id: 78, name: "Sage Valmiki shelters Sita", locked: true },
+                    { id: 79, name: "Lava and Kusha learn Ramayan", locked: true },
+                    { id: 80, name: "Ashwamedha Yagna", locked: true },
+                    { id: 81, name: "Lava and Kusha meet Rama", locked: true },
+                    { id: 82, name: "Sita returns to Earth", locked: true },
+                    { id: 83, name: "Rama’s final journey", locked: true },
+                    { id: 84, name: "Lesson of obedience", locked: true },
+                    { id: 85, name: "Lesson of truth", locked: true },
+                    { id: 86, name: "Lesson of bravery", locked: true },
+                    { id: 87, name: "Lesson of loyalty", locked: true },
+                    { id: 88, name: "Lesson of friendship", locked: true },
+                    { id: 89, name: "Lesson of forgiveness", locked: true },
+                    { id: 90, name: "Lesson of devotion", locked: true },
+                    { id: 91, name: "Lesson of sacrifice", locked: true },
+                    { id: 92, name: "Good vs evil", locked: true },
+                    { id: 93, name: "Power of faith", locked: true },
+                    { id: 94, name: "Draw your character", locked: true },
+                    { id: 95, name: "Ramayan quiz", locked: true },
+                    { id: 96, name: "Roleplay as Rama", locked: true },
+                    { id: 97, name: "Build Ram Setu", locked: true },
+                    { id: 98, name: "Write your ending", locked: true },
+                    { id: 99, name: "What Ramayan teaches", locked: true },
+                    { id: 100, name: "Grand Conclusion", locked: true }
+                ]
+            },
+            'mahabharat': {
+                title: "The Great Mahabharat", theme: "theme-mahabharat",
+                levels: [
+                    // Chapter 1: Beginning of the Kuru Dynasty
+                    { id: 1, name: "Introduction to the Mahabharat", content: "The Mahabharat is a legendary epic that tells the story of two sets of cousins—the Pandavas and the Kauravas. It is a story of kings, heroes, and the battle between right and wrong. It teaches us that truth and goodness always win in the end!", quiz: { question: "What is the Mahabharat about?", options: ["Two sets of cousins", "Space travelers", "Deep sea life"], answer: "Two sets of cousins" } },
+                    { id: 2, name: "Sage Vyasa Writes the Epic", content: "A very wise sage named Vyasa composed this enormous story. It is said that Lord Ganesha himself helped write it down as Vyasa spoke. It is the longest epic poem ever written!", quiz: { question: "Who composed the Mahabharat?", options: ["Sage Vyasa", "Sage Valmiki", "Sage Agastya"], answer: "Sage Vyasa" } },
+                    { id: 3, name: "King Shantanu of Hastinapur", content: "Hastinapur was a powerful kingdom ruled by King Shantanu. He was a noble king who loved his people. The story of the Mahabharat begins in the beautiful palace of this great city.", quiz: { question: "Who was the ruler of Hastinapur?", options: ["King Shantanu", "King Rama", "King Janaka"], answer: "King Shantanu" } },
+                    { id: 4, name: "River Goddess Ganga", content: "King Shantanu met a mysterious and beautiful lady named Ganga by the river. She was actually the goddess of the holy river Ganges! They married and had a son who would become a great hero.", quiz: { question: "Who was the goddess King Shantanu met?", options: ["Ganga", "Sita", "Saraswati"], answer: "Ganga" } },
+                    { id: 5, name: "Birth of Bhishma", content: "The son of Shantanu and Ganga was named Devavrata. He was a brilliant and brave prince who learned everything from the best teachers. We know him today by the name Bhishma.", quiz: { question: "What was Bhishma's original name?", options: ["Devavrata", "Arjuna", "Karna"], answer: "Devavrata" } },
+                    { id: 6, name: "Bhishma’s Great Promise", content: "To help his father marry Queen Satyavati, Devavrata made a very hard promise. He swore never to become king and never to have children. Because of this 'Bheesham' (terrible) promise, he was called Bhishma.", quiz: { question: "What was the brave prince called after his promise?", options: ["Bhishma", "Shantanu", "Pandu"], answer: "Bhishma" } },
+                    { id: 7, name: "King Shantanu marries Satyavati", content: "With Bhishma's help, King Shantanu married Satyavati, the daughter of a fisherman. They had two sons, and Bhishma looked after them like a guardian, protecting the throne of Hastinapur.", quiz: { question: "Who did King Shantanu marry next?", options: ["Satyavati", "Ganga", "Kunti"], answer: "Satyavati" } },
+                    { id: 8, name: "Chitrangada and Vichitravirya", content: "The sons of Shantanu and Satyavati were named Chitrangada and Vichitravirya. They grew up to be kings, but they passed away early. Bhishma continued to protect the kingdom during these tricky times.", quiz: { question: "Who were the sons of Satyavati?", options: ["Chitrangada & Vichitravirya", "Rama & Lakshmana", "Pandu & Dhritarashtra"], answer: "Chitrangada & Vichitravirya" } },
+                    { id: 9, name: "Birth of Dhritarashtra", content: "Vichitravirya had two sons. The eldest was Dhritarashtra. He was born blind, but he was very strong. Because he couldn't see, his younger brother Pandu became the king first.", quiz: { question: "Who was the eldest son of Vichitravirya?", options: ["Dhritarashtra", "Pandu", "Vidura"], answer: "Dhritarashtra" } },
+                    { id: 10, name: "Birth of Pandu", content: "The younger son was Pandu. He was pale in color but a very brave warrior and a great archer. He was crowned the King of Hastinapur and led the kingdom to many victories.", quiz: { question: "Who became the king instead of Dhritarashtra?", options: ["Pandu", "Bhishma", "Vidura"], answer: "Pandu" } },
+
+                    // Locked placeholders for the rest of the levels
+                    { id: 11, name: "Birth of Duryodhana", locked: true },
+                    { id: 12, name: "Birth of the 100 Kauravas", locked: true },
+                    { id: 13, name: "Birth of Yudhishthira", locked: true },
+                    { id: 14, name: "Birth of Bhima", locked: true },
+                    { id: 15, name: "Birth of Arjuna", locked: true },
+                    { id: 16, name: "Birth of Nakula", locked: true },
+                    { id: 17, name: "Birth of Sahadeva", locked: true },
+                    { id: 18, name: "Childhood rivalry begins", locked: true },
+                    { id: 19, name: "Poisoning of Bhima", locked: true },
+                    { id: 20, name: "Escape from danger", locked: true },
+                    { id: 21, name: "Guru Dronacharya", locked: true },
+                    { id: 22, name: "Training in weapons", locked: true },
+                    { id: 23, name: "Arjuna's Training", locked: true },
+                    { id: 24, name: "Story of Ekalavya", locked: true },
+                    { id: 25, name: "Competition of skills", locked: true },
+                    { id: 26, name: "Arjuna wins praise", locked: true },
+                    { id: 27, name: "Entry of Karna", locked: true },
+                    { id: 28, name: "Duryodhana & Karna", locked: true },
+                    { id: 29, name: "Public talents", locked: true },
+                    { id: 30, name: "Jealousy grows", locked: true },
+                    { id: 31, name: "The wax palace", locked: true },
+                    { id: 32, name: "Escape Lakshagraha", locked: true },
+                    { id: 33, name: "Pandavas in disguise", locked: true },
+                    { id: 34, name: "Draupadi’s swayamvar", locked: true },
+                    { id: 35, name: "Arjuna wins Draupadi", locked: true },
+                    { id: 36, name: "Marriage", locked: true },
+                    { id: 37, name: "Division of kingdom", locked: true },
+                    { id: 38, name: "Building Indraprastha", locked: true },
+                    { id: 39, name: "Maya Sabha palace", locked: true },
+                    { id: 40, name: "Duryodhana’s humiliation", locked: true },
+                    { id: 41, name: "The Game of Dice", locked: true },
+                    { id: 42, name: "Shakuni’s trickery", locked: true },
+                    { id: 43, name: "Yudhishthira loses", locked: true },
+                    { id: 44, name: "Loss of kingdom", locked: true },
+                    { id: 45, name: "Loss of brothers", locked: true },
+                    { id: 46, name: "Draupadi insulted", locked: true },
+                    { id: 47, name: "Prayer to Krishna", locked: true },
+                    { id: 48, name: "Miracle of sari", locked: true },
+                    { id: 49, name: "Second dice game", locked: true },
+                    { id: 50, name: "13 years exile", locked: true },
+                    { id: 51, name: "Life in exile", locked: true },
+                    { id: 52, name: "Meeting sages", locked: true },
+                    { id: 53, name: "Arjuna’s journey", locked: true },
+                    { id: 54, name: "Bhima meets Hanuman", locked: true },
+                    { id: 55, name: "Divine weapons", locked: true },
+                    { id: 56, name: "Virata's kingdom", locked: true },
+                    { id: 57, name: "Year in disguise", locked: true },
+                    { id: 58, name: "Keechaka defeated", locked: true },
+                    { id: 59, name: "Cattle raid battle", locked: true },
+                    { id: 60, name: "End of exile", locked: true },
+                    { id: 61, name: "Preparation for war", locked: true },
+                    { id: 62, name: "Peace mission", locked: true },
+                    { id: 63, name: "Choosing armies", locked: true },
+                    { id: 64, name: "Arjuna chooses Krishna", locked: true },
+                    { id: 65, name: "Kurukshetra field", locked: true },
+                    { id: 66, name: "Conch shells blow", locked: true },
+                    { id: 67, name: "Arjuna’s doubt", locked: true },
+                    { id: 68, name: "Bhagavad Gita", locked: true },
+                    { id: 69, name: "Bhishma leads army", locked: true },
+                    { id: 70, name: "Fall of Bhishma", locked: true },
+                    { id: 71, name: "Drona commander", locked: true },
+                    { id: 72, name: "Abhimanyu’s bravery", locked: true },
+                    { id: 73, name: "Drona’s fall", locked: true },
+                    { id: 74, name: "Karna commander", locked: true },
+                    { id: 75, name: "Arjuna vs Karna", locked: true },
+                    { id: 76, name: "Fall of Karna", locked: true },
+                    { id: 77, name: "Shalya leads", locked: true },
+                    { id: 78, name: "Bhima vs Duryodhana", locked: true },
+                    { id: 79, name: "Duryodhana defeated", locked: true },
+                    { id: 80, name: "Pandavas win", locked: true },
+                    { id: 81, name: "Yudhishthira crowned", locked: true },
+                    { id: 82, name: "Grief of Gandhari", locked: true },
+                    { id: 83, name: "Rule of peace", locked: true },
+                    { id: 84, name: "Ashwamedha Yagna", locked: true },
+                    { id: 85, name: "Himalayas journey", locked: true },
+                    { id: 86, name: "Test of loyalty", locked: true },
+                    { id: 87, name: "Entry into heaven", locked: true },
+                    { id: 88, name: "Importance of truth", locked: true },
+                    { id: 89, name: "Control anger", locked: true },
+                    { id: 90, name: "Stand for justice", locked: true },
+                    { id: 91, name: "Good actions win", locked: true },
+                    { id: 92, name: "Grand Finale", locked: true }
+                ]
+            },
+            'krishna': {
+                title: "Lord Krishna Tales", theme: "theme-krishna",
+                levels: [
+                    { id: 1, name: "Little Krishna & Makhan", content: "Little Krishna loved butter (Makhan) more than anything! He and his friends would often play tricks in Vrindavan to find the tastiest butter pots.", quiz: { question: "What did little Krishna love to eat?", options: ["Butter", "Apples", "Rice"], answer: "Butter" } },
+                    { id: 2, name: "Kaliya Naag", icon: "fa-snake", locked: true }
+                ]
+            },
+            'akbar-birbal': {
+                title: "Akbar & Birbal", theme: "theme-legends",
+                levels: [
+                    { id: 1, name: "The Smartest Minister", content: "Emperor Akbar had a very smart minister named Birbal. No matter how hard the puzzle, Birbal always had a clever answer that made the Emperor smile!", quiz: { question: "Who was Akbar's smartest minister?", options: ["Birbal", "Tansen", "Todarmal"], answer: "Birbal" } },
+                    { id: 2, name: "The Crows of Agra", icon: "fa-crow", locked: true }
+                ]
+            },
+            'tenali-raman': {
+                title: "Tenali Raman Wisdom", theme: "theme-legends",
+                levels: [
+                    { id: 1, name: "The Wit of Tenali", content: "In the kingdom of Vijayanagara, Tenali Raman was famous for his quick wit. He used his intelligence to help King Krishnadevaraya and solve tricky problems with a laugh!", quiz: { question: "In which kingdom did Tenali Raman live?", options: ["Vijayanagara", "Magadha", "Mughal"], answer: "Vijayanagara" } }
+                ]
+            },
+            'pratap': { // matching id from index.html url
+                title: "Maharana Pratap", theme: "theme-legends",
+                levels: [
+                    { id: 1, name: "The Brave King", content: "Maharana Pratap was the brave King of Mewar. He was famous for his courage and his loyal horse, Chetak, who helped him in many battles to protect his land.", quiz: { question: "What was the name of Maharana Pratap's loyal horse?", options: ["Chetak", "Pawan", "Badal"], answer: "Chetak" } }
+                ]
+            },
+            'panchatantra': {
+                title: "Panchatantra Tales", theme: "theme-fables",
+                levels: [
+                    { id: 1, name: "The Clever Rabbit", content: "Once, a small rabbit used his smart brain to trick a big, scary lion and save all the animals in the forest. It shows that being smart is better than being just strong!", quiz: { question: "Who tricked the big lion?", options: ["A Rabbit", "An Elephant", "A Monkey"], answer: "A Rabbit" } }
+                ]
+            },
+            'jataka': { // matching id from index.html url
+                title: "Jataka Tales", theme: "theme-fables",
+                levels: [
+                    { id: 1, name: "The Kind Elephant", content: "The Jataka tales tell stories of the Buddha in his previous lives. In one story, he was a kind elephant who helped lost travelers find their way through a dark forest.", quiz: { question: "Who did the kind elephant help?", options: ["Travelers", "Lions", "Hunters"], answer: "Travelers" } }
+                ]
+            },
+            'vikram': { // matching id from index.html url
+                title: "Vikram and Betal", theme: "theme-fables",
+                levels: [
+                    { id: 1, name: "The King & The Ghost", content: "King Vikram was tasked with carrying a ghost named Betal. Every time, Betal would tell a story with a difficult riddle at the end for the wise King to solve.", quiz: { question: "What did Betal do after telling a story?", options: ["Asked a Riddle", "Disappeared", "Sang a Song"], answer: "Asked a Riddle" } }
                 ]
             },
             'general': {
-                title: "Adventure World",
-                theme: "theme-default",
+                title: "Adventure World", theme: "theme-default",
                 levels: [
-                    { id: 1, name: "The Brave Robot", content: "Once upon a time, there was a little robot named Pip who wanted to explore the moon...", quiz: { question: "What was the robot's name?", options: ["Pip", "Pop", "Zap"], answer: "Pip" } },
-                    { id: 2, name: "The Flying Whale", content: "Deep in the cotton-candy clouds lived a giant blue whale whose fins were actually wings...", quiz: { question: "Where did the whale live?", options: ["Ocean", "Clouds", "Forest"], answer: "Clouds" } }
+                    { id: 1, name: "The Brave Robot", content: "Pip the robot wanted to see the stars! He built a rocket and flew higher than any robot had ever gone.", quiz: { question: "Who was the robot?", options: ["Pip", "Chip", "Zip"], answer: "Pip" } }
                 ]
             }
         };
@@ -312,6 +595,16 @@
         const currentStory = storyMasterData[storyId] || storyMasterData['general'];
         document.title = currentStory.title + " - WonderKids";
         document.body.className = currentStory.theme;
+
+        // Coin & Progress Management
+        let coins = parseInt(localStorage.getItem('wonderKids_coins')) || 50;
+        let unlockedLevels = parseInt(localStorage.getItem(`wonderKids_unlocked_${storyId}`)) || 1;
+        const coinDisplay = document.getElementById('userCoins');
+
+        function updateCoinDisplay() {
+            coinDisplay.innerText = coins;
+            localStorage.setItem('wonderKids_coins', coins);
+        }
 
         function initMap() {
             const map = document.getElementById('storyMap');
@@ -322,14 +615,16 @@
             nodes.forEach(n => n.remove());
 
             currentStory.levels.forEach((lvl, index) => {
+                const isLocked = lvl.id > unlockedLevels;
                 const node = document.createElement('div');
-                node.className = `story-node ${lvl.locked ? 'locked' : ''}`;
+                node.className = `story-node ${isLocked ? 'locked' : ''}`;
 
-                if (lvl.locked) {
+                if (isLocked) {
                     node.innerHTML = `<i class="fa-solid fa-lock"></i>`;
+                    node.onclick = () => alert("🔓 Complete the previous level to unlock this one!");
                 } else {
                     node.innerText = lvl.id;
-                    node.onclick = () => openStory(lvl.id, lvl.name, lvl.content, lvl.quiz);
+                    node.onclick = () => tryOpenStory(lvl);
                 }
 
                 const label = document.createElement('div');
@@ -341,9 +636,24 @@
             });
 
             loader.style.display = 'none';
+            updateCoinDisplay();
+        }
+
+        function tryOpenStory(lvl) {
+            if (coins < 1) {
+                alert("❌ You need 1 Coin to start this level!");
+                return;
+            }
+
+            if (confirm(`Open "${lvl.name}" for 1 Coin?`)) {
+                coins -= 1;
+                updateCoinDisplay();
+                openStory(lvl.id, lvl.name, lvl.content, lvl.quiz);
+            }
         }
 
         function openStory(id, title, content, quiz) {
+            window.currentLevelId = id;
             document.getElementById('storyTitle').innerText = title;
             document.getElementById('storyBody').innerHTML = content;
             document.getElementById('storyPlayer').style.display = 'flex';
@@ -379,6 +689,13 @@
                 btn.onclick = () => {
                     if (opt === window.currentQuiz.answer) {
                         alert("✨ Perfect! Level Complete.");
+                        // Unlock next level
+                        const nextId = parseInt(window.currentLevelId) + 1;
+                        if (nextId > unlockedLevels) {
+                            unlockedLevels = nextId;
+                            localStorage.setItem(`wonderKids_unlocked_${storyId}`, unlockedLevels);
+                            initMap(); // Refresh map
+                        }
                         closeStory();
                     } else {
                         alert("❌ Oops! Try again.");
