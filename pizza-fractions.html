@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraction Pizza - Math Kitchen</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --pizza-crust: #e67e22;
+            --pizza-base: #f1c40f;
+            --tomato: #e74c3c;
+            --cheese: #f9ca24;
+            --mushroom: #95a5a6;
+            --corn: #ffbe76;
+            --bg-kitchen: #fdfcf0;
+            --text: #2d3436;
+            --secondary: #6c5ce7;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-kitchen);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text);
+        }
+
+        /* --- Header & HUD --- */
+        header {
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .hud-panel {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 30px;
+            border: 3px solid #eee;
+        }
+
+        .hud-stat {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #636e72;
+            display: block;
+        }
+
+        /* --- Order Board --- */
+        .order-board {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: 10px;
+            border: 4px dashed var(--pizza-crust);
+            position: relative;
+        }
+
+        .order-hint {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: #636e72;
+        }
+
+        .fraction-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .fraction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .denominator {
+            border-top: 4px solid var(--text);
+            padding-top: 4px;
+        }
+
+        /* --- Game World --- */
+        .game-area {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            padding: 20px;
+        }
+
+        /* --- Pizza Creator --- */
+        .pizza-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            background: var(--pizza-crust);
+            border-radius: 50%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+        }
+
+        .pizza-base {
+            width: 100%;
+            height: 100%;
+            background: var(--pizza-base);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #d35400;
+        }
+
+        .slice {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slice:hover {
+            filter: brightness(1.05);
+        }
+
+        .slice.selected {
+            background-color: var(--cheese);
+        }
+
+        .slice.selected::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 30% 30%, #f1c40f 10%, transparent 10.5%),
+                radial-gradient(circle at 70% 60%, #f1c40f 15%, transparent 15.5%);
+            opacity: 0.6;
+        }
+
+        /* --- Tool Sidebar --- */
+        .topping-tray {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .topping-item {
+            width: 80px;
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+
+        .topping-item:hover {
+            transform: scale(1.1);
+            background: white;
+            border-color: var(--secondary);
+        }
+
+        .topping-item.active {
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .topping-item i {
+            font-size: 2rem;
+            color: var(--secondary);
+        }
+
+        .topping-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* --- Progress Section --- */
+        .progress-section {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            height: 25px;
+            background: #eee;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* --- Success Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Animations --- */
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .celebrate {
+            animation: bounce 0.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-house"></i> Home</a>
+        <div class="hud-panel">
+            <div class="hud-stat">
+                <span class="stat-val" id="score">0</span>
+                <span class="stat-label">Pizzas Made</span>
+            </div>
+            <div class="hud-stat">
+                <span class="stat-val" id="level">1</span>
+                <span class="stat-label">Level</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="order-board">
+        <div class="order-hint">The customer wants...</div>
+        <div class="fraction-display">
+            <span id="topping-name">Cheese</span>
+            <div class="fraction">
+                <div id="numerator">3</div>
+                <div class="denominator" id="denominator">8</div>
+            </div>
+            <span>Pizza!</span>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <div class="topping-tray">
+            <div class="topping-item active" data-topping="cheese">
+                <i class="fa-solid fa-cheese"></i>
+                <div class="topping-label">Cheese</div>
+            </div>
+            <div class="topping-item" data-topping="mushroom">
+                <i class="fa-solid fa-mushroom"></i>
+                <div class="topping-label">Mushroom</div>
+            </div>
+            <div class="topping-item" data-topping="corn">
+                <i class="fa-solid fa-cloud-sun"></i>
+                <div class="topping-label">Corn</div>
+            </div>
+        </div>
+
+        <div class="pizza-container" id="pizza-container">
+            <div class="pizza-base" id="pizza-base">
+                <!-- Slices will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <div class="order-hint"><span id="current-count">0</span> / <span id="target-count">3</span> Slices Ready</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <button class="btn" id="finish-btn">Serve Pizza! 🍕</button>
+    </div>
+
+    <div class="modal" id="success-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--secondary); margin-bottom: 10px;">Delizioso! 🇮🇹</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">That's exactly <span
+                    id="fact-result">3/8</span> of a pizza! You're a fraction master.</p>
+            <div style="font-size: 4rem; margin: 20px 0;">🎉</div>
+            <button class="btn" onclick="nextQuestion()">Next Order!</button>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+            totalSlices: 8,
+            toppings: ['cheese', 'mushroom', 'corn']
+        };
+
+        let state = {
+            numerator: 3,
+            denominator: 8,
+            currentTopping: 'cheese',
+            placedSlices: new Set(),
+            score: 0,
+            level: 1
+        };
+
+        const pizzaBase = document.getElementById('pizza-base');
+        const numEl = document.getElementById('numerator');
+        const denEl = document.getElementById('denominator');
+        const topEl = document.getElementById('topping-name');
+        const countEl = document.getElementById('current-count');
+        const targetEl = document.getElementById('target-count');
+        const progressFill = document.getElementById('progress-fill');
+        const finishBtn = document.getElementById('finish-btn');
+        const scoreEl = document.getElementById('score');
+
+        // Audio Context for feedback
+        let audioCtx;
+        function playTone(freq, duration) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function initPizza() {
+            pizzaBase.innerHTML = '';
+            for (let i = 0; i < state.denominator; i++) {
+                const slice = document.createElement('div');
+                slice.className = 'slice';
+                const angle = 360 / state.denominator;
+                slice.style.transform = `rotate(${i * angle}deg) skewY(${90 - angle}deg)`;
+
+                slice.addEventListener('click', () => toggleSlice(i, slice));
+                pizzaBase.appendChild(slice);
+            }
+        }
+
+        function toggleSlice(id, el) {
+            if (state.placedSlices.has(id)) {
+                state.placedSlices.delete(id);
+                el.classList.remove('selected');
+                el.style.backgroundColor = '';
+                playTone(300, 0.1);
+            } else {
+                state.placedSlices.add(id);
+                el.classList.add('selected');
+                el.style.backgroundColor = getColorForTopping(state.currentTopping);
+                playTone(400 + (state.placedSlices.size * 50), 0.2);
+
+                // Speak feedback (mock)
+                console.log(`Good! That's ${state.placedSlices.size}/${state.denominator}`);
+            }
+            updateUI();
+        }
+
+        function getColorForTopping(topping) {
+            switch (topping) {
+                case 'cheese': return '#f9ca24';
+                case 'mushroom': return '#95a5a6';
+                case 'corn': return '#ffbe76';
+                default: return '#f9ca24';
+            }
+        }
+
+        function updateUI() {
+            countEl.innerText = state.placedSlices.size;
+            targetEl.innerText = state.numerator;
+            const percent = (state.placedSlices.size / state.numerator) * 100;
+            progressFill.style.width = Math.min(100, percent) + '%';
+
+            if (state.placedSlices.size === state.numerator) {
+                progressFill.style.background = '#2ecc71';
+                finishBtn.classList.add('celebrate');
+            } else {
+                progressFill.style.background = 'var(--secondary)';
+                finishBtn.classList.remove('celebrate');
+            }
+        }
+
+        function spawnQuestion() {
+            state.denominator = [4, 6, 8, 10][Math.floor(Math.random() * 4)];
+            state.numerator = Math.floor(Math.random() * (state.denominator - 1)) + 1;
+            state.currentTopping = config.toppings[Math.floor(Math.random() * config.toppings.length)];
+            state.placedSlices.clear();
+
+            numEl.innerText = state.numerator;
+            denEl.innerText = state.denominator;
+            topEl.innerText = state.currentTopping.charAt(0).toUpperCase() + state.currentTopping.slice(1);
+
+            initPizza();
+            updateUI();
+        }
+
+        finishBtn.addEventListener('click', () => {
+            if (state.placedSlices.size === state.numerator) {
+                state.score++;
+                scoreEl.innerText = state.score;
+                document.getElementById('fact-result').innerText = `${state.numerator}/${state.denominator}`;
+                document.getElementById('success-modal').style.display = 'flex';
+                playTone(800, 0.5);
+            } else {
+                const diff = state.numerator - state.placedSlices.size;
+                alert(diff > 0 ? `Needs more toppings! Add ${diff} more.` : `Too many toppings! Remove ${Math.abs(diff)}.`);
+                playTone(200, 0.3);
+            }
+        });
+
+        function nextQuestion() {
+            document.getElementById('success-modal').style.display = 'none';
+            spawnQuestion();
+        }
+
+        // Topping Tray interaction
+        document.querySelectorAll('.topping-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.topping-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                state.currentTopping = item.dataset.topping;
+            });
+        });
+
+        spawnQuestion();
+    </script>
+</body>
+
+</html>

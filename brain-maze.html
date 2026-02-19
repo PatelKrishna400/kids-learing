@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Maze - Logic Quest</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --success: #00b894;
+            --danger: #d63031;
+            --warning: #f1c40f;
+            --wall: #2d3436;
+            --bg: #dfe6e9;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--wall);
+            font-weight: 700;
+            box-shadow: var(--shadow);
+            border: 2px solid #eee;
+        }
+
+        .hud-panel {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 20px;
+            border: 3px solid #eee;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #636e72;
+            display: block;
+        }
+
+        /* --- Game Layout --- */
+        .game-area {
+            flex: 1;
+            display: flex;
+            gap: 40px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Maze Canvas --- */
+        .maze-container {
+            position: relative;
+            background: white;
+            padding: 15px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 10px solid var(--wall);
+        }
+
+        .maze-grid {
+            display: grid;
+            gap: 4px;
+            background: #eee;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .cell.wall {
+            background: var(--wall);
+            border-radius: 2px;
+        }
+
+        .cell.floor {
+            background: white;
+        }
+
+        .cell.start {
+            background: #e1f5fe;
+        }
+
+        .cell.exit {
+            background: #e8f5e9;
+            border: 4px dashed var(--success);
+        }
+
+        .cell.door {
+            background: #ffebee;
+            border: 4px solid var(--danger);
+            transition: all 0.3s;
+        }
+
+        .cell.door.open {
+            background: #e8f5e9;
+            border-color: transparent;
+        }
+
+        .cell.switch {
+            background: #fff9c4;
+            cursor: pointer;
+            border: 2px solid var(--warning);
+            border-radius: 10px;
+        }
+
+        .cell.switch.on {
+            background: var(--warning);
+            box-shadow: 0 0 15px var(--warning);
+        }
+
+        #player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        /* --- Logic Panel --- */
+        .logic-panel {
+            width: 320px;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 4px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .logic-condition {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: #2d3436;
+            line-height: 1.6;
+            border-left: 6px solid var(--primary);
+        }
+
+        .logic-status {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #eee;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .status-item.active {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            background: #ccc;
+            color: white;
+        }
+
+        .status-item.active .status-badge {
+            background: var(--success);
+        }
+
+        /* --- Controls --- */
+        .controls-hint {
+            margin-bottom: 30px;
+            padding: 15px 30px;
+            background: var(--glass);
+            border-radius: 20px;
+            font-weight: 700;
+            color: #636e72;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            border: 8px solid var(--success);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                scale: 1;
+                opacity: 1;
+            }
+
+            50% {
+                scale: 1.1;
+                opacity: 0.8;
+            }
+        }
+
+        .cell.exit i {
+            animation: pulse 2s infinite;
+            color: var(--success);
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) translateX(0);
+            }
+
+            20% {
+                transform: translate(-50%, -50%) translateX(-5px);
+            }
+
+            40% {
+                transform: translate(-50%, -50%) translateX(5px);
+            }
+
+            60% {
+                transform: translate(-50%, -50%) translateX(-5px);
+            }
+
+            80% {
+                transform: translate(-50%, -50%) translateX(5px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <div class="hud-panel">
+            <div class="hud-stat">
+                <span class="stat-val" id="level-num">1</span>
+                <span class="stat-label">Maze Level</span>
+            </div>
+            <div class="hud-stat">
+                <span class="stat-val" id="steps-num">0</span>
+                <span class="stat-label">Steps Taken</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-area">
+        <div class="maze-container">
+            <div id="player"><i class="fa-solid fa-brain"></i></div>
+            <div id="maze" class="maze-grid">
+                <!-- Maze cells injected here -->
+            </div>
+        </div>
+
+        <div class="logic-panel">
+            <div class="panel-title"><i class="fa-solid fa-key"></i> Door Logic</div>
+            <div class="logic-condition" id="logic-text">
+                Switch A must be ON to open the Exit Door.
+            </div>
+            <div class="logic-status">
+                <div class="status-item" id="stat-A">
+                    <span>Switch A</span>
+                    <span class="status-badge">OFF</span>
+                </div>
+                <div class="status-item" id="stat-B">
+                    <span>Switch B</span>
+                    <span class="status-badge">OFF</span>
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; color: #999; text-align: center;">
+                <i class="fa-solid fa-keyboard"></i> Use arrow keys to move
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-hint">
+        <span><i class="fa-solid fa-square" style="color: var(--primary)"></i> You</span>
+        <span><i class="fa-solid fa-square" style="color: var(--warning)"></i> Swich</span>
+        <span><i class="fa-solid fa-square" style="color: var(--danger)"></i> Door</span>
+        <span><i class="fa-solid fa-square" style="color: var(--success)"></i> Exit</span>
+    </div>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--success);">Door Opened! 🚪🏃</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">Your brain solved the logic puzzle and escaped
+                the maze!</p>
+            <div style="font-size: 5rem; margin: 30px 0;">🎉</div>
+            <button class="btn" onclick="nextLevel()">Next Puzzle</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                grid: [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 2, 0, 0, 0, 1, 0, 3, 1],
+                    [1, 1, 1, 1, 0, 1, 0, 1, 1],
+                    [1, 5, 0, 0, 0, 0, 0, 4, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1]
+                ],
+                logic: (s) => s.A,
+                text: "Switch A must be ON to open the Exit Door.",
+                start: { x: 1, y: 1 },
+                switches: { A: { x: 7, y: 1 }, B: { x: -1, y: -1 } },
+                door: { x: 7, y: 3 }
+            },
+            {
+                grid: [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 2, 0, 0, 1, 0, 0, 0, 1],
+                    [1, 0, 1, 0, 5, 0, 1, 0, 1],
+                    [1, 0, 1, 0, 1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 0, 6, 0, 3, 1],
+                    [1, 1, 1, 1, 0, 1, 1, 4, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1]
+                ],
+                logic: (s) => s.A && s.B,
+                text: "Both Switch A AND Switch B must be ON.",
+                start: { x: 1, y: 1 },
+                switches: { A: { x: 4, y: 2 }, B: { x: 5, y: 4 } },
+                door: { x: 7, y: 5 }
+            },
+            {
+                grid: [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 2, 0, 0, 0, 0, 0, 1, 1],
+                    [1, 0, 1, 1, 1, 1, 0, 5, 1],
+                    [1, 0, 1, 3, 0, 1, 0, 1, 1],
+                    [1, 0, 0, 0, 1, 0, 0, 4, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1]
+                ],
+                logic: (s) => s.A && !s.B,
+                text: "Switch A must be ON, but Switch B must be OFF!",
+                start: { x: 1, y: 3 },
+                switches: { A: { x: 7, y: 2 }, B: { x: 3, y: 3 } },
+                door: { x: 7, y: 4 }
+            }
+        ];
+
+        // Cell codes: 0: Floor, 1: Wall, 2: Start, 3: Switch A, 4: Door, 5: Switch B, 6: Switch B (alternative)
+
+        let state = {
+            level: 0,
+            pos: { x: 0, y: 0 },
+            switches: { A: false, B: false },
+            steps: 0,
+            isFinished: false
+        };
+
+        const mazeEl = document.getElementById('maze');
+        const playerEl = document.getElementById('player');
+        const logicText = document.getElementById('logic-text');
+        const statA = document.getElementById('stat-A');
+        const statB = document.getElementById('stat-B');
+        const stepDisplay = document.getElementById('steps-num');
+
+        function initLevel() {
+            state.isFinished = false;
+            const level = levels[state.level];
+            state.pos = { ...level.start };
+            state.switches = { A: false, B: false };
+            state.steps = 0;
+
+            logicText.innerText = level.text;
+            stepDisplay.innerText = "0";
+            document.getElementById('level-num').innerText = state.level + 1;
+
+            // Render Maze
+            mazeEl.style.gridTemplateColumns = `repeat(${level.grid[0].length}, 50px)`;
+            mazeEl.innerHTML = '';
+
+            level.grid.forEach((row, y) => {
+                row.forEach((type, x) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (type === 1) cell.classList.add('wall');
+                    else if (type === 0) cell.classList.add('floor');
+                    else if (type === 2) { cell.classList.add('start'); cell.innerHTML = '<i class="fa-solid fa-flag"></i>'; }
+                    else if (type === 3) { cell.classList.add('switch'); cell.innerHTML = 'A'; cell.id = `sw-A`; }
+                    else if (type === 4) { cell.classList.add('door'); cell.innerHTML = '<i class="fa-solid fa-lock"></i>'; cell.id = `door-exit`; }
+                    else if (type === 5 || type === 6) { cell.classList.add('switch'); cell.innerHTML = 'B'; cell.id = `sw-B`; }
+                    mazeEl.appendChild(cell);
+                });
+            });
+
+            updatePlayerPos();
+            updateLogic();
+        }
+
+        function updatePlayerPos() {
+            playerEl.style.left = (state.pos.x * 54 + 15 + 7) + 'px';
+            playerEl.style.top = (state.pos.y * 54 + 15 + 7) + 'px';
+        }
+
+        function updateLogic() {
+            const level = levels[state.level];
+            const isOpen = level.logic(state.switches);
+
+            const door = document.getElementById('door-exit');
+            if (isOpen) {
+                door.classList.add('open');
+                door.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+            } else {
+                door.classList.remove('open');
+                door.innerHTML = '<i class="fa-solid fa-lock"></i>';
+            }
+
+            // Status Panel
+            statA.className = state.switches.A ? 'status-item active' : 'status-item';
+            statA.querySelector('.status-badge').innerText = state.switches.A ? 'ON' : 'OFF';
+
+            // Show/Hide B status if present
+            if (level.switches.B.x !== -1) {
+                statB.style.display = 'flex';
+                statB.className = state.switches.B ? 'status-item active' : 'status-item';
+                statB.querySelector('.status-badge').innerText = state.switches.B ? 'ON' : 'OFF';
+            } else {
+                statB.style.display = 'none';
+            }
+        }
+
+        function move(dx, dy) {
+            if (state.isFinished) return;
+
+            const newX = state.pos.x + dx;
+            const newY = state.pos.y + dy;
+            const level = levels[state.level];
+
+            // Collision Check
+            if (newY < 0 || newY >= level.grid.length || newX < 0 || newX >= level.grid[0].length) return;
+
+            const cellType = level.grid[newY][newX];
+
+            if (cellType === 1) return; // Wall
+            if (cellType === 4 && !level.logic(state.switches)) {
+                playerEl.classList.add('shake');
+                setTimeout(() => playerEl.classList.remove('shake'), 400);
+                return; // Locked Door
+            }
+
+            state.pos.x = newX;
+            state.pos.y = newY;
+            state.steps++;
+            stepDisplay.innerText = state.steps;
+
+            // Switch Check
+            if (cellType === 3) {
+                state.switches.A = !state.switches.A;
+                document.getElementById('sw-A').classList.toggle('on');
+                playSfx(400, 0.1);
+            }
+            if (cellType === 5 || cellType === 6) {
+                state.switches.B = !state.switches.B;
+                document.getElementById('sw-B').classList.toggle('on');
+                playSfx(400, 0.1);
+            }
+
+            updatePlayerPos();
+            updateLogic();
+
+            // Win Check
+            if (cellType === 4 && level.logic(state.switches)) {
+                state.isFinished = true;
+                setTimeout(() => {
+                    document.getElementById('finish-modal').style.display = 'flex';
+                    playSfx(600, 0.3);
+                }, 300);
+            }
+        }
+
+        function nextLevel() {
+            document.getElementById('finish-modal').style.display = 'none';
+            state.level = (state.level + 1) % levels.length;
+            initLevel();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') move(0, -1);
+            if (e.key === 'ArrowDown') move(0, 1);
+            if (e.key === 'ArrowLeft') move(-1, 0);
+            if (e.key === 'ArrowRight') move(1, 0);
+        });
+
+        let audioCtx;
+        function playSfx(f, d) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initLevel();
+    </script>
+</body>
+
+</html>

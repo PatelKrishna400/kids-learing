@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco-Sorter - Recycling Hero</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-eco: #2dcc70;
+            --plastic-blue: #3498db;
+            --paper-orange: #f39c12;
+            --metal-gray: #7f8c8d;
+            --bg-garden: #f9fdf9;
+            --text-dark: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-garden);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Header & Stats --- */
+        header {
+            width: 90%;
+            max-width: 1200px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 700;
+            box-shadow: var(--shadow);
+            border: 2px solid #eee;
+        }
+
+        .hud-panel {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 25px;
+            border: 3px solid #eee;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-eco);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #636e72;
+            display: block;
+        }
+
+        /* --- Conveyor Belt --- */
+        .belt-container {
+            width: 100%;
+            height: 200px;
+            background: #dfe6e9;
+            margin-top: 50px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 10px solid #b2bec3;
+            border-bottom: 15px solid #636e72;
+            overflow: hidden;
+        }
+
+        .belt-rollers {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            display: flex;
+            gap: 40px;
+            animation: moveBelt 10s linear infinite;
+        }
+
+        .roller {
+            width: 40px;
+            height: 40px;
+            background: #b2bec3;
+            border-radius: 50%;
+            margin-top: 150px;
+            border: 4px solid #636e72;
+        }
+
+        @keyframes moveBelt {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* --- Trash Items --- */
+        .trash-spawn {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            z-index: 50;
+            transition: transform 0.2s;
+        }
+
+        .trash-spawn:active {
+            cursor: grabbing;
+            scale: 1.1;
+        }
+
+        .trash-icon {
+            font-size: 4rem;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
+        }
+
+        /* --- Bins Area --- */
+        .bins-container {
+            flex: 1;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            align-items: flex-end;
+            padding-bottom: 50px;
+        }
+
+        .bin {
+            width: 180px;
+            height: 250px;
+            background: white;
+            border-radius: 30px 30px 10px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-bottom: 12px solid #ddd;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .bin.plastic {
+            border-top: 10px solid var(--plastic-blue);
+            color: var(--plastic-blue);
+        }
+
+        .bin.paper {
+            border-top: 10px solid var(--paper-orange);
+            color: var(--paper-orange);
+        }
+
+        .bin.metal {
+            border-top: 10px solid var(--metal-gray);
+            color: var(--metal-gray);
+        }
+
+        .bin.drag-over {
+            transform: scale(1.1);
+            background: #f0fdf4;
+        }
+
+        .bin i {
+            font-size: 4rem;
+            margin-top: 20px;
+        }
+
+        .bin-label {
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        /* --- Tips & Feedback --- */
+        .tip-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 25px 40px;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid var(--primary-eco);
+        }
+
+        .tip-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .tip-icon {
+            font-size: 3rem;
+            color: var(--primary-eco);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* --- Success Effect --- */
+        .feedback-tick {
+            position: absolute;
+            font-size: 4rem;
+            color: var(--primary-eco);
+            pointer-events: none;
+            z-index: 500;
+            display: none;
+            animation: popOut 0.5s forwards;
+        }
+
+        @keyframes popOut {
+            0% {
+                transform: scale(0) rotate(-20deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.5) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .btn {
+            background: var(--primary-eco);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Animations */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-leaf"></i> Eco-Center</a>
+        <div class="hud-panel">
+            <div class="hud-stat">
+                <span class="stat-val" id="score">0</span>
+                <span class="stat-label">Items Recycled</span>
+            </div>
+            <div class="hud-stat">
+                <span class="stat-val" id="level">1</span>
+                <span class="stat-label">Eco Level</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="belt-container" id="belt">
+        <div class="belt-rollers">
+            <!-- Many rollers for infinite effect -->
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+            <div class="roller"></div>
+        </div>
+        <!-- Trash items will spawn here -->
+    </div>
+
+    <div class="bins-container">
+        <div class="bin plastic" data-type="plastic" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+            <i class="fa-solid fa-bottle-water"></i>
+            <span class="bin-label">Plastic</span>
+        </div>
+        <div class="bin paper" data-type="paper" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+            <i class="fa-solid fa-newspaper"></i>
+            <span class="bin-label">Paper</span>
+        </div>
+        <div class="bin metal" data-type="metal" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+            <i class="fa-solid fa-can-food"></i>
+            <span class="bin-label">Metal</span>
+        </div>
+    </div>
+
+    <div class="tip-popup" id="tip-popup">
+        <i class="fa-solid fa-lightbulb tip-icon"></i>
+        <h3 style="margin: 0; color: var(--text-dark);">Eco-Tip!</h3>
+        <p id="tip-text" style="color: #636e72; font-size: 1.1rem; margin-top: 10px;">Recycling plastic saves energy!
+        </p>
+        <button class="btn" onclick="closeTip()">Great!</button>
+    </div>
+
+    <div class="feedback-tick" id="tick"><i class="fa-solid fa-circle-check"></i></div>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--primary-eco);">Eco-Hero! 🌍</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">You've sorted enough waste to help save the
+                planet! Keep up the good work.</p>
+            <div style="font-size: 5rem; margin: 30px 0;">🌳</div>
+            <button class="btn" onclick="location.reload()">Save More!</button>
+        </div>
+    </div>
+
+    <script>
+        const trashTypes = [
+            { type: 'plastic', icon: '🥤', name: 'Plastic Cup' },
+            { type: 'plastic', icon: '🍼', name: 'Plastic Bottle' },
+            { type: 'paper', icon: '📦', name: 'Cardboard Box' },
+            { type: 'paper', icon: '📝', name: 'Paper Scrap' },
+            { type: 'metal', icon: '🥫', name: 'Tin Can' },
+            { type: 'metal', icon: '🥄', name: 'Metal Spoon' }
+        ];
+
+        const tips = [
+            "Recycling plastic saves energy!",
+            "Paper can be recycled into new books!",
+            "Metal recycling is infinite times possible!",
+            "One recycled can saves enough energy to power a TV for 3 hours!",
+            "Recycling reduces pollution and saves oceans!"
+        ];
+
+        let state = {
+            score: 0,
+            level: 1,
+            draggedItem: null
+        };
+
+        const belt = document.getElementById('belt');
+        const scoreEl = document.getElementById('score');
+        const tickEl = document.getElementById('tick');
+        const tipPopup = document.getElementById('tip-popup');
+
+        function spawnTrash() {
+            const trash = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+            const div = document.createElement('div');
+            div.className = 'trash-spawn floating';
+            div.draggable = true;
+            div.innerHTML = `<span class="trash-icon">${trash.icon}</span>`;
+
+            // Randomized start position
+            div.style.left = "-100px";
+            div.style.top = "50px";
+
+            div.addEventListener('dragstart', (e) => {
+                state.draggedItem = trash;
+                div.style.opacity = "0.5";
+                playTone(400, 0.1);
+            });
+
+            div.addEventListener('dragend', () => {
+                div.style.opacity = "1";
+            });
+
+            belt.appendChild(div);
+
+            // Movement logic
+            let pos = -100;
+            const animate = setInterval(() => {
+                if (div.classList.contains('matched')) {
+                    clearInterval(animate);
+                    return;
+                }
+                pos += (1 + state.level * 0.5);
+                div.style.left = pos + "px";
+
+                if (pos > window.innerWidth) {
+                    clearInterval(animate);
+                    div.remove();
+                    spawnTrash();
+                }
+            }, 16);
+
+            div.id = `trash-${Date.now()}`;
+            div.dataset.interval = animate;
+        }
+
+        function handleDrop(e) {
+            const binType = e.currentTarget.dataset.type;
+            const isMatch = state.draggedItem.type === binType;
+
+            if (isMatch) {
+                state.score++;
+                scoreEl.innerText = state.score;
+
+                // Visual feedback
+                showTick(e.clientX, e.clientY);
+                playTone(800, 0.2);
+
+                // Cleanup dragged element
+                const dragging = document.querySelector('.trash-spawn[style*="opacity: 0.5"]');
+                if (dragging) {
+                    dragging.classList.add('matched');
+                    dragging.remove();
+                }
+
+                if (state.score % 5 === 0) {
+                    showTip();
+                }
+
+                if (state.score >= 20) {
+                    document.getElementById('finish-modal').style.display = 'flex';
+                }
+
+                spawnTrash();
+            } else {
+                playTone(200, 0.3);
+                e.currentTarget.style.borderColor = "#e74c3c";
+                setTimeout(() => e.currentTarget.style.borderColor = "", 500);
+            }
+        }
+
+        function showTick(x, y) {
+            tickEl.style.left = (x - 30) + "px";
+            tickEl.style.top = (y - 30) + "px";
+            tickEl.style.display = 'block';
+            setTimeout(() => tickEl.style.display = 'none', 500);
+        }
+
+        function showTip() {
+            const tip = tips[Math.floor(Math.random() * tips.length)];
+            document.getElementById('tip-text').innerText = tip;
+            tipPopup.classList.add('show');
+        }
+
+        function closeTip() {
+            tipPopup.classList.remove('show');
+        }
+
+        let audioCtx;
+        function playTone(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        // Add visual feedback to bins
+        document.querySelectorAll('.bin').forEach(bin => {
+            bin.addEventListener('dragenter', () => bin.classList.add('drag-over'));
+            bin.addEventListener('dragleave', () => bin.classList.remove('drag-over'));
+            bin.addEventListener('drop', () => bin.classList.remove('drag-over'));
+        });
+
+        // Start game
+        spawnTrash();
+        setTimeout(spawnTrash, 2000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Maker - WonderKids Creative Lab</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fdcb6e;
+            --danger: #ff7675;
+            --success: #2ecc71;
+            --bg: #f5f6fa;
+            --panel: #ffffff;
+            --border: #dcdde1;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #2f3640;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #2f3640;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-shield {
+            background: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Editor/Play Container --- */
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- Toolbox Sidebar --- */
+        .toolbox {
+            width: 300px;
+            background: var(--panel);
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            border: 2px solid var(--primary);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .comp-card {
+            background: #f1f2f6;
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .comp-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            background: #f8f9fa;
+        }
+
+        .comp-card:active {
+            cursor: grabbing;
+        }
+
+        .comp-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .player-icon {
+            background: #3498db;
+        }
+
+        .enemy-icon {
+            background: #e74c3c;
+        }
+
+        .goal-icon {
+            background: #f1c40f;
+        }
+
+        .comp-info h4 {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .comp-info p {
+            margin: 2px 0 0;
+            font-size: 0.75rem;
+            color: #7f8c8d;
+        }
+
+        /* --- Canvas/World --- */
+        .canvas-area {
+            flex: 1;
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            border: 5px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-world {
+            width: 800px;
+            height: 600px;
+            background-image: radial-gradient(#dfe4ea 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-color: white;
+            border: 2px solid #ced4da;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .entity {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border-radius: 8px;
+            transition: transform 0.1s;
+            z-index: 10;
+        }
+
+        .entity-player {
+            background: #3498db;
+            color: white;
+            border: 2px solid #2980b9;
+        }
+
+        .entity-enemy {
+            background: #e74c3c;
+            color: white;
+            border: 2px solid #c0392b;
+        }
+
+        .entity-goal {
+            background: #f1c40f;
+            color: white;
+            border: 2px solid #d35400;
+        }
+
+        .entity .delete-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 18px;
+            height: 18px;
+            background: #2f3640;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            font-size: 10px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .entity:hover .delete-btn {
+            display: flex;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .btn-game {
+            padding: 15px 40px;
+            border-radius: 25px;
+            border: none;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-play {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-stop {
+            background: var(--danger);
+            color: white;
+            display: none;
+        }
+
+        .btn-save {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-game:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-game:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Overlay/Modals --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .controls-hint {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+            z-index: 3000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-flask"></i> Creative Hub</a>
+        <h1 style="margin: 0; font-family: 'Nunito', sans-serif; color: var(--primary);">WonderKids Game Maker</h1>
+        <div class="mode-shield" id="mode-label">EDITOR MODE</div>
+    </header>
+
+    <main>
+        <aside class="toolbox" id="toolbox">
+            <div class="section-title"><i class="fa-solid fa-cube"></i> Entities</div>
+            <div class="component-list">
+                <div class="comp-card" draggable="true" ondragstart="handleDragStart(event, 'player')">
+                    <div class="comp-icon player-icon"><i class="fa-solid fa-robot"></i></div>
+                    <div class="comp-info">
+                        <h4>Hero Robot</h4>
+                        <p>Moves with keys</p>
+                    </div>
+                </div>
+                <div class="comp-card" draggable="true" ondragstart="handleDragStart(event, 'enemy')">
+                    <div class="comp-icon enemy-icon"><i class="fa-solid fa-skull"></i></div>
+                    <div class="comp-info">
+                        <h4>Spiky Wall</h4>
+                        <p>Collision = Lose</p>
+                    </div>
+                </div>
+                <div class="comp-card" draggable="true" ondragstart="handleDragStart(event, 'goal')">
+                    <div class="comp-icon goal-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+                    <div class="comp-info">
+                        <h4>Winner Flag</h4>
+                        <p>Reach to Win!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: auto; padding: 20px; background: #eef2ff; border-radius: 20px; border: 1px solid var(--secondary);">
+                <h5 style="margin: 0 0 8px; color: var(--primary);">Maker Rules:</h5>
+                <ul style="margin: 0; padding-left: 15px; font-size: 0.8rem; color: #555;">
+                    <li>1. Drag icons to the grid</li>
+                    <li>2. Place the Hero and Flag</li>
+                    <li>3. Add Spiky Walls for challenge</li>
+                    <li>4. Hit PLAY to test!</li>
+                </ul>
+            </div>
+        </aside>
+
+        <section class="canvas-area">
+            <div id="game-world" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+                <div class="controls-hint" id="hint">Use Arrow Keys to Move!</div>
+            </div>
+        </section>
+    </main>
+
+    <div class="controls">
+        <button class="btn-game btn-play" id="play-btn" onclick="togglePlay()"><i class="fa-solid fa-play"></i> TEST
+            PLAY</button>
+        <button class="btn-game btn-stop" id="stop-btn" onclick="togglePlay()"><i class="fa-solid fa-stop"></i> STOP
+            GAME</button>
+        <button class="btn-game btn-save" onclick="exportJSON()"><i class="fa-solid fa-download"></i> SAVE JSON</button>
+    </div>
+
+    <div class="overlay" id="result-modal">
+        <div class="modal-card">
+            <h1 id="result-title" style="font-size: 2.5rem;">YOU WIN!</h1>
+            <p id="result-desc" style="font-size: 1.1rem; color: #666; margin-bottom: 30px;">Great game design, creator!
+            </p>
+            <div style="font-size: 5rem; margin-bottom: 30px;" id="result-emoji">🏆</div>
+            <button class="btn-game btn-play" style="width: 100%;" onclick="closeModal()">Back to Editor</button>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            mode: 'editor',
+            entities: [],
+            player: null,
+            keys: {},
+            gameLoop: null
+        };
+
+        const world = document.getElementById('game-world');
+        const playBtn = document.getElementById('play-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const modeLabel = document.getElementById('mode-label');
+        const toolbox = document.getElementById('toolbox');
+        const hint = document.getElementById('hint');
+
+        function handleDragStart(e, type) {
+            e.dataTransfer.setData('type', type);
+        }
+
+        function handleDrop(e) {
+            if (state.mode !== 'editor') return;
+            const type = e.dataTransfer.getData('type');
+            const rect = world.getBoundingClientRect();
+            const x = Math.round((e.clientX - rect.left - 20) / 40) * 40;
+            const y = Math.round((e.clientY - rect.top - 20) / 40) * 40;
+
+            if (type === 'player' && state.entities.find(e => e.type === 'player')) {
+                alert("Only one Hero allowed!");
+                return;
+            }
+
+            addEntity(type, x, y);
+        }
+
+        function addEntity(type, x, y) {
+            const id = Date.now();
+            const el = document.createElement('div');
+            el.className = `entity entity-${type}`;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.dataset.id = id;
+
+            const icons = { player: 'robot', enemy: 'skull', goal: 'flag-checkered' };
+            el.innerHTML = `<i class="fa-solid fa-${icons[type]}"></i><div class="delete-btn" onclick="removeEntity(${id})">✕</div>`;
+
+            world.appendChild(el);
+            state.entities.push({ id, type, x, y, el });
+        }
+
+        function removeEntity(id) {
+            if (state.mode !== 'editor') return;
+            const idx = state.entities.findIndex(e => e.id === id);
+            if (idx !== -1) {
+                state.entities[idx].el.remove();
+                state.entities.splice(idx, 1);
+            }
+        }
+
+        function togglePlay() {
+            if (state.mode === 'editor') {
+                const p = state.entities.find(e => e.type === 'player');
+                const g = state.entities.find(e => e.type === 'goal');
+                if (!p || !g) {
+                    alert("Add a Hero and a Flag before playing!");
+                    return;
+                }
+                startPlay();
+            } else {
+                stopPlay();
+            }
+        }
+
+        function startPlay() {
+            state.mode = 'play';
+            modeLabel.innerText = "PLAYING...";
+            modeLabel.style.background = "var(--success)";
+            playBtn.style.display = 'none';
+            stopBtn.style.display = 'flex';
+            toolbox.style.opacity = '0.3';
+            toolbox.style.pointerEvents = 'none';
+            hint.style.display = 'block';
+
+            state.player = state.entities.find(e => e.type === 'player');
+            state.entities.forEach(en => en.el.querySelector('.delete-btn').style.display = 'none');
+
+            state.gameLoop = setInterval(update, 1000 / 60);
+            window.addEventListener('keydown', keydown);
+            window.addEventListener('keyup', keyup);
+        }
+
+        function stopPlay() {
+            state.mode = 'editor';
+            modeLabel.innerText = "EDITOR MODE";
+            modeLabel.style.background = "var(--primary)";
+            playBtn.style.display = 'flex';
+            stopBtn.style.display = 'none';
+            toolbox.style.opacity = '1';
+            toolbox.style.pointerEvents = 'auto';
+            hint.style.display = 'none';
+
+            clearInterval(state.gameLoop);
+            window.removeEventListener('keydown', keydown);
+            window.removeEventListener('keyup', keyup);
+
+            // Reset player position
+            if (state.player) {
+                state.player.el.style.left = state.player.x + 'px';
+                state.player.el.style.top = state.player.y + 'px';
+            }
+        }
+
+        function keydown(e) { state.keys[e.code] = true; }
+        function keyup(e) { state.keys[e.code] = false; }
+
+        function update() {
+            if (!state.player) return;
+
+            let nx = parseInt(state.player.el.style.left);
+            let ny = parseInt(state.player.el.style.top);
+            const speed = 4;
+
+            if (state.keys['ArrowLeft']) nx -= speed;
+            if (state.keys['ArrowRight']) nx += speed;
+            if (state.keys['ArrowUp']) ny -= speed;
+            if (state.keys['ArrowDown']) ny += speed;
+
+            // Bounds
+            nx = Math.max(0, Math.min(760, nx));
+            ny = Math.max(0, Math.min(560, ny));
+
+            state.player.el.style.left = nx + 'px';
+            state.player.el.style.top = ny + 'px';
+
+            checkCollisions(nx, ny);
+        }
+
+        function checkCollisions(px, py) {
+            state.entities.forEach(en => {
+                if (en.type === 'player') return;
+
+                const ex = en.x;
+                const ey = en.y;
+
+                if (px < en.el.offsetLeft + 40 && px + 40 > en.el.offsetLeft &&
+                    py < en.el.offsetTop + 40 && py + 40 > en.el.offsetTop) {
+
+                    if (en.type === 'enemy') handleEnd('GAME OVER', 'The spikes got you!', '💀');
+                    if (en.type === 'goal') handleEnd('YOU WIN!', 'Great level design!', '🏆');
+                }
+            });
+        }
+
+        function handleEnd(title, desc, emoji) {
+            stopPlay();
+            document.getElementById('result-title').innerText = title;
+            document.getElementById('result-title').style.color = title.includes('WIN') ? 'var(--success)' : 'var(--danger)';
+            document.getElementById('result-desc').innerText = desc;
+            document.getElementById('result-emoji').innerText = emoji;
+            document.getElementById('result-modal').style.display = 'flex';
+            playSfx(title.includes('WIN') ? 880 : 200, 0.5);
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').style.display = 'none';
+        }
+
+        function exportJSON() {
+            const data = state.entities.map(e => ({ type: e.type, x: e.x, y: e.y }));
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'wonderkids_game.json';
+            a.click();
+            playSfx(1000, 0.2);
+        }
+
+        let audioCtx;
+        function playSfx(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+    </script>
+</body>
+
+</html>

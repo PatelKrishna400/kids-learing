@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Sorter - Healthy Eating Adventure</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --healthy-color: #2ecc71;
+            --junk-color: #e74c3c;
+            --bg-kitchen: #fdfcf0;
+            --text-dark: #2d3436;
+            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background-color: var(--bg-kitchen);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image:
+                radial-gradient(#eee 10%, transparent 10%),
+                radial-gradient(#eee 10%, transparent 10%);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+        }
+
+        /* --- Header & HUD --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .hud {
+            display: flex;
+            gap: 20px;
+        }
+
+        .hud-item {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 3px solid #eee;
+        }
+
+        .score-value {
+            color: var(--healthy-color);
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .streak-value {
+            color: #f1c40f;
+        }
+
+        /* --- Game Area --- */
+        .game-container {
+            flex: 1;
+            width: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .baskets {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: 50px;
+        }
+
+        .basket {
+            width: 280px;
+            height: 220px;
+            border-radius: 30px 30px 100px 100px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 30px;
+            transition: transform 0.3s;
+            border-bottom: 15px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .basket::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 80%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        .basket-healthy {
+            background: var(--healthy-color);
+            color: white;
+            box-shadow: 0 15px 0 #27ae60;
+        }
+
+        .basket-junk {
+            background: var(--junk-color);
+            color: white;
+            box-shadow: 0 15px 0 #c0392b;
+        }
+
+        .basket.drag-over {
+            transform: scale(1.1);
+            filter: brightness(1.1);
+        }
+
+        .basket i {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .basket span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* --- Food Spawn Area --- */
+        .food-source {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .food-item {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            cursor: grab;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+            position: absolute;
+            z-index: 50;
+            border: 4px solid #fff;
+        }
+
+        .food-item:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .food-item:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        /* --- Animations & Effects --- */
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-10px);
+            }
+
+            40% {
+                transform: translateX(10px);
+            }
+
+            60% {
+                transform: translateX(-10px);
+            }
+
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .pop {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .floating-emoji {
+            position: absolute;
+            font-size: 3rem;
+            pointer-events: none;
+            animation: floatUp 1s forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-150px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* --- Success Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .btn {
+            background: var(--healthy-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Streak Flash */
+        .streak-glow {
+            box-shadow: 0 0 30px #f1c40f !important;
+            border-color: #f1c40f !important;
+        }
+
+        /* Kitchen Elements */
+        .counter {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background: #dcdde1;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-house"></i> Home</a>
+        <div class="hud">
+            <div class="hud-item">
+                <i class="fa-solid fa-star" style="color: #f1c40f;"></i>
+                <span class="score-value" id="score">0</span>
+            </div>
+            <div class="hud-item">
+                <i class="fa-solid fa-fire" style="color: #e67e22;"></i>
+                <span id="streak">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="baskets">
+            <div class="basket basket-healthy" id="healthy-basket" data-type="healthy">
+                <i class="fa-solid fa-apple-whole"></i>
+                <span>Healthy</span>
+            </div>
+            <div class="basket basket-junk" id="junk-basket" data-type="junk">
+                <i class="fa-solid fa-burger"></i>
+                <span>Junk</span>
+            </div>
+        </div>
+
+        <div class="food-source" id="food-container">
+            <!-- Food items will be spawned here -->
+        </div>
+
+        <div class="counter"></div>
+    </div>
+
+    <div class="modal" id="tip-modal">
+        <div class="modal-content">
+            <h1 id="modal-title" style="color: var(--healthy-color); margin-bottom: 10px;">Great Job! 🍎</h1>
+            <p id="health-tip" style="font-size: 1.2rem; line-height: 1.6; color: #555;">Eating fruits keeps your body
+                strong and helps you focus in school!</p>
+            <div style="font-size: 4rem; margin: 20px 0;" id="modal-icon">🌟</div>
+            <button class="btn" onclick="nextLevel()">Keep Playing!</button>
+        </div>
+    </div>
+
+    <script>
+        const foodDatabase = [
+            // Healthy
+            { emoji: '🍎', type: 'healthy', name: 'Apple' },
+            { emoji: '🥦', type: 'healthy', name: 'Broccoli' },
+            { emoji: '🍌', type: 'healthy', name: 'Banana' },
+            { emoji: '🥕', type: 'healthy', name: 'Carrot' },
+            { emoji: '🍇', type: 'healthy', name: 'Grapes' },
+            { emoji: '🍓', type: 'healthy', name: 'Strawberry' },
+            { emoji: '🥚', type: 'healthy', name: 'Egg' },
+            { emoji: '🥗', type: 'healthy', name: 'Salad' },
+            { emoji: '🥑', type: 'healthy', name: 'Avocado' },
+            { emoji: '🥛', type: 'healthy', name: 'Milk' },
+            // Junk
+            { emoji: '🍔', type: 'junk', name: 'Burger' },
+            { emoji: '🍟', type: 'junk', name: 'Fries' },
+            { emoji: '🍕', type: 'junk', name: 'Pizza' },
+            { emoji: '🍩', type: 'junk', name: 'Donut' },
+            { emoji: '🍭', type: 'junk', name: 'Lollipop' },
+            { emoji: '🌭', type: 'junk', name: 'Hotdog' },
+            { emoji: '🍰', type: 'junk', name: 'Cake' },
+            { emoji: '🍦', type: 'junk', name: 'Ice Cream' },
+            { emoji: '🍪', type: 'junk', name: 'Cookie' },
+            { emoji: '🥤', type: 'junk', name: 'Soda' }
+        ];
+
+        const healthTips = [
+            "Fruits and vegetables are full of vitamins that help you grow!",
+            "Drinking water instead of soda keeps your heart happy and strong.",
+            "Eating a healthy breakfast gives you energy for the whole day!",
+            "Too much sugar can make you feel tired after the 'rush' wears off.",
+            "Colorful plates are the best! Try to eat foods of every color.",
+            "Healthy snacks like nuts and yogurt help your brain think faster!"
+        ];
+
+        let state = {
+            score: 0,
+            streak: 0,
+            currentFood: null,
+            levelCount: 0
+        };
+
+        const scoreEl = document.getElementById('score');
+        const streakEl = document.getElementById('streak');
+        const foodContainer = document.getElementById('food-container');
+        const tipModal = document.getElementById('tip-modal');
+
+        // Audio setup
+        let audioCtx = null;
+        function playSfx(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            if (type === 'success') {
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            } else {
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+            }
+
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        function createFoodItem() {
+            const data = foodDatabase[Math.floor(Math.random() * foodDatabase.length)];
+            const div = document.createElement('div');
+            div.className = 'food-item pop';
+            div.innerText = data.emoji;
+            div.draggable = true;
+
+            // Positioning at source
+            div.style.left = '50%';
+            div.style.transform = 'translate(-50%, -50%)';
+
+            div.addEventListener('dragstart', (e) => {
+                state.currentFood = data;
+                div.style.opacity = '0.5';
+                e.dataTransfer.setData('text/plain', ''); // Required for Firefox
+            });
+
+            div.addEventListener('dragend', () => {
+                div.style.opacity = '1';
+            });
+
+            // Touch events for mobile
+            div.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+            foodContainer.appendChild(div);
+        }
+
+        // Native Drag Drop Logic
+        document.querySelectorAll('.basket').forEach(basket => {
+            basket.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                basket.classList.add('drag-over');
+            });
+
+            basket.addEventListener('dragleave', () => {
+                basket.classList.remove('drag-over');
+            });
+
+            basket.addEventListener('drop', (e) => {
+                e.preventDefault();
+                basket.classList.remove('drag-over');
+                handleSort(basket.dataset.type);
+            });
+        });
+
+        function handleSort(targetType) {
+            const isCorrect = state.currentFood.type === targetType;
+            const foodEl = document.querySelector('.food-item');
+
+            if (isCorrect) {
+                state.score += 10 + (state.streak * 2);
+                state.streak++;
+                playSfx('success');
+                showFloatingEmoji('⭐', targetType === 'healthy' ? '#healthy-basket' : '#junk-basket');
+
+                if (state.streak >= 3) {
+                    streakEl.classList.add('streak-glow');
+                }
+            } else {
+                state.streak = 0;
+                streakEl.classList.remove('streak-glow');
+                playSfx('fail');
+                showFloatingEmoji('❌', targetType === 'healthy' ? '#healthy-basket' : '#junk-basket');
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
+            }
+
+            updateHUD();
+            foodEl.remove();
+
+            state.levelCount++;
+            if (state.levelCount >= 10) {
+                showLevelTip();
+            } else {
+                setTimeout(createFoodItem, 300);
+            }
+        }
+
+        function updateHUD() {
+            scoreEl.innerText = state.score;
+            streakEl.innerText = state.streak;
+        }
+
+        function showFloatingEmoji(emoji, targetId) {
+            const target = document.querySelector(targetId);
+            const rect = target.getBoundingClientRect();
+            const el = document.createElement('div');
+            el.className = 'floating-emoji';
+            el.innerText = emoji;
+            el.style.left = (rect.left + rect.width / 2 - 25) + 'px';
+            el.style.top = rect.top + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function showLevelTip() {
+            const tip = healthTips[Math.floor(Math.random() * healthTips.length)];
+            document.getElementById('health-tip').innerText = tip;
+            tipModal.classList.add('active');
+            state.levelCount = 0;
+        }
+
+        function nextLevel() {
+            tipModal.classList.remove('active');
+            createFoodItem();
+        }
+
+        // Touch Support
+        let activeTouchItem = null;
+        function handleTouchStart(e) {
+            e.preventDefault();
+            activeTouchItem = e.target;
+            const touch = e.touches[0];
+            activeTouchItem.style.position = 'fixed';
+            updateTouchPos(touch);
+
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            updateTouchPos(e.touches[0]);
+        }
+
+        function handleTouchEnd(e) {
+            const touch = e.changedTouches[0];
+            const healthyBasket = document.getElementById('healthy-basket').getBoundingClientRect();
+            const junkBasket = document.getElementById('junk-basket').getBoundingClientRect();
+
+            let droppedType = null;
+            if (isInside(touch, healthyBasket)) droppedType = 'healthy';
+            else if (isInside(touch, junkBasket)) droppedType = 'junk';
+
+            if (droppedType) {
+                state.currentFood = foodDatabase.find(f => f.emoji === activeTouchItem.innerText);
+                handleSort(droppedType);
+            } else {
+                activeTouchItem.style.position = 'absolute';
+                activeTouchItem.style.left = '50%';
+                activeTouchItem.style.top = '50%';
+                activeTouchItem.style.transform = 'translate(-50%, -50%)';
+            }
+
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        }
+
+        function updateTouchPos(touch) {
+            if (!activeTouchItem) return;
+            activeTouchItem.style.left = (touch.clientX - 60) + 'px';
+            activeTouchItem.style.top = (touch.clientY - 60) + 'px';
+            activeTouchItem.style.transform = 'none';
+        }
+
+        function isInside(touch, rect) {
+            return touch.clientX > rect.left &&
+                touch.clientX < rect.right &&
+                touch.clientY > rect.top &&
+                touch.clientY < rect.bottom;
+        }
+
+        // Init
+        createFoodItem();
+
+    </script>
+</body>
+
+</html>

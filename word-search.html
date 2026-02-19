@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Search Jungle - WonderKids</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --jungle-green: #27ae60;
+            --jungle-dark: #1b4d3e;
+            --accent-yellow: #f1c40f;
+            --bg-mist: #f0f7f4;
+            --text-main: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-mist);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+        }
+
+        /* --- Game Layout --- */
+        main {
+            flex: 1;
+            display: flex;
+            gap: 40px;
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* --- Sidebar --- */
+        .word-sidebar {
+            width: 250px;
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            border: 4px solid var(--jungle-green);
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--jungle-green);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .word-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .word-item {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-weight: 700;
+            color: #636e72;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-item.found {
+            background: var(--jungle-green);
+            color: white;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .word-item.found i {
+            display: block;
+        }
+
+        .word-item i {
+            display: none;
+            color: white;
+        }
+
+        /* --- Letter Grid --- */
+        .grid-container {
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+            user-select: none;
+        }
+
+        .letter-grid {
+            display: grid;
+            gap: 8px;
+            background: white;
+        }
+
+        .letter-cell {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--jungle-dark);
+        }
+
+        .letter-cell:hover {
+            background: #eef2f0;
+            transform: scale(1.05);
+        }
+
+        .letter-cell.selecting {
+            background: var(--accent-yellow);
+            color: white;
+        }
+
+        .letter-cell.found {
+            background: var(--jungle-green);
+            color: white;
+        }
+
+        /* --- Selection Trail --- */
+        .selection-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--jungle-green);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-leaf"></i> Jungle Hub</a>
+        <h1 style="margin: 0; color: var(--jungle-green); font-family: 'Nunito', sans-serif;">Word Search Jungle</h1>
+        <div class="hud-panel">
+            <div class="stat-badge">Found: <span id="found-count">0</span>/<span id="total-count">0</span></div>
+            <div class="stat-badge"><i class="fa-solid fa-clock"></i> <span id="timer">00:00</span></div>
+        </div>
+    </header>
+
+    <main>
+        <aside class="word-sidebar">
+            <div class="sidebar-title"><i class="fa-solid fa-magnifying-glass"></i> Word Hunt</div>
+            <ul class="word-list" id="target-words">
+                <!-- Words injected here -->
+            </ul>
+        </aside>
+
+        <section class="grid-container">
+            <div id="grid" class="letter-grid">
+                <!-- Letters injected here -->
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--jungle-green);">Jungle Explorer! 🌴✨</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">You've found all the hidden words in the deep
+                jungle!</p>
+            <div style="font-size: 4rem; margin: 20px 0;">🦜🦁🐒</div>
+            <button class="btn-action" onclick="location.reload()">Explore Again</button>
+        </div>
+    </div>
+
+    <script>
+        const jungleWords = ["LION", "TIGER", "SNAKE", "MONKEY", "PARROT", "JUNGLE", "LEAF", "TREE"];
+        const gridSize = 12;
+        let state = {
+            grid: [],
+            targets: [],
+            found: [],
+            isSelecting: false,
+            selectionStart: null,
+            currentSelection: [],
+            startTime: Date.now(),
+            timerInterval: null
+        };
+
+        const gridEl = document.getElementById('grid');
+        const wordListEl = document.getElementById('target-words');
+
+        function initGame() {
+            state.targets = [...jungleWords].sort(() => Math.random() - 0.5).slice(0, 6);
+            document.getElementById('total-count').innerText = state.targets.length;
+
+            // Build Grid
+            state.grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+
+            // Place Words
+            state.targets.forEach(word => {
+                let placed = false;
+                while (!placed) {
+                    const direction = Math.random() > 0.5 ? 'H' : 'V';
+                    const r = Math.floor(Math.random() * gridSize);
+                    const c = Math.floor(Math.random() * gridSize);
+
+                    if (canPlace(word, r, c, direction)) {
+                        placeWord(word, r, c, direction);
+                        placed = true;
+                    }
+                }
+            });
+
+            // Fill Randoms
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (state.grid[r][c] === '') {
+                        state.grid[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    }
+                }
+            }
+
+            renderGrid();
+            renderWordList();
+            startTimer();
+        }
+
+        function canPlace(word, r, c, dir) {
+            if (dir === 'H' && c + word.length > gridSize) return false;
+            if (dir === 'V' && r + word.length > gridSize) return false;
+
+            for (let i = 0; i < word.length; i++) {
+                const tr = dir === 'V' ? r + i : r;
+                const tc = dir === 'H' ? c + i : c;
+                if (state.grid[tr][tc] !== '' && state.grid[tr][tc] !== word[i]) return false;
+            }
+            return true;
+        }
+
+        function placeWord(word, r, c, dir) {
+            for (let i = 0; i < word.length; i++) {
+                const tr = dir === 'V' ? r + i : r;
+                const tc = dir === 'H' ? c + i : c;
+                state.grid[tr][tc] = word[i];
+            }
+        }
+
+        function renderGrid() {
+            gridEl.style.gridTemplateColumns = `repeat(${gridSize}, 45px)`;
+            gridEl.innerHTML = '';
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'letter-cell';
+                    cell.innerText = state.grid[r][c];
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+
+                    cell.addEventListener('mousedown', startSelection);
+                    cell.addEventListener('mouseover', updateSelection);
+                    cell.addEventListener('mouseup', endSelection);
+
+                    gridEl.appendChild(cell);
+                }
+            }
+            // Mobile Support
+            gridEl.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target && target.classList.contains('letter-cell')) startSelection({ target });
+            });
+            gridEl.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target && target.classList.contains('letter-cell')) updateSelection({ target });
+            });
+            gridEl.addEventListener('touchend', endSelection);
+        }
+
+        function renderWordList() {
+            wordListEl.innerHTML = '';
+            state.targets.forEach(word => {
+                const li = document.createElement('li');
+                li.className = 'word-item';
+                li.id = `word-${word}`;
+                li.innerHTML = `<span>${word}</span> <i class="fa-solid fa-check"></i>`;
+                wordListEl.appendChild(li);
+            });
+        }
+
+        function startSelection(e) {
+            state.isSelecting = true;
+            state.selectionStart = { r: parseInt(e.target.dataset.r), c: parseInt(e.target.dataset.c) };
+            clearSelectionStyles();
+            e.target.classList.add('selecting');
+        }
+
+        function updateSelection(e) {
+            if (!state.isSelecting) return;
+            const target = { r: parseInt(e.target.dataset.r), c: parseInt(e.target.dataset.c) };
+
+            // Only allow straight lines
+            if (target.r !== state.selectionStart.r && target.c !== state.selectionStart.c) return;
+
+            clearSelectionStyles();
+            state.currentSelection = [];
+
+            const rStart = Math.min(state.selectionStart.r, target.r);
+            const rEnd = Math.max(state.selectionStart.r, target.r);
+            const cStart = Math.min(state.selectionStart.c, target.c);
+            const cEnd = Math.max(state.selectionStart.c, target.c);
+
+            for (let r = rStart; r <= rEnd; r++) {
+                for (let c = cStart; c <= cEnd; c++) {
+                    const cell = document.querySelector(`.letter-cell[data-r="${r}"][data-c="${c}"]`);
+                    cell.classList.add('selecting');
+                    state.currentSelection.push({ r, c, char: cell.innerText });
+                }
+            }
+        }
+
+        function endSelection() {
+            if (!state.isSelecting) return;
+            state.isSelecting = false;
+
+            const word = state.currentSelection.map(s => s.char).join('');
+            const reversed = word.split('').reverse().join('');
+
+            if (state.targets.includes(word) && !state.found.includes(word)) {
+                handleWordFound(word);
+            } else if (state.targets.includes(reversed) && !state.found.includes(reversed)) {
+                handleWordFound(reversed);
+            }
+
+            clearSelectionStyles();
+        }
+
+        function handleWordFound(word) {
+            state.found.push(word);
+            state.currentSelection.forEach(s => {
+                const cell = document.querySelector(`.letter-cell[data-r="${s.r}"][data-c="${s.c}"]`);
+                cell.classList.add('found');
+            });
+
+            document.getElementById(`word-${word}`).classList.add('found');
+            document.getElementById('found-count').innerText = state.found.length;
+
+            playSfx(800, 0.2);
+            if (state.found.length === state.targets.length) {
+                clearInterval(state.timerInterval);
+                setTimeout(() => document.getElementById('win-modal').style.display = 'flex', 500);
+            }
+        }
+
+        function clearSelectionStyles() {
+            document.querySelectorAll('.letter-cell').forEach(c => c.classList.remove('selecting'));
+        }
+
+        function startTimer() {
+            state.startTime = Date.now();
+            state.timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const secs = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        let audioCtx;
+        function playSfx(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initGame();
+    </script>
+</body>
+
+</html>

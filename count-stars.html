@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Count the Stars - WonderKids Space Academy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --space-dark: #090a0f;
+            --star-gold: #f1c40f;
+            --accent-blue: #3498db;
+            --glass: rgba(255, 255, 255, 0.1);
+            --text-light: #ffffff;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--space-dark);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-light);
+        }
+
+        /* --- Background --- */
+        .nebula {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1b2735 0%, #090a0f 100%);
+            z-index: -2;
+        }
+
+        .stars-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            background: var(--glass);
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: var(--glass);
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- Game Grid --- */
+        main {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .star-container {
+            width: 80%;
+            height: 60%;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .game-star {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            color: var(--star-gold);
+            font-size: 2rem;
+            filter: drop-shadow(0 0 10px var(--star-gold));
+            animation: twinkle var(--speed) infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+                filter: drop-shadow(0 0 15px white);
+            }
+        }
+
+        /* --- Input Panel --- */
+        .controls {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .answer-box {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--star-gold);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 30px;
+            border-radius: 15px;
+            min-width: 100px;
+            text-align: center;
+            border: 2px solid var(--star-gold);
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .num-btn {
+            width: 50px;
+            height: 50px;
+            background: white;
+            color: var(--space-dark);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .num-btn:hover {
+            background: var(--star-gold);
+            transform: scale(1.1);
+        }
+
+        .num-btn:active {
+            transform: scale(0.9);
+        }
+
+        .num-btn.clear {
+            background: #ff7675;
+            color: white;
+        }
+
+        .num-btn.check {
+            background: #2ecc71;
+            color: white;
+            grid-column: span 2;
+            width: 110px;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            color: var(--space-dark);
+            max-width: 400px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nebula"></div>
+    <div class="stars-field" id="bg-stars"></div>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-shuttle-space"></i> Station</a>
+        <h1 style="margin: 0; font-family: 'Nunito', sans-serif;">Count the Stars</h1>
+        <div class="hud-panel">
+            <div class="stat-badge">Level: <span id="level">1</span></div>
+            <div class="stat-badge">Stars: <span id="target-range">5-10</span></div>
+        </div>
+    </header>
+
+    <main>
+        <div class="star-container" id="game-field">
+            <!-- Game stars injected here -->
+        </div>
+
+        <div class="controls">
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: #aaa;">How many stars did you see?</div>
+            <div class="answer-box" id="answer-display">?</div>
+            <div class="numpad">
+                <button class="num-btn" onclick="addNum(1)">1</button>
+                <button class="num-btn" onclick="addNum(2)">2</button>
+                <button class="num-btn" onclick="addNum(3)">3</button>
+                <button class="num-btn" onclick="addNum(4)">4</button>
+                <button class="num-btn" onclick="addNum(5)">5</button>
+                <button class="num-btn" onclick="addNum(6)">6</button>
+                <button class="num-btn" onclick="addNum(7)">7</button>
+                <button class="num-btn" onclick="addNum(8)">8</button>
+                <button class="num-btn" onclick="addNum(9)">9</button>
+                <button class="num-btn" onclick="addNum(0)">0</button>
+                <button class="num-btn clear" onclick="clearInput()">C</button>
+                <button class="num-btn check" onclick="checkAnswer()">CHECK <i
+                        class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="result-modal">
+        <div class="modal-card">
+            <h1 id="result-title">Perfect! 🌠</h1>
+            <p id="result-text" style="font-size: 1.2rem; line-height: 1.6; color: #555;"></p>
+            <div style="font-size: 5rem; margin: 20px 0;" id="result-emoji">⭐</div>
+            <button class="btn-action" onclick="nextLevel()" id="modal-btn">Blast Off!</button>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            level: 1,
+            actualCount: 0,
+            userInput: "",
+            maxStars: 10,
+            minStars: 5,
+            speed: 3
+        };
+
+        const gameField = document.getElementById('game-field');
+        const answerDisplay = document.getElementById('answer-display');
+        const levelText = document.getElementById('level');
+        const rangeText = document.getElementById('target-range');
+        const resultModal = document.getElementById('result-modal');
+
+        function initStars() {
+            // Background decor
+            const bg = document.getElementById('bg-stars');
+            bg.innerHTML = '';
+            for (let i = 0; i < 100; i++) {
+                const s = document.createElement('div');
+                s.style.position = 'absolute';
+                s.style.width = Math.random() * 2 + 'px';
+                s.style.height = s.style.width;
+                s.style.background = 'white';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.opacity = Math.random();
+                bg.appendChild(s);
+            }
+        }
+
+        function spawnStars() {
+            gameField.innerHTML = '';
+            state.actualCount = Math.floor(Math.random() * (state.maxStars - state.minStars + 1)) + state.minStars;
+            state.userInput = "";
+            answerDisplay.innerText = "?";
+
+            for (let i = 0; i < state.actualCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'game-star';
+                star.innerHTML = '<i class="fa-solid fa-star"></i>';
+
+                // Random position
+                const x = Math.random() * 90;
+                const y = Math.random() * 90;
+                star.style.left = x + "%";
+                star.style.top = y + "%";
+
+                // Random speed
+                const speed = (0.5 + Math.random() * state.speed).toFixed(1);
+                star.style.setProperty('--speed', speed + 's');
+
+                gameField.appendChild(star);
+            }
+        }
+
+        function addNum(n) {
+            if (state.userInput.length < 3) {
+                state.userInput += n;
+                answerDisplay.innerText = state.userInput;
+                playSfx(440 + (n * 20), 0.1);
+            }
+        }
+
+        function clearInput() {
+            state.userInput = "";
+            answerDisplay.innerText = "?";
+        }
+
+        function checkAnswer() {
+            const resultTitle = document.getElementById('result-title');
+            const resultText = document.getElementById('result-text');
+            const resultEmoji = document.getElementById('result-emoji');
+
+            if (parseInt(state.userInput) === state.actualCount) {
+                resultTitle.innerText = "Mathematical Genius! 🌠";
+                resultText.innerText = `You counted all ${state.actualCount} stars correctly! Ready for more?`;
+                resultEmoji.innerText = "🎓";
+                playSfx(880, 0.3);
+                resultModal.style.display = 'flex';
+            } else {
+                resultTitle.innerText = "Oops! Almost... 🛸";
+                resultText.innerText = `There were actually ${state.actualCount} stars. Let's try once more!`;
+                resultEmoji.innerText = "🔭";
+                playSfx(220, 0.4);
+                resultModal.style.display = 'flex';
+                document.getElementById('modal-btn').innerText = "Try Again";
+            }
+        }
+
+        function nextLevel() {
+            if (parseInt(state.userInput) === state.actualCount) {
+                state.level++;
+                state.maxStars += 5;
+                state.minStars += 2;
+                state.speed = Math.max(1, state.speed - 0.2);
+            }
+
+            levelText.innerText = state.level;
+            rangeText.innerText = `${state.minStars}-${state.maxStars}`;
+            resultModal.style.display = 'none';
+            document.getElementById('modal-btn').innerText = "Blast Off!";
+            spawnStars();
+        }
+
+        let audioCtx;
+        function playSfx(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initStars();
+        spawnStars();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Meaning Match - WonderKids Academy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --accent: #fdcb6e;
+            --bg: #f8f9fa;
+            --text: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+        }
+
+        /* --- Game Area --- */
+        main {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .game-title {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .game-title h1 {
+            color: var(--primary);
+            margin: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .game-title p {
+            color: #636e72;
+            font-weight: 600;
+        }
+
+        .match-container {
+            display: flex;
+            gap: 100px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .emoji-card {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .label-card {
+            width: 180px;
+            height: 100px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: capitalize;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            border-color: #eee;
+        }
+
+        .card.selected {
+            border-color: var(--primary);
+            background: #eee;
+        }
+
+        .card.matched {
+            border-color: #2ecc71 !important;
+            background: #e8f5e9 !important;
+            color: #2ecc71 !important;
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            animation: fall 3s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-graduation-cap"></i> Academy</a>
+        <div class="hud-panel">
+            <div class="stat-badge">Section: <span id="section-name">Emotions</span></div>
+            <div class="stat-badge">Solved: <span id="solved-count">0</span>/4</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="game-title">
+            <h1>Emoji Meaning Match</h1>
+            <p>Select an emoji and then its matching meaning to complete the set!</p>
+        </div>
+
+        <div class="match-container">
+            <div class="column" id="emoji-column">
+                <!-- Emojis here -->
+            </div>
+            <div class="column" id="label-column">
+                <!-- Labels here -->
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="level-modal">
+        <div class="modal-card">
+            <h1 style="color: #2ecc71;" id="modal-title">Perfect Match! 🧩✨</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;" id="modal-desc">You've mastered the Emotions
+                set. Ready for the next challenge?</p>
+            <div style="font-size: 5rem; margin: 30px 0;" id="modal-emoji">🎉</div>
+            <button class="btn-action" onclick="nextSection()">Next Level</button>
+        </div>
+    </div>
+
+    <script>
+        const sections = [
+            {
+                name: "Emotions",
+                pairs: [
+                    { emoji: "🙂", meaning: "Happy" },
+                    { emoji: "😴", meaning: "Sleepy" },
+                    { emoji: "🥳", meaning: "Excited" },
+                    { emoji: "😡", meaning: "Angry" }
+                ]
+            },
+            {
+                name: "Actions",
+                pairs: [
+                    { emoji: "🏃", meaning: "Running" },
+                    { emoji: "🎨", meaning: "Painting" },
+                    { emoji: "🧘", meaning: "Meditating" },
+                    { emoji: "🍽️", meaning: "Eating" }
+                ]
+            },
+            {
+                name: "Objects",
+                pairs: [
+                    { emoji: "🚗", meaning: "Car" },
+                    { emoji: "🍕", meaning: "Pizza" },
+                    { emoji: "🎸", meaning: "Guitar" },
+                    { emoji: "📱", meaning: "Phone" }
+                ]
+            }
+        ];
+
+        let state = {
+            currentSectionIdx: 0,
+            selectedEmoji: null,
+            selectedLabel: null,
+            matchesFound: 0
+        };
+
+        const emojiCol = document.getElementById('emoji-column');
+        const labelCol = document.getElementById('label-column');
+        const solvedCount = document.getElementById('solved-count');
+
+        function initGame() {
+            state.matchesFound = 0;
+            state.selectedEmoji = null;
+            state.selectedLabel = null;
+            solvedCount.innerText = "0";
+
+            const currentSection = sections[state.currentSectionIdx];
+            document.getElementById('section-name').innerText = currentSection.name;
+
+            // Prepare columns
+            const shuffledEmojis = [...currentSection.pairs].sort(() => Math.random() - 0.5);
+            const shuffledLabels = [...currentSection.pairs].sort(() => Math.random() - 0.5);
+
+            emojiCol.innerHTML = '';
+            shuffledEmojis.forEach(pair => {
+                const card = document.createElement('div');
+                card.className = 'emoji-card card';
+                card.innerText = pair.emoji;
+                card.onclick = () => selectCard('emoji', pair, card);
+                emojiCol.appendChild(card);
+            });
+
+            labelCol.innerHTML = '';
+            shuffledLabels.forEach(pair => {
+                const card = document.createElement('div');
+                card.className = 'label-card card';
+                card.innerText = pair.meaning;
+                card.onclick = () => selectCard('label', pair, card);
+                labelCol.appendChild(card);
+            });
+        }
+
+        function selectCard(type, pair, el) {
+            if (el.classList.contains('matched')) return;
+
+            // Deselect previous in same column
+            const container = type === 'emoji' ? emojiCol : labelCol;
+            container.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+
+            el.classList.add('selected');
+            playSfx(440 + (type === 'emoji' ? 100 : 0), 0.1);
+
+            if (type === 'emoji') state.selectedEmoji = { pair, el };
+            else state.selectedLabel = { pair, el };
+
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            if (state.selectedEmoji && state.selectedLabel) {
+                if (state.selectedEmoji.pair.meaning === state.selectedLabel.pair.meaning) {
+                    handleMatch();
+                } else {
+                    handleMismatch();
+                }
+            }
+        }
+
+        function handleMatch() {
+            state.selectedEmoji.el.classList.remove('selected');
+            state.selectedLabel.el.classList.remove('selected');
+            state.selectedEmoji.el.classList.add('matched');
+            state.selectedLabel.el.classList.add('matched');
+
+            state.selectedEmoji = null;
+            state.selectedLabel = null;
+            state.matchesFound++;
+            solvedCount.innerText = state.matchesFound;
+
+            playSfx(880, 0.2);
+            spawnConfetti(state.matchesFound * 10);
+
+            if (state.matchesFound === 4) {
+                setTimeout(showWin, 800);
+            }
+        }
+
+        function handleMismatch() {
+            state.selectedEmoji.el.classList.add('wrong');
+            state.selectedLabel.el.classList.add('wrong');
+
+            playSfx(150, 0.4, 'sawtooth');
+
+            setTimeout(() => {
+                state.selectedEmoji.el.classList.remove('selected', 'wrong');
+                state.selectedLabel.el.classList.remove('selected', 'wrong');
+                state.selectedEmoji = null;
+                state.selectedLabel = null;
+            }, 600);
+        }
+
+        function showWin() {
+            const modal = document.getElementById('level-modal');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const nextBtn = document.querySelector('.btn-action');
+
+            if (state.currentSectionIdx < sections.length - 1) {
+                title.innerText = "Perfect Match! 🧩✨";
+                desc.innerText = `You've mastered the ${sections[state.currentSectionIdx].name} set. Ready for the next challenge?`;
+                nextBtn.innerText = "Next Level";
+            } else {
+                title.innerText = "Emoji Overlord! 👑";
+                desc.innerText = "You've successfully matched every emoji across all categories. You're a communication genius!";
+                nextBtn.innerText = "Play Again";
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function nextSection() {
+            if (state.currentSectionIdx < sections.length - 1) {
+                state.currentSectionIdx++;
+            } else {
+                state.currentSectionIdx = 0;
+            }
+            document.getElementById('level-modal').style.display = 'none';
+            initGame();
+        }
+
+        function spawnConfetti(count) {
+            for (let i = 0; i < count; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                c.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 3000);
+            }
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.innerText = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            .wrong { animation: shake 0.4s; border-color: #ff7675 !important; }
+        `;
+        document.head.appendChild(style);
+
+        initGame();
+    </script>
+</body>
+
+</html>

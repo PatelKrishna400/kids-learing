@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Maker - Sky Explorer</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sunny-sky: #4facfe;
+            --cloudy-sky: #a1c4fd;
+            --rainy-sky: #636e72;
+            --primary: #6c5ce7;
+            --glass: rgba(255, 255, 255, 0.2);
+            --text: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 1s ease;
+            background: var(--sunny-sky);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Sky Canvas --- */
+        #sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .sun {
+            position: absolute;
+            top: 50px;
+            right: 80px;
+            width: 120px;
+            height: 120px;
+            background: #f1c40f;
+            border-radius: 50%;
+            box-shadow: 0 0 50px #f1c40f;
+            display: none;
+            animation: pulse 4s infinite;
+        }
+
+        .clouds-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            transition: all 0.5s;
+        }
+
+        .cloud::after,
+        .cloud::before {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .rain-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .drop {
+            position: absolute;
+            background: #74b9ff;
+            width: 2px;
+            height: 15px;
+            animation: fall linear infinite;
+        }
+
+        /* --- Controls --- */
+        .weather-panel {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px 40px;
+            border-radius: 50px;
+            display: flex;
+            gap: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .tool {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            border: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 2rem;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tool:hover {
+            transform: scale(1.1);
+        }
+
+        .tool.active {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .tool-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #444;
+        }
+
+        /* --- Quiz & Modals --- */
+        .status-box {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            z-index: 100;
+            display: none;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            width: 400px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-cloud-sun"></i> Home</a>
+        <h1 style="margin: 0; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">Weather Maker</h1>
+    </header>
+
+    <div id="sky">
+        <div class="sun" id="v-sun"></div>
+        <div class="clouds-container" id="v-clouds">
+            <div class="cloud" style="width: 100px; height: 40px; top: 100px; left: 20%;"></div>
+            <div class="cloud" style="width: 150px; height: 60px; top: 150px; left: 50%;"></div>
+            <div class="cloud" style="width: 120px; height: 50px; top: 80px; left: 70%;"></div>
+        </div>
+        <div class="rain-container" id="v-rain"></div>
+    </div>
+
+    <div class="status-box" id="weather-name">Sunny Day</div>
+
+    <div class="weather-panel">
+        <div class="tool" id="btn-sun" onclick="toggleElement('sun')">
+            <i class="fa-solid fa-sun" style="color: #f1c40f;"></i>
+            <span class="tool-label">SUN</span>
+        </div>
+        <div class="tool" id="btn-cloud" onclick="toggleElement('cloud')">
+            <i class="fa-solid fa-cloud" style="color: #bdc3c7;"></i>
+            <span class="tool-label">CLOUD</span>
+        </div>
+        <div class="tool" id="btn-rain" onclick="toggleElement('rain')">
+            <i class="fa-solid fa-droplet" style="color: #3498db;"></i>
+            <span class="tool-label">RAIN</span>
+        </div>
+        <div class="tool" style="background: var(--primary); color: white;" onclick="checkWeather()">
+            <i class="fa-solid fa-play"></i>
+            <span class="tool-label">CHECK</span>
+        </div>
+    </div>
+
+    <div class="modal" id="quiz-modal">
+        <div class="modal-card">
+            <h2 id="quiz-title">Wait! Quick Question...</h2>
+            <p id="quiz-text"></p>
+            <div id="quiz-options"></div>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            sun: false,
+            cloud: false,
+            rain: false,
+            currentResult: ""
+        };
+
+        const vSun = document.getElementById('v-sun');
+        const vClouds = document.getElementById('v-clouds');
+        const vRain = document.getElementById('v-rain');
+        const statusBox = document.getElementById('weather-name');
+
+        function toggleElement(id) {
+            state[id] = !state[id];
+            document.getElementById(`btn-${id}`).classList.toggle('active');
+            updateSky();
+            playTone(400 + (Math.random() * 200), 0.1);
+        }
+
+        function updateSky() {
+            vSun.style.display = state.sun ? 'block' : 'none';
+            vClouds.style.display = state.cloud ? 'block' : 'none';
+            vRain.style.display = state.rain ? 'block' : 'none';
+
+            // Background Transitions
+            if (state.rain) document.body.style.background = '#636e72';
+            else if (state.cloud) document.body.style.background = '#a1c4fd';
+            else document.body.style.background = '#4facfe';
+
+            // Rain Generation
+            if (state.rain && vRain.children.length === 0) {
+                for (let i = 0; i < 50; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+                    drop.style.animationDelay = Math.random() * 2 + 's';
+                    vRain.appendChild(drop);
+                }
+            } else if (!state.rain) {
+                vRain.innerHTML = '';
+            }
+        }
+
+        function checkWeather() {
+            let result = "";
+            let quiz = {};
+
+            if (state.rain && state.cloud) {
+                result = "Rainy Day";
+                quiz = { q: "What should you use in the rain?", a: ["Sunglasses", "Umbrella", "Hat"], c: 1 };
+            } else if (state.sun && state.cloud) {
+                result = "Cloudy Day";
+                quiz = { q: "Can you see the full sun on a cloudy day?", a: ["Yes", "No", "Maybe"], c: 1 };
+            } else if (state.sun) {
+                result = "Sunny Day";
+                quiz = { q: "What is the best thing to wear when it's sunny?", a: ["Heavy Coat", "Sunglasses", "Winter Boots"], c: 1 };
+            } else {
+                alert("Add some elements to create weather!");
+                return;
+            }
+
+            statusBox.innerText = result;
+            statusBox.style.display = 'block';
+            state.currentResult = result;
+
+            setTimeout(() => showQuiz(quiz), 1500);
+        }
+
+        function showQuiz(quiz) {
+            const modal = document.getElementById('quiz-modal');
+            const qText = document.getElementById('quiz-text');
+            const qOpts = document.getElementById('quiz-options');
+
+            qText.innerText = quiz.q;
+            qOpts.innerHTML = '';
+
+            quiz.a.forEach((opt, idx) => {
+                const b = document.createElement('button');
+                b.className = 'btn';
+                b.innerText = opt;
+                b.onclick = () => {
+                    if (idx === quiz.c) {
+                        alert("Correct! You're a weather expert!");
+                        modal.style.display = 'none';
+                        resetWeather();
+                    } else {
+                        alert("Oops! Try again.");
+                    }
+                };
+                qOpts.appendChild(b);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function resetWeather() {
+            state = { sun: false, cloud: false, rain: false, currentResult: "" };
+            document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+            statusBox.style.display = 'none';
+            updateSky();
+        }
+
+        let audioCtx;
+        function playTone(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        updateSky();
+    </script>
+</body>
+
+</html>

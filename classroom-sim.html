@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Classroom - WonderKids Academy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --green: #2ecc71;
+            --wood: #8d6e63;
+            --board: #2c3e50;
+            --bg: #f8f9fa;
+            --text: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--text);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grade-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        /* --- Classroom Scene --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+            background: linear-gradient(to bottom, #dfe6e9 0%, #b2bec3 100%);
+        }
+
+        .classroom-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 600px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 10px solid var(--wood);
+        }
+
+        .board-wall {
+            flex: 1;
+            background: #f1f2f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .chalkboard {
+            width: 80%;
+            height: 250px;
+            background: var(--board);
+            border: 15px solid var(--wood);
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+            position: relative;
+        }
+
+        .chalkboard h2 {
+            font-size: 1.8rem;
+            margin: 0;
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+
+        .teacher-area {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .teacher-avatar {
+            font-size: 6rem;
+            color: #2d3436;
+            filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s;
+        }
+
+        .desk {
+            width: 120px;
+            height: 60px;
+            background: var(--wood);
+            border-radius: 10px;
+            box-shadow: 0 10px 0 #5d4037;
+            margin-top: -10px;
+        }
+
+        .interaction-area {
+            height: 200px;
+            background: #e1e4e8;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .btn-option {
+            padding: 15px;
+            background: white;
+            border: 3px solid #ced4da;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+
+        .btn-option:hover {
+            background: #f8f9fa;
+            border-color: var(--primary);
+        }
+
+        .btn-option:active {
+            transform: scale(0.95);
+        }
+
+        .btn-option.correct {
+            background: #e8f5e9;
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-option.wrong {
+            background: #ffebee;
+            border-color: #ff7675;
+            color: #ff7675;
+        }
+
+        /* --- Hand Raise --- */
+        .hand-raise-btn {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4);
+            border: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        .hand-raise-btn:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .hand-raise-btn.active {
+            animation: raise 0.8s forwards;
+            font-size: 2.5rem;
+        }
+
+        @keyframes raise {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-50px) scale(1.2);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .report-card {
+            background: #fffbe6;
+            padding: 30px;
+            border: 2px dashed #faad14;
+            border-radius: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #555;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 600px;
+            height: 12px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-graduation-cap"></i> Academy</a>
+        <div class="hud-panel">
+            <div class="grade-badge">GRADE <span id="grade-num">1</span></div>
+            <div class="stat-badge"><i class="fa-solid fa-star" style="color: #f1c40f"></i> XP: <span
+                    id="xp-count">0</span>/100</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="progress-container">
+            <div class="progress-fill" id="xp-bar"></div>
+        </div>
+
+        <div class="classroom-container">
+            <div class="board-wall">
+                <div class="chalkboard">
+                    <h2 id="question-text">Welcome to Class! Raise your hand to start the lesson.</h2>
+                </div>
+
+                <div class="teacher-area">
+                    <div class="teacher-avatar" id="teacher-avatar"><i class="fa-solid fa-person-chalkboard"></i></div>
+                    <div class="desk"></div>
+                </div>
+            </div>
+
+            <div class="interaction-area">
+                <div class="options-grid" id="options">
+                    <!-- Options here -->
+                </div>
+            </div>
+        </div>
+
+        <button class="hand-raise-btn" id="hand-btn" onclick="startLesson()">
+            <i class="fa-solid fa-hand"></i>
+        </button>
+    </main>
+
+    <div class="modal" id="report-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--primary);">Weekly Progress Report 📝</h1>
+            <div class="report-card">
+                <div class="report-row"><span>Subject Mastery:</span> <span id="report-mastery">0%</span></div>
+                <div class="report-row"><span>Study Time:</span> <span id="report-time">0m</span></div>
+                <div class="report-row"><span>Class Participation:</span> <span id="report-notes">Excellent!</span>
+                </div>
+            </div>
+            <div style="font-size: 4rem; margin: 20px 0;">🏫🎓✨</div>
+            <button class="btn-action" onclick="nextLesson()">Back to Class</button>
+        </div>
+    </div>
+
+    <script>
+        const questionPool = {
+            'Math': [
+                { q: "What is 15 + 27?", a: "42", s: ["32", "42", "41", "52"] },
+                { q: "A triangle has how many sides?", a: "3", s: ["3", "4", "5", "6"] },
+                { q: "Which number is even?", a: "14", s: ["13", "14", "15", "17"] }
+            ],
+            'English': [
+                { q: "Which word is a verb?", a: "Running", s: ["Red", "Running", "Table", "Quickly"] },
+                { q: "Opposite of 'Old' is...", a: "Young", s: ["Small", "Young", "New", "Weak"] },
+                { q: "Plural of 'Mouse'?", a: "Mice", s: ["Mouses", "Mice", "Mices", "Mousey"] }
+            ],
+            'EVS': [
+                { q: "Which gas do we breathe out?", a: "Carbon Dioxide", s: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"] },
+                { q: "Part of plant underground?", a: "Root", s: ["Leaf", "Stem", "Flower", "Root"] },
+                { q: "Largest animal on Earth?", a: "Blue Whale", s: ["Elephant", "Giraffe", "Blue Whale", "Shark"] }
+            ]
+        };
+
+        const subjects = ['Math', 'English', 'EVS'];
+
+        let state = {
+            grade: 1,
+            xp: 0,
+            totalAnswered: 0,
+            correctClicks: 0,
+            startTime: Date.now(),
+            isLessonActive: false
+        };
+
+        const qText = document.getElementById('question-text');
+        const optionsEl = document.getElementById('options');
+        const handBtn = document.getElementById('hand-btn');
+        const xpBar = document.getElementById('xp-fill'); // Fixed later by id check
+        const reportModal = document.getElementById('report-modal');
+
+        function startLesson() {
+            if (state.isLessonActive) return;
+
+            handBtn.classList.add('active');
+            playSfx(440, 0.1);
+
+            setTimeout(() => {
+                handBtn.classList.remove('active');
+                state.isLessonActive = true;
+                generateQuestion();
+            }, 800);
+        }
+
+        function generateQuestion() {
+            const subject = subjects[Math.floor(Math.random() * subjects.length)];
+            const pool = questionPool[subject];
+            const item = pool[Math.floor(Math.random() * pool.length)];
+
+            qText.innerText = `[${subject}] ${item.q}`;
+            optionsEl.innerHTML = '';
+
+            item.s.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, item, btn);
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(ans, item, btn) {
+            if (!state.isLessonActive) return;
+            state.totalAnswered++;
+
+            if (ans === item.a) {
+                state.correctClicks++;
+                state.xp += 20;
+                btn.classList.add('correct');
+                playSfx(880, 0.3);
+                updateXP();
+
+                if (state.xp >= 100) {
+                    showReport();
+                } else {
+                    setTimeout(generateQuestion, 1000);
+                }
+            } else {
+                btn.classList.add('wrong');
+                playSfx(200, 0.5, 'sawtooth');
+                setTimeout(() => btn.classList.remove('wrong'), 500);
+            }
+        }
+
+        function updateXP() {
+            document.getElementById('xp-count').innerText = state.xp;
+            document.getElementById('xp-bar').style.width = state.xp + "%";
+        }
+
+        function showReport() {
+            state.isLessonActive = false;
+            const accuracy = Math.round((state.correctClicks / state.totalAnswered) * 100);
+            const timeDiff = Math.round((Date.now() - state.startTime) / 60000);
+
+            document.getElementById('report-mastery').innerText = accuracy + "%";
+            document.getElementById('report-time').innerText = timeDiff + "m";
+
+            reportModal.style.display = 'flex';
+            playSfx(1000, 1);
+        }
+
+        function nextLesson() {
+            state.xp = 0;
+            state.grade++;
+            state.totalAnswered = 0;
+            state.correctClicks = 0;
+            state.startTime = Date.now();
+
+            document.getElementById('grade-num').innerText = state.grade;
+            updateXP();
+            reportModal.style.display = 'none';
+            qText.innerText = "Welcome to Grade " + state.grade + "! Raise your hand to start!";
+            optionsEl.innerHTML = '';
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        // Teacher hover effect
+        document.getElementById('teacher-avatar').addEventListener('mouseover', function () {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        document.getElementById('teacher-avatar').addEventListener('mouseout', function () {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+
+    </script>
+</body>
+
+</html>

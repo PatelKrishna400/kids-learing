@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opposite Battle - WonderKids Vocabulary</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff7675;
+            --secondary: #74b9ff;
+            --accent: #55efc4;
+            --bg: #fdf2f2;
+            --text: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Character Area --- */
+        .battle-stage {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .character-box {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .robot {
+            font-size: 5rem;
+            color: var(--primary);
+            transition: transform 0.3s;
+            filter: drop-shadow(0 10px 15px rgba(255, 118, 117, 0.3));
+        }
+
+        .speech-bubble {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text);
+            border: 4px solid var(--primary);
+            text-align: center;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid var(--primary);
+        }
+
+        /* --- Options Grid --- */
+        .options-container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .word-card {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            border: 3px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+            text-transform: capitalize;
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+            background: #f0f7ff;
+        }
+
+        .word-card:active {
+            transform: scale(0.95);
+        }
+
+        .word-card.correct {
+            background: #e8f5e9 !important;
+            border-color: #2ecc71 !important;
+            color: #2ecc71 !important;
+            animation: pulse-green 0.5s;
+        }
+
+        .word-card.wrong {
+            background: #ffebee !important;
+            border-color: #ff7675 !important;
+            color: #ff7675 !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        @keyframes pulse-green {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* --- Animations --- */
+        .happy {
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        #streak-pop {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            pointer-events: none;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #streak-pop.active {
+            transform: translate(-50%, -50%) scale(1.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-graduation-cap"></i> Academy</a>
+        <h1 style="margin: 0; font-family: 'Nunito', sans-serif; color: var(--primary);">Opposite Battle</h1>
+        <div class="hud-panel">
+            <div class="stat-badge"><i class="fa-solid fa-star" style="color: var(--accent)"></i> <span
+                    id="score">0</span></div>
+            <div class="stat-badge"><i class="fa-solid fa-fire" style="color: #ff9f43"></i> <span id="streak">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="battle-stage">
+        <div class="character-box">
+            <div class="speech-bubble" id="question">What's the opposite of HOT?</div>
+            <div class="robot" id="buddy"><i class="fa-solid fa-robot"></i></div>
+        </div>
+
+        <div class="options-container" id="options">
+            <!-- Words injected here -->
+        </div>
+    </main>
+
+    <div id="streak-pop">COMBO!</div>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--primary);">Vocabulary Victor! 🏆</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">You've mastered these opposites with an amazing
+                streak!</p>
+            <div style="font-size: 5rem; margin: 20px 0;">✨🤖✨</div>
+            <button class="btn-action" onclick="location.reload()">Next Battle!</button>
+        </div>
+    </div>
+
+    <script>
+        const wordPairs = [
+            { word: "Hot", opposite: "Cold" },
+            { word: "Big", opposite: "Small" },
+            { word: "Fast", opposite: "Slow" },
+            { word: "Up", opposite: "Down" },
+            { word: "Happy", opposite: "Sad" },
+            { word: "Day", opposite: "Night" },
+            { word: "Clean", opposite: "Dirty" },
+            { word: "Heavy", opposite: "Light" },
+            { word: "Tall", opposite: "Short" },
+            { word: "Soft", opposite: "Hard" },
+            { word: "Open", opposite: "Closed" },
+            { word: "Young", opposite: "Old" }
+        ];
+
+        let state = {
+            score: 0,
+            streak: 0,
+            currentPair: null,
+            isAnswering: false,
+            multiplier: 1
+        };
+
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const buddy = document.getElementById('buddy');
+        const streakPop = document.getElementById('streak-pop');
+
+        function initRound() {
+            state.isAnswering = false;
+            buddy.classList.remove('happy');
+
+            // Pick a random pair
+            state.currentPair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
+            questionEl.innerText = `What's the opposite of ${state.currentPair.word.toUpperCase()}?`;
+            speak(state.currentPair.word);
+
+            // Generate options
+            const options = [state.currentPair.opposite];
+            while (options.length < 4) {
+                const randPair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
+                if (!options.includes(randPair.opposite) && randPair.opposite !== state.currentPair.opposite) {
+                    options.push(randPair.opposite);
+                }
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            optionsEl.innerHTML = '';
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.innerText = opt;
+                card.onclick = () => checkAnswer(opt, card);
+                optionsEl.appendChild(card);
+            });
+        }
+
+        function checkAnswer(selected, card) {
+            if (state.isAnswering) return;
+            state.isAnswering = true;
+
+            if (selected === state.currentPair.opposite) {
+                handleSuccess(card);
+            } else {
+                handleFailure(card);
+            }
+        }
+
+        function handleSuccess(card) {
+            card.classList.add('correct');
+            state.streak++;
+            state.multiplier = 1 + Math.floor(state.streak / 5);
+            state.score += 10 * state.multiplier;
+
+            document.getElementById('score').innerText = state.score;
+            document.getElementById('streak').innerText = state.streak;
+
+            buddy.classList.add('happy');
+            playSfx(880, 0.2);
+            speak(state.currentPair.opposite);
+
+            if (state.streak % 5 === 0) {
+                showCombo();
+            }
+
+            if (state.score >= 200) {
+                setTimeout(() => document.getElementById('finish-modal').style.display = 'flex', 1000);
+            } else {
+                setTimeout(initRound, 1200);
+            }
+        }
+
+        function handleFailure(card) {
+            card.classList.add('wrong');
+            state.streak = 0;
+            state.multiplier = 1;
+            document.getElementById('streak').innerText = "0";
+
+            playSfx(220, 0.4, 'sawtooth');
+
+            // Highlight correct one
+            document.querySelectorAll('.word-card').forEach(c => {
+                if (c.innerText === state.currentPair.opposite) c.classList.add('correct');
+            });
+
+            setTimeout(initRound, 2000);
+        }
+
+        function showCombo() {
+            streakPop.classList.add('active');
+            setTimeout(() => streakPop.classList.remove('active'), 1000);
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.rate = 1.0;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        initRound();
+    </script>
+</body>
+
+</html>

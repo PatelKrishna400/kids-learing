@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Ninja - Language Arts Quest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Shojumaru&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --dojo-bg: #2c3e50;
+            --ninja-red: #e74c3c;
+            --wood: #8e44ad;
+            --accent: #f1c40f;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: var(--dojo-bg);
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            user-select: none;
+        }
+
+        /* --- Dojo Background --- */
+        .dojo-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255, 255, 255, 0.05) 50px, rgba(255, 255, 255, 0.05) 51px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- HUD --- */
+        .game-hud {
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .hud-panel {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            gap: 30px;
+        }
+
+        .hud-stat {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ccc;
+        }
+
+        /* --- Mission Board --- */
+        .mission-board {
+            background: #fff4e6;
+            color: #2d3436;
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 0 #d35400, 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-top: 20px;
+            z-index: 90;
+            border: 4px solid #e67e22;
+        }
+
+        .mission-board h2 {
+            font-family: 'Shojumaru', system-ui;
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--ninja-red);
+        }
+
+        .target-word {
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin: 10px 0;
+        }
+
+        .sentence-display {
+            font-style: italic;
+            font-size: 1.3rem;
+            opacity: 0.8;
+        }
+
+        /* --- Game World --- */
+        .game-world {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            cursor: crosshair;
+        }
+
+        .word-block {
+            position: absolute;
+            padding: 15px 30px;
+            background: white;
+            color: #2d3436;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            box-shadow: 0 8px 0 #ddd, 0 15px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .word-block.sliced {
+            pointer-events: none;
+            transition: all 0.5s ease-in;
+        }
+
+        /* --- Slash Animation --- */
+        .slash-line {
+            position: absolute;
+            height: 4px;
+            background: white;
+            box-shadow: 0 0 10px white, 0 0 20px var(--ninja-red);
+            pointer-events: none;
+            z-index: 1000;
+            transform-origin: left center;
+            border-radius: 2px;
+        }
+
+        /* --- Effects --- */
+        .combo-text {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent);
+            pointer-events: none;
+            animation: comboFloat 1s forwards;
+            font-family: 'Shojumaru', cursive;
+            z-index: 2000;
+        }
+
+        @keyframes comboFloat {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            color: var(--dojo-bg);
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 450px;
+            border: 10px solid var(--ninja-red);
+        }
+
+        .btn {
+            background: var(--ninja-red);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Shojumaru', cursive;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--glass);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            z-index: 1000;
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            pointer-events: none;
+            animation: explode 0.5s forwards;
+        }
+
+        @keyframes explode {
+            to {
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body onmousedown="startSlash(event)" onmousemove="updateSlash(event)" onmouseup="endSlash()">
+
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> DOJO</a>
+
+    <div class="dojo-container">
+        <div class="game-hud">
+            <div class="hud-panel">
+                <div class="hud-stat">
+                    <span class="stat-val" id="score">0</span>
+                    <span class="stat-label">Score</span>
+                </div>
+                <div class="hud-stat">
+                    <span class="stat-val" id="combo">0</span>
+                    <span class="stat-label">Combo</span>
+                </div>
+            </div>
+            <div class="hud-panel">
+                <div class="hud-stat">
+                    <span class="stat-val" id="level">1</span>
+                    <span class="stat-label">Level</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mission-board">
+            <h2>NINJA MISSION</h2>
+            <div class="target-word" id="target-type">NOUN</div>
+            <div class="sentence-display" id="sentence-prompt">Target the correct word!</div>
+        </div>
+
+        <div class="game-world" id="game-world">
+            <!-- Words will fly here -->
+        </div>
+    </div>
+
+    <div class="modal" id="level-modal">
+        <div class="modal-card">
+            <h1 id="modal-title">RANK UP!</h1>
+            <p id="modal-desc">You are becoming a Grammar Sensei.</p>
+            <div style="font-size: 4rem; margin: 20px 0;">🥋</div>
+            <button class="btn" onclick="nextLevel()">CONTINUE</button>
+        </div>
+    </div>
+
+    <script>
+        const grammarData = {
+            easy: [
+                { s: "The quick cat jumps.", words: [{ t: "the", c: "article" }, { t: "quick", c: "adjective" }, { t: "cat", c: "noun" }, { t: "jumps", c: "verb" }] },
+                { s: "Birds fly high.", words: [{ t: "birds", c: "noun" }, { t: "fly", c: "verb" }, { t: "high", c: "adverb" }] },
+                { s: "I like apples.", words: [{ t: "i", c: "pronoun" }, { t: "like", c: "verb" }, { t: "apples", c: "noun" }] }
+            ],
+            medium: [
+                { s: "She is running fast.", words: [{ t: "she", c: "pronoun" }, { t: "is", c: "verb" }, { t: "running", c: "verb" }, { t: "fast", c: "adverb" }] },
+                { s: "They will go tomorrow.", words: [{ t: "they", c: "pronoun" }, { t: "will", c: "verb" }, { t: "go", c: "verb" }, { t: "tomorrow", c: "adverb" }] }
+            ],
+            hard: [
+                { s: "The brave ninja silently strikes.", words: [{ t: "the", c: "article" }, { t: "brave", c: "adjective" }, { t: "ninja", c: "noun" }, { t: "silently", c: "adverb" }, { t: "strikes", c: "verb" }] }
+            ]
+        };
+
+        let state = {
+            score: 0,
+            combo: 0,
+            level: 1,
+            currentTarget: "noun",
+            currentSentence: null,
+            isSlashing: false,
+            slashStartX: 0,
+            slashStartY: 0,
+            pointsToWin: 50
+        };
+
+        const world = document.getElementById('game-world');
+        const scoreEl = document.getElementById('score');
+        const comboEl = document.getElementById('combo');
+        const levelEl = document.getElementById('level');
+        const targetEl = document.getElementById('target-type');
+        const sentenceEl = document.getElementById('sentence-prompt');
+
+        // --- Game Logic ---
+
+        function init() {
+            spawnQuestion();
+            gameLoop();
+        }
+
+        function spawnQuestion() {
+            const pool = state.level === 1 ? grammarData.easy : (state.level === 2 ? grammarData.medium : grammarData.hard);
+            const entry = pool[Math.floor(Math.random() * pool.length)];
+            state.currentSentence = entry;
+
+            // Pick a unique category from sentence to target
+            const categories = [...new Set(entry.words.map(w => w.c))];
+            state.currentTarget = categories[Math.floor(Math.random() * categories.length)];
+
+            targetEl.innerText = state.currentTarget;
+            sentenceEl.innerText = `"${entry.s}"`;
+
+            // Clear world and spawn words
+            world.innerHTML = '';
+            entry.words.forEach((w, i) => {
+                setTimeout(() => createWordBlock(w), i * 300);
+            });
+        }
+
+        function createWordBlock(wordObj) {
+            const div = document.createElement('div');
+            div.className = 'word-block';
+            div.innerText = wordObj.t;
+            div.dataset.category = wordObj.c;
+
+            const startX = Math.random() * (world.offsetWidth - 150);
+            const startY = world.offsetHeight + 100;
+
+            div.style.left = startX + 'px';
+            div.style.top = startY + 'px';
+
+            world.appendChild(div);
+
+            const velocity = -8 - Math.random() * 5;
+            const horizontal = (Math.random() - 0.5) * 4;
+            let currentX = startX;
+            let currentY = startY;
+            let force = velocity;
+
+            const move = () => {
+                if (div.classList.contains('sliced')) return;
+
+                force += 0.2; // Gravity
+                currentY += force;
+                currentX += horizontal;
+
+                div.style.top = currentY + 'px';
+                div.style.left = currentX + 'px';
+                div.style.transform = `rotate(${currentY * 0.1}deg)`;
+
+                if (currentY < world.offsetHeight + 200) {
+                    requestAnimationFrame(move);
+                } else {
+                    div.remove();
+                    if (world.children.length === 0) spawnQuestion();
+                }
+            };
+            requestAnimationFrame(move);
+        }
+
+        // --- Interaction ---
+
+        function startSlash(e) {
+            state.isSlashing = true;
+            state.slashStartX = e.clientX;
+            state.slashStartY = e.clientY;
+        }
+
+        function updateSlash(e) {
+            if (!state.isSlashing) return;
+
+            const slash = document.createElement('div');
+            slash.className = 'slash-line';
+            const dx = e.clientX - state.slashStartX;
+            const dy = e.clientY - state.slashStartY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+            slash.style.width = dist + 'px';
+            slash.style.left = state.slashStartX + 'px';
+            slash.style.top = state.slashStartY + 'px';
+            slash.style.transform = `rotate(${angle}deg)`;
+
+            document.body.appendChild(slash);
+            setTimeout(() => slash.remove(), 100);
+
+            // Check Collision
+            const blocks = document.querySelectorAll('.word-block:not(.sliced)');
+            blocks.forEach(block => {
+                const rect = block.getBoundingClientRect();
+                if (e.clientX > rect.left && e.clientX < rect.right && e.clientY > rect.top && e.clientY < rect.bottom) {
+                    sliceWord(block);
+                }
+            });
+
+            state.slashStartX = e.clientX;
+            state.slashStartY = e.clientY;
+        }
+
+        function endSlash() {
+            state.isSlashing = false;
+        }
+
+        function sliceWord(block) {
+            block.classList.add('sliced');
+            const isCorrect = block.dataset.category === state.currentTarget;
+
+            if (isCorrect) {
+                state.score += 10 + (state.combo * 5);
+                state.combo++;
+                showCombo();
+                createParticles(block);
+                playSfx(600, 800);
+            } else {
+                state.combo = 0;
+                playSfx(200, 100);
+                block.style.background = '#ff7675';
+            }
+
+            updateHUD();
+
+            // Slice animation
+            block.style.transform += ' scale(0.5) rotate(45deg)';
+            block.style.opacity = '0';
+            setTimeout(() => block.remove(), 500);
+
+            if (state.score >= state.level * state.pointsToWin) {
+                rankUp();
+            }
+        }
+
+        function updateHUD() {
+            scoreEl.innerText = state.score;
+            comboEl.innerText = state.combo;
+            levelEl.innerText = state.level;
+        }
+
+        function showCombo() {
+            if (state.combo < 2) return;
+            const t = document.createElement('div');
+            t.className = 'combo-text';
+            t.innerText = `${state.combo}x COMBO!`;
+            t.style.left = state.slashStartX + 'px';
+            t.style.top = state.slashStartY + 'px';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 1000);
+        }
+
+        function rankUp() {
+            state.level++;
+            const modal = document.getElementById('level-modal');
+            modal.style.display = 'flex';
+        }
+
+        function nextLevel() {
+            document.getElementById('level-modal').style.display = 'none';
+            spawnQuestion();
+        }
+
+        function createParticles(block) {
+            const rect = block.getBoundingClientRect();
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = rect.left + rect.width / 2 + 'px';
+                p.style.top = rect.top + rect.height / 2 + 'px';
+                p.style.setProperty('--x', (Math.random() - 0.5) * 200 + 'px');
+                p.style.setProperty('--y', (Math.random() - 0.5) * 200 + 'px');
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+
+        let audioCtx;
+        function playSfx(f1, f2) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

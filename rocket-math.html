@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Rocket Math - Galactic Mission</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --space-bg: #0b0d17;
+            --primary-accent: #6c5ce7;
+            --fuel-color: #ff7675;
+            --success: #00b894;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--space-bg);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Galaxy Background --- */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            z-index: -1;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 90%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: var(--glass);
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- Game Grid --- */
+        .game-main {
+            flex: 1;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            padding: 20px;
+            gap: 20px;
+            align-items: center;
+        }
+
+        /* --- Left: Fuel Tank --- */
+        .fuel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .fuel-meter {
+            width: 80px;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .fuel-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #ff7675, #fab1a0);
+            transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(255, 118, 117, 0.5);
+        }
+
+        .fuel-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            filter: blur(5px);
+        }
+
+        .fuel-percent {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--fuel-color);
+        }
+
+        /* --- Center: Rocket Launchpad --- */
+        .launchpad {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 50px;
+        }
+
+        .rocket {
+            width: 120px;
+            height: 200px;
+            position: relative;
+            transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+        }
+
+        .rocket-img {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .thruster-fire {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            background: linear-gradient(to bottom, #ff7675, transparent);
+            border-radius: 0 0 50% 50%;
+            display: none;
+            animation: flicker 0.1s infinite;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            100% {
+                height: 60px;
+                opacity: 0.8;
+            }
+
+            50% {
+                height: 80px;
+                opacity: 1;
+            }
+        }
+
+        /* --- Right: Math Station --- */
+        .math-panel {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .math-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #a29bfe;
+            margin-bottom: 10px;
+        }
+
+        .equation {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .answer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .answer-btn:hover {
+            background: var(--primary-accent);
+            transform: scale(1.05);
+        }
+
+        .answer-btn.correct {
+            background: var(--success);
+        }
+
+        .answer-btn.wrong {
+            background: var(--fuel-color);
+            animation: shake 0.5s;
+        }
+
+        /* --- Launch Sequence --- */
+        .countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 15rem;
+            font-weight: 900;
+            color: white;
+            z-index: 1000;
+            display: none;
+            text-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(15px);
+        }
+
+        .modal-card {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .planet-img {
+            font-size: 8rem;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: var(--primary-accent);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .flying {
+            transform: translateY(-120vh) scale(0.5);
+        }
+
+        /* Particles */
+        .star-p {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Mission Control</a>
+        <div style="text-align: right;">
+            <span id="planet-name" style="color: #a29bfe; font-weight: 800; text-transform: uppercase;">Destination:
+                Mars</span>
+        </div>
+    </header>
+
+    <div class="stars" id="star-field"></div>
+
+    <main class="game-main">
+        <aside class="fuel-section">
+            <div class="fuel-percent" id="fuel-txt">0%</div>
+            <div class="fuel-meter">
+                <div class="fuel-fill" id="fuel-fill"></div>
+            </div>
+            <div class="fuel-percent">FUEL LEVEL</div>
+        </aside>
+
+        <section class="launchpad">
+            <div class="rocket" id="rocket">
+                <div class="thruster-fire" id="fire"></div>
+                <div class="rocket-img"><i class="fa-solid fa-rocket fa-5x"></i></div>
+            </div>
+            <div style="width: 200px; height: 10px; background: #333; border-radius: 50%;"></div>
+        </section>
+
+        <aside class="math-panel">
+            <div class="math-title">Solve for Fuel</div>
+            <div class="equation" id="equation">5 + 3</div>
+            <div class="answer-grid" id="options">
+                <!-- Answers here -->
+            </div>
+        </aside>
+    </main>
+
+    <div class="countdown" id="countdown-timer">5</div>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <div class="planet-img" id="finish-icon">🔴</div>
+            <h1 id="finish-title">Welcome to Mars!</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #ccc;">Mission Accomplished! Your math skills powered
+                our journey through the stars.</p>
+            <button class="btn" onclick="nextMission()">Next Mission: Jupiter</button>
+        </div>
+    </div>
+
+    <script>
+        const planets = [
+            { name: "Mars", icon: "🔴", color: "#ff7675" },
+            { name: "Jupiter", icon: "🟠", color: "#f39c12" },
+            { name: "Saturn", icon: "🪐", color: "#f1c40f" },
+            { name: "Neptune", icon: "🔵", color: "#3498db" }
+        ];
+
+        let state = {
+            fuel: 0,
+            goal: 100,
+            currentPlanet: 0,
+            answer: 0,
+            isLaunching: false
+        };
+
+        const fuelFill = document.getElementById('fuel-fill');
+        const fuelTxt = document.getElementById('fuel-txt');
+        const eqEl = document.getElementById('equation');
+        const optGrid = document.getElementById('options');
+        const rocket = document.getElementById('rocket');
+        const fire = document.getElementById('fire');
+        const countdownTimer = document.getElementById('countdown-timer');
+
+        function initStars() {
+            const field = document.getElementById('star-field');
+            for (let i = 0; i < 150; i++) {
+                const s = document.createElement('div');
+                s.className = 'star-p';
+                const size = Math.random() * 3;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.opacity = Math.random();
+                field.appendChild(s);
+            }
+        }
+
+        function generateMath() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            state.answer = num1 + num2;
+            eqEl.innerText = `${num1} + ${num2}`;
+
+            const options = [state.answer];
+            while (options.length < 4) {
+                const rand = Math.floor(Math.random() * 20) + 1;
+                if (!options.includes(rand)) options.push(rand);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            optGrid.innerHTML = '';
+            options.forEach(val => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.innerText = val;
+                btn.onclick = () => checkAnswer(val, btn);
+                optGrid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(val, btn) {
+            if (state.isLaunching) return;
+
+            if (val === state.answer) {
+                btn.classList.add('correct');
+                state.fuel += 20;
+                updateFuel();
+                playSfx(800, 0.2);
+                if (state.fuel >= state.goal) {
+                    startLaunch();
+                } else {
+                    setTimeout(generateMath, 500);
+                }
+            } else {
+                btn.classList.add('wrong');
+                playSfx(200, 0.3);
+                setTimeout(() => btn.classList.remove('wrong'), 500);
+            }
+        }
+
+        function updateFuel() {
+            fuelFill.style.height = state.fuel + "%";
+            fuelTxt.innerText = state.fuel + "%";
+        }
+
+        function startLaunch() {
+            state.isLaunching = true;
+            countdownTimer.style.display = 'block';
+            let count = 5;
+
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownTimer.innerText = count;
+                    playSfx(400, 0.1);
+                } else {
+                    clearInterval(timer);
+                    countdownTimer.innerText = "LIFT OFF!";
+                    launch();
+                }
+            }, 1000);
+        }
+
+        function launch() {
+            fire.style.display = 'block';
+            rocket.classList.add('flying');
+            playSfx(100, 3, 'sawtooth');
+
+            setTimeout(() => {
+                countdownTimer.style.display = 'none';
+                showArrival();
+            }, 3500);
+        }
+
+        function showArrival() {
+            const planet = planets[state.currentPlanet];
+            document.getElementById('finish-icon').innerText = planet.icon;
+            document.getElementById('finish-title').innerText = `Welcome to ${planet.name}!`;
+            document.getElementById('finish-modal').style.display = 'flex';
+        }
+
+        function nextMission() {
+            state.currentPlanet = (state.currentPlanet + 1) % planets.length;
+            state.fuel = 0;
+            state.isLaunching = false;
+            updateFuel();
+
+            rocket.classList.remove('flying');
+            fire.style.display = 'none';
+            document.getElementById('finish-modal').style.display = 'none';
+            document.getElementById('planet-name').innerText = `Destination: ${planets[state.currentPlanet].name}`;
+
+            generateMath();
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initStars();
+        generateMath();
+    </script>
+</body>
+
+</html>

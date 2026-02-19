@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Shape Finder - WonderKids Lab</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00cec9;
+            --secondary: #0984e3;
+            --accent: #fdcb6e;
+            --glass: rgba(0, 0, 0, 0.6);
+            --scan-line: rgba(0, 206, 201, 0.5);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* --- Camera Feed --- */
+        #video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #111;
+        }
+
+        video {
+            min-width: 100%;
+            min-height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror for selfie, logic usually back cam but desktop is selfie */
+        }
+
+        /* --- AR Overlay --- */
+        #ar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            border: 20px solid transparent;
+            box-sizing: border-box;
+            background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+        }
+
+        .corner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--primary);
+        }
+
+        .top-left {
+            top: 40px;
+            left: 40px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .top-right {
+            top: 40px;
+            right: 40px;
+            border-left: 0;
+            border-bottom: 0;
+        }
+
+        .bottom-left {
+            bottom: 40px;
+            left: 40px;
+            border-right: 0;
+            border-top: 0;
+        }
+
+        .bottom-right {
+            bottom: 40px;
+            right: 40px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--scan-line);
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 10%;
+            }
+
+            50% {
+                top: 90%;
+            }
+
+            100% {
+                top: 10%;
+            }
+        }
+
+        /* --- HUD --- */
+        .hud-top {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        .back-btn {
+            background: var(--glass);
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mission-panel {
+            background: var(--glass);
+            padding: 15px 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--primary);
+            text-align: center;
+            min-width: 250px;
+        }
+
+        .mission-panel h2 {
+            margin: 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            letter-spacing: 2px;
+        }
+
+        .target-shape {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* --- Detection Box --- */
+        #detector-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        #detector-box.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px var(--primary);
+            scale: 1.1;
+        }
+
+        .scan-btn {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            border: 8px solid rgba(0, 206, 201, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            pointer-events: auto;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .scan-btn:hover {
+            scale: 1.1;
+            border-color: var(--primary);
+        }
+
+        .scan-btn:active {
+            scale: 0.9;
+        }
+
+        /* --- Analysis Overlay --- */
+        #analysis-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 206, 201, 0.2);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .analyzing-text {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 5px;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 0.5;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(15px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            color: #333;
+            max-width: 450px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="video-container">
+        <video id="video" autoplay playsinline muted></video>
+    </div>
+
+    <div id="ar-overlay">
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+        <div class="scan-line"></div>
+    </div>
+
+    <div class="hud-top">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-flask"></i> Exit Lab</a>
+        <div class="mission-panel">
+            <h2>Current Mission</h2>
+            <div class="target-shape" id="mission-target">
+                Find a <span id="target-name">CIRCLE</span>
+            </div>
+        </div>
+        <div class="back-btn" style="pointer-events: none;">
+            Scans: <span id="scan-count">0</span>
+        </div>
+    </div>
+
+    <div id="detector-box">
+        <i class="fa-solid fa-expand" style="opacity: 0.3; font-size: 3rem;"></i>
+    </div>
+
+    <button class="scan-btn" onclick="performScan()">
+        <i class="fa-solid fa-camera"></i>
+    </button>
+
+    <div id="analysis-overlay">
+        <div class="analyzing-text">ANALYZING GEOMETRY...</div>
+        <div style="margin-top: 20px; font-weight: 600;">MATCHING CONTOURS</div>
+    </div>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--secondary);">SHAPE DETECTED! 🎯</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">Incredible! Your AR lens confirmed a perfect
+                match for the target geometry.</p>
+            <div style="font-size: 5rem; margin: 30px 0;" id="result-emoji">⭕</div>
+            <button class="btn-action" onclick="nextMission()">Next Mission</button>
+        </div>
+    </div>
+
+    <script>
+        const missions = [
+            { name: "CIRCLE", emoji: "⭕", icon: "circle" },
+            { name: "RECTANGLE", emoji: "⬜", icon: "square" },
+            { name: "TRIANGLE", emoji: "△", icon: "caret-up" },
+            { name: "STAR", emoji: "⭐", icon: "star" }
+        ];
+
+        let state = {
+            currentMission: 0,
+            scans: 0,
+            stream: null
+        };
+
+        const video = document.getElementById('video');
+        const targetName = document.getElementById('target-name');
+        const scanCount = document.getElementById('scan-count');
+        const detector = document.getElementById('detector-box');
+        const analysis = document.getElementById('analysis-overlay');
+        const winModal = document.getElementById('win-modal');
+
+        async function initCamera() {
+            try {
+                state.stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
+                    audio: false
+                });
+                video.srcObject = state.stream;
+            } catch (err) {
+                console.error("Camera access denied:", err);
+                alert("Please allow camera access to use the AR Shape Finder!");
+            }
+        }
+
+        async function performScan() {
+            // Trigger haptic feedback (vibration)
+            if ("vibrate" in navigator) {
+                navigator.vibrate([100, 50, 100]);
+            }
+
+            detector.classList.add('active');
+            analysis.style.display = 'flex';
+            playSfx(200, 1, 'sawtooth'); // Scanning sound
+
+            // Simulated AI Analysis delay
+            setTimeout(() => {
+                detector.classList.remove('active');
+                analysis.style.display = 'none';
+                handleScanResult();
+            }, 2000);
+        }
+
+        function handleScanResult() {
+            // In a real AR app, we'd use OpenCV or TFJS here.
+            // For the game, we reward the user for their "Find".
+            state.scans++;
+            scanCount.innerText = state.scans;
+
+            document.getElementById('result-emoji').innerText = missions[state.currentMission].emoji;
+            winModal.style.display = 'flex';
+            playSfx(880, 0.5);
+        }
+
+        function nextMission() {
+            winModal.style.display = 'none';
+            state.currentMission = (state.currentMission + 1) % missions.length;
+            targetName.innerText = missions[state.currentMission].name;
+
+            if (state.scans >= 5) {
+                alert("CONGRATULATIONS! You are a Master AR Shape Hunter! 🎓🌟");
+                location.reload();
+            }
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initCamera();
+    </script>
+</body>
+
+</html>

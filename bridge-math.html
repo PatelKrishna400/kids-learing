@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Number Bridge - WonderKids Academy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --wood-brown: #8d6e63;
+            --rope-color: #d7ccc8;
+            --water-blue: #4fc3f7;
+            --danger: #ff5252;
+            --success: #66bb6a;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(to bottom, #81d4fa, #e1f5fe);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+        }
+
+        /* --- Game World --- */
+        main {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .canyon {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 250px;
+            background: #4e342e;
+            z-index: 1;
+        }
+
+        .river {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--water-blue);
+            z-index: 2;
+            animation: wave 3s infinite ease-in-out;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* --- Bridge --- */
+        .bridge-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            padding-bottom: 200px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .bridge-step {
+            width: 80px;
+            height: 30px;
+            background: var(--wood-brown);
+            border-radius: 5px;
+            box-shadow: 0 5px 0 #5d4037;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 1.5rem;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .bridge-step::before,
+        .bridge-step::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            width: 4px;
+            height: 50px;
+            background: var(--rope-color);
+        }
+
+        .bridge-step::before {
+            left: 10px;
+        }
+
+        .bridge-step::after {
+            right: 10px;
+        }
+
+        .bridge-step.mystery {
+            background: #bcaaa4;
+            border: 2px dashed #8d6e63;
+            color: #5d4037;
+        }
+
+        .bridge-step.collapsed {
+            transform: translateY(400px) rotate(45deg);
+            opacity: 0;
+        }
+
+        /* --- Controls --- */
+        .game-controls {
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            margin-top: 50px;
+        }
+
+        .answer-display {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--wood-brown);
+            background: #eee;
+            padding: 10px 40px;
+            border-radius: 15px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .num-btn {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .num-btn:hover {
+            background: #f8f9fa;
+            border-color: var(--wood-brown);
+        }
+
+        .num-btn:active {
+            transform: scale(0.9);
+        }
+
+        .num-btn.clear {
+            background: #ff5252;
+            color: white;
+            border: none;
+        }
+
+        .num-btn.check {
+            background: var(--success);
+            color: white;
+            border: none;
+            grid-column: span 2;
+            width: 110px;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--wood-brown);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-mountain"></i> Home</a>
+        <h1 style="margin: 0; color: var(--wood-brown); font-family: 'Nunito', sans-serif;">Number Bridge</h1>
+        <div class="hud-panel">
+            <div class="stat-badge">Level: <span id="level">1</span></div>
+            <div class="stat-badge">Streak: <span id="streak">0</span></div>
+        </div>
+    </header>
+
+    <main>
+        <div class="bridge-container" id="bridge">
+            <!-- Steps injected here -->
+        </div>
+
+        <div class="game-controls">
+            <div style="font-size: 0.9rem; font-weight: 700; color: #777;">WHAT'S THE MISSING STEP?</div>
+            <div class="answer-display" id="display">?</div>
+            <div class="numpad">
+                <button class="num-btn" onclick="addNum(1)">1</button>
+                <button class="num-btn" onclick="addNum(2)">2</button>
+                <button class="num-btn" onclick="addNum(3)">3</button>
+                <button class="num-btn" onclick="addNum(4)">4</button>
+                <button class="num-btn" onclick="addNum(5)">5</button>
+                <button class="num-btn" onclick="addNum(6)">6</button>
+                <button class="num-btn" onclick="addNum(7)">7</button>
+                <button class="num-btn" onclick="addNum(8)">8</button>
+                <button class="num-btn" onclick="addNum(9)">9</button>
+                <button class="num-btn" onclick="addNum(0)">0</button>
+                <button class="num-btn clear" onclick="clearInput()">C</button>
+                <button class="num-btn check" onclick="checkAnswer()">CHECK <i class="fa-solid fa-bridge"></i></button>
+            </div>
+        </div>
+
+        <div class="canyon"></div>
+        <div class="river"></div>
+    </main>
+
+    <div class="modal" id="modal">
+        <div class="modal-card">
+            <h1 id="m-title">Title</h1>
+            <p id="m-text" style="font-size: 1.1rem; color: #666;"></p>
+            <div id="m-emoji" style="font-size: 4rem; margin: 20px 0;"></div>
+            <button class="btn-action" onclick="nextRound()" id="m-btn">Next Bridge</button>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            level: 1,
+            streak: 0,
+            sequence: [],
+            missingIndex: 0,
+            correctValue: 0,
+            userInput: ""
+        };
+
+        const bridge = document.getElementById('bridge');
+        const display = document.getElementById('display');
+        const levelText = document.getElementById('level');
+        const streakText = document.getElementById('streak');
+        const modal = document.getElementById('modal');
+
+        function generateSequence() {
+            const length = 5;
+            const start = Math.floor(Math.random() * 20) + 1;
+            const step = Math.floor(Math.random() * 5) + 1;
+            const direction = Math.random() > 0.5 ? 1 : -1;
+
+            state.sequence = [];
+            for (let i = 0; i < length; i++) {
+                state.sequence.push(start + (i * step * direction));
+            }
+
+            // Ensure all numbers are positive for simple level
+            if (state.sequence.some(n => n < 0)) return generateSequence();
+
+            state.missingIndex = Math.floor(Math.random() * length);
+            state.correctValue = state.sequence[state.missingIndex];
+            state.userInput = "";
+            display.innerText = "?";
+
+            renderBridge();
+        }
+
+        function renderBridge() {
+            bridge.innerHTML = '';
+            state.sequence.forEach((val, i) => {
+                const step = document.createElement('div');
+                step.className = 'bridge-step';
+                if (i === state.missingIndex) {
+                    step.classList.add('mystery');
+                    step.innerText = "?";
+                    step.id = 'target-step';
+                } else {
+                    step.innerText = val;
+                }
+                bridge.appendChild(step);
+            });
+        }
+
+        function addNum(n) {
+            if (state.userInput.length < 3) {
+                state.userInput += n;
+                display.innerText = state.userInput;
+                playSfx(440 + (n * 20), 0.1);
+            }
+        }
+
+        function clearInput() {
+            state.userInput = "";
+            display.innerText = "?";
+        }
+
+        function checkAnswer() {
+            const userVal = parseInt(state.userInput);
+            const mTitle = document.getElementById('m-title');
+            const mText = document.getElementById('m-text');
+            const mEmoji = document.getElementById('m-emoji');
+            const mBtn = document.getElementById('m-btn');
+
+            if (userVal === state.correctValue) {
+                state.streak++;
+                const target = document.getElementById('target-step');
+                target.innerText = state.correctValue;
+                target.classList.remove('mystery');
+                target.style.background = "#66bb6a";
+                target.style.boxShadow = "0 5px 0 #2e7d32";
+
+                playSfx(880, 0.3);
+
+                mTitle.innerText = "Solid Bridge! 🔨";
+                mText.innerText = `Great job! You calculated the pattern correctly. Let's keep moving!`;
+                mEmoji.innerText = "🏗️";
+                mBtn.innerText = "Next Round";
+
+                setTimeout(() => modal.style.display = 'flex', 800);
+            } else {
+                state.streak = 0;
+                playSfx(200, 0.5, 'square');
+
+                // Collapse effect
+                document.querySelectorAll('.bridge-step').forEach(s => s.classList.add('collapsed'));
+
+                mTitle.innerText = "Splash! 🌊";
+                mText.innerText = `Oh no, the bridge collapsed! The missing number was ${state.correctValue}. Try again?`;
+                mEmoji.innerText = "🪵";
+                mBtn.innerText = "Rebuild Bridge";
+
+                setTimeout(() => modal.style.display = 'flex', 1000);
+            }
+
+            streakText.innerText = state.streak;
+            if (state.streak > 0 && state.streak % 3 === 0) state.level++;
+            levelText.innerText = state.level;
+        }
+
+        function nextRound() {
+            modal.style.display = 'none';
+            generateSequence();
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        generateSequence();
+    </script>
+</body>
+
+</html>

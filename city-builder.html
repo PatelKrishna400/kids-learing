@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your City - WonderKids Urban Planner</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4facfe;
+            --secondary: #00f2fe;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-yellow: #f1c40f;
+            --bg: #f0f3f5;
+            --text: #2c3e50;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --grid-line: #dee2e6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--text);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-badge i {
+            color: var(--primary);
+        }
+
+        .stat-badge.pop i {
+            color: var(--accent-red);
+        }
+
+        .stat-badge.hap i {
+            color: var(--accent-yellow);
+        }
+
+        /* --- Main Layout --- */
+        main {
+            flex: 1;
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            box-sizing: border-box;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- Sidebar (palette) --- */
+        .sidebar {
+            width: 320px;
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .building-palette {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .building-item {
+            padding: 15px;
+            border-radius: 20px;
+            background: #f8f9fa;
+            border: 2px solid #eee;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .building-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+
+        .building-item:active {
+            cursor: grabbing;
+        }
+
+        .item-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .item-info h4 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .item-info p {
+            margin: 2px 0 0;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .house-icon {
+            background: #ff7675;
+        }
+
+        .school-icon {
+            background: #6c5ce7;
+        }
+
+        .hospital-icon {
+            background: #00cec9;
+        }
+
+        .park-icon {
+            background: #2ecc71;
+        }
+
+        /* --- Grid Map --- */
+        .map-area {
+            flex: 1;
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: auto;
+        }
+
+        .city-grid {
+            display: grid;
+            gap: 2px;
+            background: var(--grid-line);
+            border: 5px solid #bdc3c7;
+            border-radius: 10px;
+            padding: 2px;
+        }
+
+        .grid-cell {
+            width: 70px;
+            height: 70px;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .grid-cell:hover {
+            background: #dfe6e9;
+        }
+
+        .grid-cell.highlight {
+            border: 2px solid var(--primary);
+            background: #f0f7ff;
+        }
+
+        .building-placed {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        /* --- Hint / Notification --- */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: var(--shadow);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            border-bottom: 5px solid var(--primary);
+            z-index: 2000;
+            animation: slideUp 0.3s forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* --- Win Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-city"></i> Main Menu</a>
+        <h1 style="margin: 0; color: var(--primary); font-family: 'Nunito', sans-serif;">WonderKids Urban Planner</h1>
+        <div class="hud-panel">
+            <div class="stat-badge pop" title="Population"><i class="fa-solid fa-users"></i> <span
+                    id="pop-count">0</span></div>
+            <div class="stat-badge hap" title="Happiness"><i class="fa-solid fa-face-smile"></i> <span
+                    id="hap-count">100</span>%</div>
+            <div class="stat-badge" title="Budget"><i class="fa-solid fa-coins" style="color: var(--accent-yellow)"></i>
+                $<span id="budget-count">1000</span></div>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <div class="sidebar-title"><i class="fa-solid fa-box-open"></i> Building Kit</div>
+            <div class="building-palette">
+                <!-- House -->
+                <div class="building-item" draggable="true" ondragstart="handleDragStart(event, 'house')">
+                    <div class="item-icon house-icon"><i class="fa-solid fa-house"></i></div>
+                    <div class="item-info">
+                        <h4>Residential</h4>
+                        <p>Pop: +10 | Cost: $100</p>
+                    </div>
+                </div>
+                <!-- School -->
+                <div class="building-item" draggable="true" ondragstart="handleDragStart(event, 'school')">
+                    <div class="item-icon school-icon"><i class="fa-solid fa-school"></i></div>
+                    <div class="item-info">
+                        <h4>School</h4>
+                        <p>Happiness: +5 | Cost: $150</p>
+                    </div>
+                </div>
+                <!-- Hospital -->
+                <div class="building-item" draggable="true" ondragstart="handleDragStart(event, 'hospital')">
+                    <div class="item-icon hospital-icon"><i class="fa-solid fa-hospital"></i></div>
+                    <div class="item-info">
+                        <h4>Hospital</h4>
+                        <p>Health: +10 | Cost: $300</p>
+                    </div>
+                </div>
+                <!-- Park -->
+                <div class="building-item" draggable="true" ondragstart="handleDragStart(event, 'park')">
+                    <div class="item-icon park-icon"><i class="fa-solid fa-tree"></i></div>
+                    <div class="item-info">
+                        <h4>Nature Park</h4>
+                        <p>Happiness: +15 | Cost: $200</p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: auto; padding: 20px; background: #f8f9fa; border-radius: 20px; border: 2px solid #eee;">
+                <h5 style="margin: 0 0 10px; color: var(--text);">Urban Rules:</h5>
+                <ul style="margin: 0; padding-left: 15px; font-size: 0.85rem; color: #666;">
+                    <li>Houses near Hospitals = ❤️ Bonus</li>
+                    <li>Parks near Schools = ⭐ Happiness Boost</li>
+                    <li>Don't let budget hit $0!</li>
+                </ul>
+            </div>
+        </aside>
+
+        <section class="map-area">
+            <div id="grid" class="city-grid">
+                <!-- Map cells injected here -->
+            </div>
+        </section>
+    </main>
+
+    <div class="notification" id="notif">
+        <i class="fa-solid fa-circle-check" style="color: var(--accent-green)"></i>
+        <span id="notif-text">Building placed!</span>
+    </div>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--primary);">City Hero! 🏙️✨</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">You've built a thriving, happy city! Your urban
+                planning skills are top-notch.</p>
+            <div style="font-size: 5rem; margin: 20px 0;">🏙️🌆🎆</div>
+            <button class="btn-action" onclick="location.reload()">Build New City</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 8;
+        const config = {
+            house: { icon: 'house', color: '#ff7675', cost: 100, pop: 10, bonus: 'hospital' },
+            school: { icon: 'school', color: '#6c5ce7', cost: 150, hap: 5, bonus: 'park' },
+            hospital: { icon: 'hospital', color: '#00cec9', cost: 300, hap: 3 },
+            park: { icon: 'tree', color: '#2ecc71', cost: 200, hap: 15 }
+        };
+
+        let state = {
+            population: 0,
+            happiness: 100,
+            budget: 1000,
+            map: Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null))
+        };
+
+        const gridEl = document.getElementById('grid');
+        const popEl = document.getElementById('pop-count');
+        const hapEl = document.getElementById('hap-count');
+        const budgetEl = document.getElementById('budget-count');
+        const notif = document.getElementById('notif');
+
+        function initGrid() {
+            gridEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 70px)`;
+            gridEl.innerHTML = '';
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+
+                    cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('highlight'); });
+                    cell.addEventListener('dragleave', () => cell.classList.remove('highlight'));
+                    cell.addEventListener('drop', e => handleDrop(e, r, c));
+
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        function handleDragStart(e, type) {
+            e.dataTransfer.setData('type', type);
+        }
+
+        function handleDrop(e, r, c) {
+            e.preventDefault();
+            const cell = e.target.closest('.grid-cell');
+            cell.classList.remove('highlight');
+
+            if (state.map[r][c]) {
+                showNotif("Space occupied!", "var(--accent-red)");
+                return;
+            }
+
+            const type = e.dataTransfer.getData('type');
+            if (state.budget < config[type].cost) {
+                showNotif("Not enough budget!", "var(--accent-red)");
+                return;
+            }
+
+            placeBuilding(type, r, c, cell);
+        }
+
+        function placeBuilding(type, r, c, cell) {
+            state.map[r][c] = type;
+            state.budget -= config[type].cost;
+            state.population += config[type].pop || 0;
+            state.happiness += config[type].hap || 0;
+
+            // Bonus logic
+            checkBonuses(type, r, c);
+
+            // Update UI
+            cell.innerHTML = `
+                <div class="building-placed" style="color: ${config[type].color}">
+                    <i class="fa-solid fa-${config[type].icon}"></i>
+                </div>
+            `;
+
+            updateHUD();
+            showNotif(`${type.charAt(0).toUpperCase() + type.slice(1)} built! ✨`);
+            playSfx(440 + Math.random() * 200, 0.1);
+
+            if (state.population >= 100) {
+                setTimeout(() => { document.getElementById('finish-modal').style.display = 'flex' }, 1000);
+            }
+        }
+
+        function checkBonuses(type, r, c) {
+            const neighbors = [
+                [r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]
+            ];
+
+            neighbors.forEach(([nr, nc]) => {
+                if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                    const neighbor = state.map[nr][nc];
+                    if (neighbor) {
+                        // House + Hospital bonus
+                        if ((type === 'house' && neighbor === 'hospital') || (type === 'hospital' && neighbor === 'house')) {
+                            state.happiness += 10;
+                            showNotif("Health Clinic Bonus! ❤️", "var(--accent-green)");
+                        }
+                        // Park + School bonus
+                        if ((type === 'park' && neighbor === 'school') || (type === 'school' && neighbor === 'park')) {
+                            state.happiness += 15;
+                            showNotif("Green Education Bonus! ⭐", "var(--accent-green)");
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHUD() {
+            popEl.innerText = state.population;
+            hapEl.innerText = Math.min(100, state.happiness);
+            budgetEl.innerText = state.budget;
+        }
+
+        function showNotif(text, color = "var(--primary)") {
+            notif.style.display = 'flex';
+            notif.style.borderBottomColor = color;
+            document.getElementById('notif-text').innerText = text;
+            setTimeout(() => { notif.style.display = 'none' }, 3000);
+        }
+
+        let audioCtx;
+        function playSfx(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initGrid();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor Pet - WonderKids Academy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #00cec9;
+            --heart: #ff7675;
+            --bg: #f8f9fa;
+            --text: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .level-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* --- Game Area --- */
+        main {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+            gap: 30px;
+            position: relative;
+        }
+
+        /* --- Pet Display --- */
+        .pet-stage {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pet-avatar {
+            font-size: 8rem;
+            color: var(--primary);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 20px 30px rgba(108, 92, 231, 0.3));
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .pet-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .mood-bubble {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            background: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: float 2s infinite ease-in-out;
+            z-index: 10;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* --- Chat UI --- */
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 4px solid var(--primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-bubble {
+            font-size: 1.3rem;
+            font-weight: 700;
+            line-height: 1.5;
+            text-align: center;
+            color: var(--text);
+            min-height: 60px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .opt-btn {
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid #eee;
+            background: #f8f9fa;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+
+        .opt-btn:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .opt-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Stats Panel (Bottom) --- */
+        .status-bars {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .stat-item {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-label {
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #7f8c8d;
+        }
+
+        .bar-bg {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* --- Animations --- */
+        .happy {
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-30px);
+            }
+        }
+
+        .sad {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* --- Modals --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        /* --- Costumes --- */
+        .costume-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            padding: 15px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            z-index: 1000;
+            font-weight: 800;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-house"></i> Home</a>
+        <h1 style="margin: 0; color: var(--primary); font-family: 'Nunito', sans-serif;">My Tutor Companion</h1>
+        <div class="hud-panel">
+            <div class="level-badge">LVL <span id="level">1</span></div>
+            <div class="stat-badge"><i class="fa-solid fa-star" style="color: var(--accent)"></i> <span
+                    id="xp">0</span>/50</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="pet-stage">
+            <div class="mood-bubble" id="mood-icon">😊</div>
+            <div class="pet-avatar" id="pet">
+                <i class="fa-solid fa-dog"></i>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-bubble" id="pet-message">
+                Hello there, Explorer! Ready to learn something amazing today?
+            </div>
+            <div class="options-grid" id="options">
+                <button class="opt-btn" onclick="startQuiz('Math')">Start Math</button>
+                <button class="opt-btn" onclick="startQuiz('Grammar')">Start Grammar</button>
+                <button class="opt-btn" onclick="startQuiz('Science')">Start Science</button>
+                <button class="opt-btn" onclick="feedPet()">Feed Me! 🍎</button>
+            </div>
+        </div>
+
+        <div class="status-bars">
+            <div class="stat-item">
+                <div class="stat-label">Hunger</div>
+                <div class="bar-bg">
+                    <div id="hunger-bar" class="bar-fill" style="width: 80%; background: var(--heart);"></div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Mood</div>
+                <div class="bar-bg">
+                    <div id="mood-bar" class="bar-fill" style="width: 60%; background: var(--accent);"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="costume-btn" id="costume-trigger" style="display: none;" onclick="changeCostume()">
+        <i class="fa-solid fa-shirt"></i> New Costume Unlocked!
+    </div>
+
+    <div class="modal" id="level-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--primary);">LEVEL UP! 🌟</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">Your pet is getting smarter! You've unlocked a
+                new evolutionary level.</p>
+            <div style="font-size: 5rem; margin: 30px 0;">🐶✨🐾</div>
+            <button class="btn-action" onclick="closeModal()">Awesome!</button>
+        </div>
+    </div>
+
+    <script>
+        const quizzes = {
+            'Math': [
+                { q: "What is 5 x 4?", a: "20", s: ["15", "20", "25", "30"], h: "Think of counting by fives!" },
+                { q: "What is half of 50?", a: "25", s: ["10", "20", "25", "50"], h: "If you share 50 cookies between 2 friends..." },
+                { q: "What is 12 + 13?", a: "25", s: ["20", "24", "25", "26"], h: "Add the tens first, then the ones." }
+            ],
+            'Grammar': [
+                { q: "Which word is a NOUN?", a: "Apple", s: ["Run", "Blue", "Apple", "Fast"], h: "A noun is a person, place, or thing!" },
+                { q: "What's the past tense of 'Go'?", a: "Went", s: ["Gone", "Goes", "Going", "Went"], h: "It starts with a 'W'!" },
+                { q: "How many syllables in 'Banana'?", a: "3", s: ["1", "2", "3", "4"], h: "Clap it out: Ba-na-na" }
+            ],
+            'Science': [
+                { q: "Which planet is RED?", a: "Mars", s: ["Earth", "Mars", "Jupiter", "Venus"], h: "It's named after the Roman god of war." },
+                { q: "What do plants need to grow?", a: "Sunlight", s: ["Ice", "Shadows", "Sunlight", "Music"], h: "Think about why they sit in the window!" },
+                { q: "A caterpillar turns into a...", a: "Butterfly", s: ["Bird", "Butterfly", "Snail", "Frog"], h: "It has beautiful wings!" }
+            ]
+        };
+
+        const costumes = ["fa-dog", "fa-cat", "fa-hippo", "fa-dragon", "fa-otter"];
+
+        let state = {
+            level: 1,
+            xp: 0,
+            hunger: 80,
+            mood: 60,
+            currentCostumeIdx: 0,
+            isAnswering: false
+        };
+
+        const pet = document.getElementById('pet');
+        const petMsg = document.getElementById('pet-message');
+        const optionsEl = document.getElementById('options');
+        const moodIcon = document.getElementById('mood-icon');
+
+        function updateUI() {
+            document.getElementById('level').innerText = state.level;
+            document.getElementById('xp').innerText = state.xp;
+            document.getElementById('hunger-bar').style.width = state.hunger + "%";
+            document.getElementById('mood-bar').style.width = state.mood + "%";
+
+            if (state.mood > 80) moodIcon.innerText = "🤩";
+            else if (state.mood > 50) moodIcon.innerText = "😊";
+            else if (state.mood > 20) moodIcon.innerText = "😐";
+            else moodIcon.innerText = "😢";
+        }
+
+        function startQuiz(type) {
+            const list = quizzes[type];
+            const item = list[Math.floor(Math.random() * list.length)];
+
+            petMsg.innerText = item.q;
+            optionsEl.innerHTML = '';
+
+            item.s.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, item);
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(ans, item) {
+            if (ans === item.a) {
+                handleSuccess();
+            } else {
+                handleFailure(item.h);
+            }
+        }
+
+        function handleSuccess() {
+            state.xp += 10;
+            state.mood = Math.min(100, state.mood + 15);
+            petMsg.innerText = "YAY! That's correct! You're so smart! 🌟";
+
+            pet.classList.add('happy');
+            playSfx(880, 0.3);
+
+            if (state.xp >= 50) {
+                levelUp();
+            }
+
+            setTimeout(resetMenu, 2000);
+        }
+
+        function handleFailure(hint) {
+            state.mood = Math.max(0, state.mood - 10);
+            petMsg.innerText = `Oops! Not quite. Here's a hint: ${hint}`;
+
+            pet.classList.add('sad');
+            playSfx(200, 0.5, 'sawtooth');
+
+            setTimeout(() => {
+                pet.classList.remove('sad');
+                updateUI();
+            }, 1000);
+        }
+
+        function resetMenu() {
+            pet.classList.remove('happy');
+            petMsg.innerText = "What would you like to explore next?";
+            optionsEl.innerHTML = `
+                <button class="opt-btn" onclick="startQuiz('Math')">Start Math</button>
+                <button class="opt-btn" onclick="startQuiz('Grammar')">Start Grammar</button>
+                <button class="opt-btn" onclick="startQuiz('Science')">Start Science</button>
+                <button class="opt-btn" onclick="feedPet()">Feed Me! 🍎</button>
+            `;
+            updateUI();
+        }
+
+        function feedPet() {
+            if (state.hunger >= 100) {
+                petMsg.innerText = "Oof! I'm full! Let's go learn something instead! 😋";
+                return;
+            }
+            state.hunger = Math.min(100, state.hunger + 20);
+            state.mood = Math.min(100, state.mood + 5);
+            petMsg.innerText = "Nom nom nom... thank you for the treats! 🍎💖";
+            playSfx(400, 0.2, 'square');
+            updateUI();
+            setTimeout(resetMenu, 2000);
+        }
+
+        function levelUp() {
+            state.level++;
+            state.xp = 0;
+            document.getElementById('level-modal').style.display = 'flex';
+            document.getElementById('costume-trigger').style.display = 'flex';
+            playSfx(1000, 0.8);
+        }
+
+        function changeCostume() {
+            state.currentCostumeIdx = (state.currentCostumeIdx + 1) % costumes.length;
+            pet.innerHTML = `<i class="fa-solid ${costumes[state.currentCostumeIdx]}"></i>`;
+            pet.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            playSfx(600, 0.2);
+        }
+
+        function closeModal() {
+            document.getElementById('level-modal').style.display = 'none';
+            updateUI();
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        // Periodic hunger
+        setInterval(() => {
+            state.hunger = Math.max(0, state.hunger - 1);
+            updateUI();
+        }, 5000);
+
+        updateUI();
+    </script>
+</body>
+
+</html>

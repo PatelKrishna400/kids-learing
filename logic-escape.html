@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logical Door Escape - WonderKids Academy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --accent: #fdcb6e;
+            --bg: #1e272e;
+            --door-wood: #485460;
+            --door-frame: #1e272e;
+            --glass: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --success: #05c46b;
+            --danger: #ff5e57;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: var(--glass);
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: var(--glass);
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- Game Area --- */
+        main {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- Door Visualization --- */
+        .escape-chamber {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .door-container {
+            width: 200px;
+            height: 300px;
+            background: #2d3436;
+            border: 10px solid #000;
+            border-radius: 10px;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .door {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--door-wood);
+            border: 5px solid #1e272e;
+            transform-origin: left;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .door.open {
+            transform: rotateY(-110deg);
+        }
+
+        .door-handle {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background: #d2dae2;
+            border-radius: 50%;
+            box-shadow: 0 4px 0 #808e9b;
+        }
+
+        .exit-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .exit-glow.active {
+            opacity: 0.8;
+        }
+
+        /* --- Logic Logic --- */
+        .logic-panel {
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logic-display {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-align: center;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .switch-container {
+            display: flex;
+            gap: 30px;
+        }
+
+        .switch-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            width: 60px;
+            height: 100px;
+            background: #485460;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            border: 4px solid #1e272e;
+            transition: background 0.3s;
+        }
+
+        .toggle-knob {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 42px;
+            height: 42px;
+            background: #d2dae2;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 0 #808e9b;
+        }
+
+        .toggle-switch.on {
+            background: var(--secondary);
+        }
+
+        .toggle-switch.on .toggle-knob {
+            top: 50px;
+            background: white;
+        }
+
+        .switch-label {
+            font-weight: 800;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .status-led {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #333;
+            margin-top: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .toggle-switch.on+.status-led {
+            background: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+
+        /* --- UI Elements --- */
+        .instruction {
+            color: #aaa;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .unlock-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .unlock-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .unlock-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(15px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            color: #333;
+            max-width: 450px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-brain"></i> Academy</a>
+        <h1 style="margin: 0; font-family: 'Nunito', sans-serif;">Logical Escape</h1>
+        <div class="hud-panel">
+            <div class="stat-badge">Challenge: <span id="level">1</span></div>
+            <div class="stat-badge">Solved: <span id="solved">0</span></div>
+        </div>
+    </header>
+
+    <main>
+        <div class="instruction">Escape Chamber Logic System</div>
+
+        <div class="escape-chamber">
+            <div class="door-container">
+                <div class="exit-glow" id="glow"><i class="fa-solid fa-sparkles"></i></div>
+                <div class="door" id="door">
+                    <div style="font-size: 4rem; color: rgba(0,0,0,0.2)"><i class="fa-solid fa-lock"></i></div>
+                    <div class="door-handle"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="logic-panel">
+            <div class="instruction">Required Key Configuration:</div>
+            <div class="logic-display" id="logic-rule">A AND B</div>
+
+            <div class="switch-container">
+                <div class="switch-item">
+                    <span class="switch-label">A</span>
+                    <div class="toggle-switch" id="switch-a" onclick="toggleSwitch('a')">
+                        <div class="toggle-knob"></div>
+                    </div>
+                    <div class="status-led"></div>
+                </div>
+
+                <div class="switch-item">
+                    <span class="switch-label">B</span>
+                    <div class="toggle-switch" id="switch-b" onclick="toggleSwitch('b')">
+                        <div class="toggle-knob"></div>
+                    </div>
+                    <div class="status-led"></div>
+                </div>
+            </div>
+
+            <button class="unlock-btn" onclick="attemptUnlock()">ATTEMPT UNLOCK <i class="fa-solid fa-key"></i></button>
+        </div>
+    </main>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--success);">Logical Brilliance! 🧠✨</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">The door yield to your superior logic! Ready
+                for the next encryption?</p>
+            <div style="font-size: 5rem; margin: 20px 0;">🔓</div>
+            <button class="btn-action" onclick="nextLevel()">Next Protocol</button>
+        </div>
+    </div>
+
+    <script>
+        const protocols = [
+            { rule: "A AND B", logic: (a, b) => a && b, text: "A must be ON AND B must be ON" },
+            { rule: "A OR B", logic: (a, b) => a || b, text: "A must be ON OR B must be ON (or both!)" },
+            { rule: "NOT A AND B", logic: (a, b) => !a && b, text: "A must be OFF AND B must be ON" },
+            { rule: "A XOR B", logic: (a, b) => (a && !b) || (!a && b), text: "ONLY ONE switch can be ON (XOR)" },
+            { rule: "NOT (A OR B)", logic: (a, b) => !(a || b), text: "BOTH switches must be OFF" }
+        ];
+
+        let state = {
+            level: 1,
+            solved: 0,
+            switchA: false,
+            switchB: false,
+            currentRule: null,
+            isDoorOpen: false
+        };
+
+        const door = document.getElementById('door');
+        const glow = document.getElementById('glow');
+        const ruleDisplay = document.getElementById('logic-rule');
+        const swA = document.getElementById('switch-a');
+        const swB = document.getElementById('switch-b');
+        const levelText = document.getElementById('level');
+        const solvedText = document.getElementById('solved');
+
+        function initLevel() {
+            state.isDoorOpen = false;
+            state.switchA = false;
+            state.switchB = false;
+
+            door.classList.remove('open');
+            glow.classList.remove('active');
+            swA.classList.remove('on');
+            swB.classList.remove('on');
+
+            const protocolIdx = (state.level - 1) % protocols.length;
+            state.currentRule = protocols[protocolIdx];
+            ruleDisplay.innerText = state.currentRule.rule;
+
+            levelText.innerText = state.level;
+            solvedText.innerText = state.solved;
+        }
+
+        function toggleSwitch(id) {
+            if (state.isDoorOpen) return;
+
+            if (id === 'a') {
+                state.switchA = !state.switchA;
+                swA.classList.toggle('on');
+            } else {
+                state.switchB = !state.switchB;
+                swB.classList.toggle('on');
+            }
+
+            playSfx(400 + (Math.random() * 100), 0.1, 'square');
+        }
+
+        function attemptUnlock() {
+            if (state.isDoorOpen) return;
+
+            const result = state.currentRule.logic(state.switchA, state.switchB);
+
+            if (result) {
+                state.isDoorOpen = true;
+                door.classList.add('open');
+                glow.classList.add('active');
+                playSfx(800, 0.5);
+                state.solved++;
+                setTimeout(() => {
+                    document.getElementById('win-modal').style.display = 'flex';
+                }, 1200);
+            } else {
+                // Shake door
+                door.style.animation = 'none';
+                void door.offsetWidth;
+                door.style.animation = 'shake 0.4s';
+                playSfx(150, 0.5, 'sawtooth');
+            }
+        }
+
+        function nextLevel() {
+            state.level++;
+            document.getElementById('win-modal').style.display = 'none';
+            initLevel();
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        // Add shake animation CSS dynamically
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        initLevel();
+    </script>
+</body>
+
+</html>

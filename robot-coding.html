@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Code Path - WonderKids Coding</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --accent: #fdcb6e;
+            --bg: #f0f3f5;
+            --robot-color: #ff7675;
+            --wall-color: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--wall-color);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--wall-color);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+        }
+
+        /* --- Game Main Layout --- */
+        main {
+            flex: 1;
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- Command Panel (Left) --- */
+        .command-panel {
+            width: 350px;
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .blocks-library {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .cmd-block {
+            padding: 15px;
+            border-radius: 15px;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border: none;
+            text-align: left;
+            width: 100%;
+        }
+
+        .cmd-block:hover {
+            transform: translateX(5px);
+            filter: brightness(1.1);
+        }
+
+        .cmd-block.turn {
+            background: var(--secondary);
+        }
+
+        .cmd-block.wait {
+            background: var(--accent);
+        }
+
+        .program-flow {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 15px;
+            border: 3px dashed #eee;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .flow-item {
+            padding: 10px 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            animation: slideIn 0.3s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-run {
+            padding: 15px;
+            border-radius: 20px;
+            background: #2ecc71;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #27ae60;
+        }
+
+        .btn-run:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        .btn-clear {
+            background: #ff7675;
+            margin-top: 10px;
+            box-shadow: 0 5px 0 #d63031;
+        }
+
+        /* --- Grid Map (Right) --- */
+        .grid-container {
+            flex: 1;
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .maze-grid {
+            display: grid;
+            gap: 4px;
+            background: #eee;
+            border: 8px solid #ddd;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .cell.wall {
+            background: var(--wall-color);
+        }
+
+        .cell.finish {
+            background: #e8f5e9;
+            border: 3px dashed #2ecc71;
+            color: #2ecc71;
+            font-size: 2rem;
+        }
+
+        #robot {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--robot-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4);
+        }
+
+        .robot-direction {
+            position: absolute;
+            top: 2px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .rating-stars {
+            font-size: 2.5rem;
+            color: #f1c40f;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-code"></i> Workshop</a>
+        <h1 style="margin: 0; color: var(--primary); font-family: 'Nunito', sans-serif;">Robot Code Path</h1>
+        <div class="hud-panel">
+            <div class="stat-badge">Level: <span id="level-num">1</span></div>
+            <div class="stat-badge">Blocks: <span id="block-count">0</span></div>
+        </div>
+    </header>
+
+    <main>
+        <aside class="command-panel">
+            <div class="panel-title">Command Blocks</div>
+            <div class="blocks-library">
+                <button class="cmd-block" onclick="addCommand('forward')">
+                    <i class="fa-solid fa-arrow-up"></i> Move Forward
+                </button>
+                <button class="cmd-block turn" onclick="addCommand('left')">
+                    <i class="fa-solid fa-rotate-left"></i> Turn Left
+                </button>
+                <button class="cmd-block turn" onclick="addCommand('right')">
+                    <i class="fa-solid fa-rotate-right"></i> Turn Right
+                </button>
+            </div>
+
+            <div class="panel-title" style="margin-top: 20px;">My Program</div>
+            <div class="program-flow" id="program-list">
+                <!-- Commands appear here -->
+            </div>
+
+            <button class="btn-run" onclick="runProgram()">RUN CODE ▶</button>
+            <button class="btn-run btn-clear" onclick="clearProgram()">CLEAR 🗑️</button>
+        </aside>
+
+        <section class="grid-container">
+            <div id="robot">
+                <div class="robot-direction" id="robot-pointer"></div>
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div id="maze" class="maze-grid">
+                <!-- Maze injected by JS -->
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: #2ecc71;">Mission Success! 🚀</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">The robot reached the destination! Excellent
+                coding skills.</p>
+            <div class="rating-stars" id="rating">⭐⭐⭐</div>
+            <button class="btn-run" style="width: 100%;" onclick="nextLevel()">Next Challenge</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                grid: [
+                    [1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 1],
+                    [1, 0, 1, 0, 1],
+                    [1, 0, 0, 3, 1],
+                    [1, 1, 1, 1, 1]
+                ],
+                start: { x: 1, y: 1, dir: 1 }, // 0:U, 1:R, 2:D, 3:L
+            },
+            {
+                grid: [
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 0, 1, 0, 0, 1],
+                    [1, 0, 1, 0, 1, 1],
+                    [1, 0, 0, 0, 3, 1],
+                    [1, 1, 1, 1, 1, 1]
+                ],
+                start: { x: 1, y: 1, dir: 2 }
+            }
+        ];
+
+        let state = {
+            level: 0,
+            robot: { x: 0, y: 0, dir: 1 },
+            program: [],
+            isExecuting: false,
+            cellSize: 64 // 60px cell + 4px gap
+        };
+
+        const mazeEl = document.getElementById('maze');
+        const robotEl = document.getElementById('robot');
+        const programList = document.getElementById('program-list');
+        const blockCount = document.getElementById('block-count');
+
+        function initLevel() {
+            const level = levels[state.level];
+            state.robot = { ...level.start };
+            state.program = [];
+            programList.innerHTML = '';
+            blockCount.innerText = "0";
+
+            // Build Grid
+            const gridWidth = level.grid[0].length;
+            mazeEl.style.gridTemplateColumns = `repeat(${gridWidth}, 60px)`;
+            mazeEl.innerHTML = '';
+
+            level.grid.forEach((row, y) => {
+                row.forEach((type, x) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (type === 1) cell.classList.add('wall');
+                    if (type === 3) {
+                        cell.classList.add('finish');
+                        cell.innerHTML = '<i class="fa-solid fa-flag-checkered"></i>';
+                    }
+                    mazeEl.appendChild(cell);
+                });
+            });
+
+            updateRobotUI();
+            document.getElementById('level-num').innerText = state.level + 1;
+        }
+
+        function updateRobotUI() {
+            const rotations = [0, 90, 180, 270];
+            robotEl.style.left = (state.robot.x * 64 + 20 + 5) + 'px'; // adjustment for grid padding
+            robotEl.style.top = (state.robot.y * 64 + 20 + 5) + 'px';
+            robotEl.style.transform = `rotate(${rotations[state.robot.dir]}deg)`;
+        }
+
+        function addCommand(cmd) {
+            if (state.isExecuting) return;
+            state.program.push(cmd);
+            blockCount.innerText = state.program.length;
+
+            const div = document.createElement('div');
+            div.className = 'flow-item';
+            const icons = { forward: 'arrow-up', left: 'rotate-left', right: 'rotate-right' };
+            div.innerHTML = `<span>${state.program.length}. ${cmd}</span> <i class="fa-solid fa-${icons[cmd]}"></i>`;
+            programList.appendChild(div);
+            playSfx(400, 0.1);
+        }
+
+        function clearProgram() {
+            if (state.isExecuting) return;
+            state.program = [];
+            programList.innerHTML = '';
+            blockCount.innerText = "0";
+            const level = levels[state.level];
+            state.robot = { ...level.start };
+            updateRobotUI();
+        }
+
+        async function runProgram() {
+            if (state.isExecuting || state.program.length === 0) return;
+            state.isExecuting = true;
+
+            // Reset to start for run
+            const level = levels[state.level];
+            state.robot = { ...level.start };
+            updateRobotUI();
+
+            for (let i = 0; i < state.program.length; i++) {
+                const cmd = state.program[i];
+                const highlight = programList.children[i];
+                highlight.style.borderColor = "var(--primary)";
+                highlight.style.background = "#eef2ff";
+
+                await new Promise(r => setTimeout(r, 600));
+
+                if (!executeCommand(cmd)) {
+                    alert("Collision detected! 💥 Robot hit a wall.");
+                    break;
+                }
+
+                updateRobotUI();
+                highlight.style.borderColor = "#ddd";
+                highlight.style.background = "white";
+
+                if (checkWin()) {
+                    showWin();
+                    break;
+                }
+            }
+            state.isExecuting = false;
+        }
+
+        function executeCommand(cmd) {
+            if (cmd === 'left') {
+                state.robot.dir = (state.robot.dir + 3) % 4;
+                return true;
+            }
+            if (cmd === 'right') {
+                state.robot.dir = (state.robot.dir + 1) % 4;
+                return true;
+            }
+            if (cmd === 'forward') {
+                const dy = [-1, 0, 1, 0];
+                const dx = [0, 1, 0, -1];
+                const nx = state.robot.x + dx[state.robot.dir];
+                const ny = state.robot.y + dy[state.robot.dir];
+
+                const level = levels[state.level];
+                if (ny < 0 || ny >= level.grid.length || nx < 0 || nx >= level.grid[0].length || level.grid[ny][nx] === 1) {
+                    playSfx(150, 0.5, 'sawtooth');
+                    return false;
+                }
+                state.robot.x = nx;
+                state.robot.y = ny;
+                playSfx(600, 0.1);
+                return true;
+            }
+        }
+
+        function checkWin() {
+            const level = levels[state.level];
+            return level.grid[state.robot.y][state.robot.x] === 3;
+        }
+
+        function showWin() {
+            const ratingEl = document.getElementById('rating');
+            let stars = "⭐⭐⭐";
+            if (state.program.length > 8) stars = "⭐⭐";
+            if (state.program.length > 12) stars = "⭐";
+            ratingEl.innerText = stars;
+
+            document.getElementById('win-modal').style.display = 'flex';
+            playSfx(800, 0.5);
+        }
+
+        function nextLevel() {
+            document.getElementById('win-modal').style.display = 'none';
+            state.level = (state.level + 1) % levels.length;
+            initLevel();
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initLevel();
+    </script>
+</body>
+
+</html>

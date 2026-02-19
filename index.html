@@ -357,7 +357,39 @@
             { id: 'puzzle-map-india', title: 'Puzzle Map India', type: 'special', color: 'linear-gradient(135deg, #ff9f43, #ff7f50)' },
             { id: 'coding-robot', title: 'Robot Coder (Blockly)', type: 'special', color: 'linear-gradient(135deg, #3498db, #2980b9)' },
             { id: 'treasure-hunt', title: 'Treasure Hunt Numbers', type: 'special', color: 'linear-gradient(135deg, #27ae60, #f1c40f)' },
-            { id: 'math-jump', title: 'Math Jump Adventure', type: 'special', color: 'linear-gradient(135deg, #87CEEB, #2ecc71)' }
+            { id: 'math-jump', title: 'Math Jump Adventure', type: 'special', color: 'linear-gradient(135deg, #87CEEB, #2ecc71)' },
+            { id: 'plant-growing', title: 'Plant Growing Sim', type: 'special', color: 'linear-gradient(135deg, #4CAF50, #8BC34A)' },
+            { id: 'food-sorter', title: 'Healthy Food Sorter', type: 'special', color: 'linear-gradient(135deg, #FF9F43, #FF6B6B)' },
+            { id: 'grammar-ninja', title: 'Grammar Ninja', type: 'special', color: 'linear-gradient(135deg, #2c3e50, #e74c3c)' },
+            { id: 'pizza-fractions', title: 'Fraction Pizza Maker', type: 'special', color: 'linear-gradient(135deg, #e67e22, #f1c40f)' },
+            { id: 'division-bowling', title: 'Division Bowling', type: 'special', color: 'linear-gradient(135deg, #f39c12, #2c3e50)' },
+            { id: 'flag-match', title: 'Geography Flag Match', type: 'special', color: 'linear-gradient(135deg, #3498db, #2ecc71)' },
+            { id: 'money-shop', title: 'Money Counting Shop', type: 'special', color: 'linear-gradient(135deg, #8d6e63, #f1c40f)' },
+            { id: 'story-maker', title: 'Magical Story Maker', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #00cec9)' },
+            { id: 'brain-maze', title: 'Brain Maze Logic', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #2d3436)' },
+            { id: 'body-puzzle', title: 'Human Body Puzzle', type: 'special', color: 'linear-gradient(135deg, #ff7675, #74b9ff)' },
+            { id: 'weather-maker', title: 'Weather Maker', type: 'special', color: 'linear-gradient(135deg, #4facfe, #a1c4fd)' },
+            { id: 'recycling-game', title: 'Eco-Sorter Recycling', type: 'special', color: 'linear-gradient(135deg, #2dcc70, #27ae60)' },
+            { id: 'rocket-math', title: 'Space Rocket Math', type: 'special', color: 'linear-gradient(135deg, #0b0d17, #6c5ce7)' },
+            { id: 'pattern-detective', title: 'Pattern Detective', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #00cec9)' },
+            { id: 'magic-table', title: 'Magic Multiplication Table', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #fdcb6e)' },
+            { id: 'robot-coding', title: 'Robot Coding Path', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #ff7675)' },
+            { id: 'word-search', title: 'Word Search Jungle', type: 'special', color: 'linear-gradient(135deg, #27ae60, #1b4d3e)' },
+            { id: 'count-stars', title: 'Count the Stars', type: 'special', color: 'linear-gradient(135deg, #090a0f, #3498db)' },
+            { id: 'bridge-math', title: 'Missing Number Bridge', type: 'special', color: 'linear-gradient(135deg, #8d6e63, #4fc3f7)' },
+            { id: 'logic-escape', title: 'Logical Door Escape', type: 'special', color: 'linear-gradient(135deg, #1e272e, #6c5ce7)' },
+            { id: 'opposite-battle', title: 'Opposite Words Battle', type: 'special', color: 'linear-gradient(135deg, #ff7675, #74b9ff)' },
+            { id: 'emoji-match', title: 'Emoji Meaning Match', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #00cec9)' },
+            { id: 'city-builder', title: 'Build Your City', type: 'special', color: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
+            { id: 'tutor-pet', title: 'AI Talking Tutor Pet', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #a29bfe)' },
+            { id: 'ar-shapes', title: 'AR Shape Finder', type: 'special', color: 'linear-gradient(135deg, #00cec9, #0984e3)' },
+            { id: 'ar-shapes', title: 'AR Shape Finder', type: 'special', color: 'linear-gradient(135deg, #00cec9, #0984e3)' },
+            { id: 'classroom-sim', title: 'Virtual Classroom Simulator', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #a29bfe)' },
+            { id: 'story-adventure', title: 'Story Adventure RPG', type: 'special', color: 'linear-gradient(135deg, #e67e22, #d35400)' },
+            { id: 'alphabet-dance', title: 'Dance with Alphabets', type: 'special', color: 'linear-gradient(135deg, #ff4757, #54a0ff)' },
+            { id: 'quiz-tournament', title: 'Mini Quiz Tournament', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #fdcb6e)' },
+            { id: 'garden-builder', title: 'Smart Garden Builder', type: 'special', color: 'linear-gradient(135deg, #2ecc71, #27ae60)' },
+            { id: 'game-maker', title: 'Build Your Own Game', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #fdcb6e)' }
         ];
 
         function populateGameGrid() {
@@ -515,6 +547,254 @@
                     banner.onclick = () => playGame('Math Jump Adventure', 'math-jump.html');
                     banner.innerHTML = `
                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('assets/mascot_math_cloud.png')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'plant-growing') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Plant Growing Sim', 'plant-simulator.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'food-sorter') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Healthy Food Sorter', 'food-sorter.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'grammar-ninja') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Grammar Ninja', 'grammar-ninja.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/student-going-to-school.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'pizza-fractions') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Fraction Pizza Maker', 'pizza-fractions.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'division-bowling') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Division Bowling', 'division-bowling.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/student-going-to-school.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'flag-match') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Geography Flag Match', 'flag-match.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'money-shop') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Money Counting Shop', 'money-shop.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'story-maker') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Magical Story Maker', 'story-maker.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'brain-maze') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Brain Maze Logic', 'brain-maze.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/meditating.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'body-puzzle') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Human Body Puzzle', 'body-puzzle.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/student-going-to-school.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'weather-maker') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Weather Maker', 'weather-maker.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'recycling-game') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Eco-Sorter Recycling', 'recycling-game.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'rocket-math') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Space Rocket Math', 'rocket-math.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'pattern-detective') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Pattern Detective', 'pattern-detective.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'magic-table') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Magic Multiplication Table', 'magic-table.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'robot-coding') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Robot Coding Path', 'robot-coding.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/meditating.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'word-search') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Word Search Jungle', 'word-search.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'count-stars') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Count the Stars', 'count-stars.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'bridge-math') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Missing Number Bridge', 'bridge-math.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'logic-escape') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Logical Door Escape', 'logic-escape.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'opposite-battle') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Opposite Words Battle', 'opposite-battle.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'emoji-match') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Emoji Meaning Match', 'emoji-match.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'city-builder') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Build Your City', 'city-builder.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'tutor-pet') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('AI Talking Tutor Pet', 'tutor-pet.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/meditating.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'ar-shapes') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('AR Shape Finder', 'ar-shapes.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'classroom-sim') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Virtual Classroom Simulator', 'classroom-sim.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'story-adventure') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Story Adventure RPG', 'story-adventure.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'alphabet-dance') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Dance with Alphabets', 'alphabet-dance.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'quiz-tournament') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Mini Quiz Tournament', 'quiz-tournament.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/meditating.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'garden-builder') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Smart Garden Builder', 'garden-builder.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'game-maker') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Build Your Own Game', 'game-maker.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg')"></div></div>
                         <div class="banner-content"><h3>${game.title}</h3></div>
                     `;
                 }

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toy Shop - Money Counting Adventure</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --shop-wood: #8d6e63;
+            --coin-gold: #f1c40f;
+            --coin-silver: #bdc3c7;
+            --accent: #2ecc71;
+            --bg-shop: #fdfcf0;
+            --text: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-shop);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Shop UI --- */
+        header {
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            box-shadow: var(--shadow);
+            border: 2px solid #eee;
+        }
+
+        .hud-panel {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 20px;
+            border: 3px solid #eee;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #636e72;
+            display: block;
+        }
+
+        /* --- Shop Shelf --- */
+        .shop-area {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            position: relative;
+        }
+
+        .shelf {
+            width: 350px;
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 8px solid var(--shop-wood);
+            position: relative;
+        }
+
+        .shelf::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: 20px;
+            background: var(--shop-wood);
+            border-radius: 5px;
+        }
+
+        .toy-display {
+            font-size: 5rem;
+            margin-bottom: 10px;
+        }
+
+        .toy-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--shop-wood);
+            margin-bottom: 5px;
+        }
+
+        .price-tag {
+            background: #e74c3c;
+            color: white;
+            display: inline-block;
+            padding: 8px 25px;
+            border-radius: 50px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            font-family: 'Nunito', sans-serif;
+            box-shadow: 0 5px 0 #c0392b;
+        }
+
+        /* --- Cash Counter --- */
+        .cash-counter {
+            width: 80%;
+            max-width: 600px;
+            background: #bdc3c7;
+            padding: 25px;
+            border-radius: 25px;
+            border-bottom: 10px solid #7f8c8d;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tray {
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            flex-wrap: wrap;
+            overflow-y: auto;
+        }
+
+        .counter-display {
+            background: #2d3436;
+            color: #2ecc71;
+            padding: 10px 30px;
+            border-radius: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.5);
+            border: 4px solid #7f8c8d;
+        }
+
+        /* --- Coin Tray --- */
+        .coin-tray {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .coin {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+            position: relative;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .coin:hover {
+            transform: translateY(-5px) scale(1.1);
+        }
+
+        .coin:active {
+            transform: scale(0.9);
+        }
+
+        .coin-10 {
+            background: radial-gradient(circle, #f1c40f, #f39c12);
+            color: #7f6000;
+            box-shadow: 0 6px 0 #9e7b00;
+        }
+
+        .coin-5 {
+            background: radial-gradient(circle, #bdc3c7, #95a5a6);
+            color: #2d3436;
+            box-shadow: 0 6px 0 #7f8c8d;
+        }
+
+        .coin-2 {
+            background: radial-gradient(circle, #ecf0f1, #bdc3c7);
+            color: #2d3436;
+            box-shadow: 0 6px 0 #95a5a6;
+            width: 60px;
+            height: 60px;
+            font-size: 1.2rem;
+        }
+
+        .coin-1 {
+            background: radial-gradient(circle, #ecf0f1, #bdc3c7);
+            color: #2d3436;
+            box-shadow: 0 6px 0 #95a5a6;
+            width: 55px;
+            height: 55px;
+            font-size: 1.1rem;
+        }
+
+        .mini-coin {
+            transform: scale(0.6) !important;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3) !important;
+            cursor: default !important;
+        }
+
+        /* --- Actions --- */
+        .action-btns {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 15px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-buy {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 5px 0 #27ae60;
+        }
+
+        .btn-clear {
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 5px 0 #7f8c8d;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Animations --- */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-10px);
+            }
+
+            40% {
+                transform: translateX(10px);
+            }
+
+            60% {
+                transform: translateX(-10px);
+            }
+
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        .hint-bubble {
+            position: absolute;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-store"></i> Shop List</a>
+        <div class="hud-panel">
+            <div class="hud-stat">
+                <span class="stat-val" id="toys-bought">0</span>
+                <span class="stat-label">Toys Bought</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="shop-area">
+        <div class="shelf" id="shelf">
+            <div class="hint-bubble" id="hint">Try using a ₹10 coin!</div>
+            <div class="toy-display" id="toy-icon">🧸</div>
+            <div class="toy-name" id="toy-name">Teddy Bear</div>
+            <div class="price-tag">₹<span id="target-price">27</span></div>
+        </div>
+
+        <div class="cash-counter">
+            <div class="stat-label" style="color: #636e72;">Place Coins Here</div>
+            <div class="tray" id="cash-tray">
+                <!-- Mini coins appear here -->
+            </div>
+            <div class="counter-display">₹<span id="current-total">0</span></div>
+            <div class="action-btns">
+                <button class="btn btn-clear" onclick="clearTray()">Clear</button>
+                <button class="btn btn-buy" onclick="checkPayment()">Buy Toy!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="coin-tray">
+        <div class="coin coin-10" onclick="addCoin(10)">₹10</div>
+        <div class="coin coin-5" onclick="addCoin(5)">₹5</div>
+        <div class="coin coin-2" onclick="addCoin(2)">₹2</div>
+        <div class="coin coin-1" onclick="addCoin(1)">₹1</div>
+    </div>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--accent);">Thank You! 🛍️</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;">The <span id="bought-toy">Teddy Bear</span> is
+                now yours! You counted perfectly.</p>
+            <div style="font-size: 5rem; margin: 30px 0;" id="success-toy">🧸</div>
+            <button class="btn btn-buy" style="margin: 0 auto; width: 100%;" onclick="nextToy()">Pick Next Toy!</button>
+        </div>
+    </div>
+
+    <script>
+        const toyDB = [
+            { name: "Teddy Bear", icon: "🧸", min: 10, max: 30 },
+            { name: "Toy Car", icon: "🏎️", min: 15, max: 40 },
+            { name: "Robot", icon: "🤖", min: 30, max: 60 },
+            { name: "Rocket", icon: "🚀", min: 40, max: 90 },
+            { name: "Dino", icon: "🦖", min: 5, max: 25 },
+            { name: "Unicorn", icon: "🦄", min: 20, max: 50 },
+            { name: "Game Console", icon: "🎮", min: 50, max: 99 }
+        ];
+
+        let state = {
+            target: 27,
+            current: 0,
+            selectedCoins: [],
+            totalBought: 0
+        };
+
+        const targetEl = document.getElementById('target-price');
+        const currentEl = document.getElementById('current-total');
+        const countEl = document.getElementById('toys-bought');
+        const trayEl = document.getElementById('cash-tray');
+        const shelf = document.getElementById('shelf');
+        const hintEl = document.getElementById('hint');
+
+        // Audio logic
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        function spawnToy() {
+            const toy = toyDB[Math.floor(Math.random() * toyDB.length)];
+            state.target = Math.floor(Math.random() * (toy.max - toy.min + 1)) + toy.min;
+            state.current = 0;
+            state.selectedCoins = [];
+
+            document.getElementById('toy-icon').innerText = toy.icon;
+            document.getElementById('toy-name').innerText = toy.name;
+            targetEl.innerText = state.target;
+            currentEl.innerText = "0";
+            trayEl.innerHTML = '';
+            hintEl.style.display = 'none';
+        }
+
+        function addCoin(val) {
+            if (state.current + val > state.target + 10) {
+                playSfx(150, 0.3, 'square');
+                return;
+            }
+
+            state.current += val;
+            state.selectedCoins.push(val);
+
+            const mini = document.createElement('div');
+            mini.className = `coin coin-${val} mini-coin`;
+            mini.innerText = `₹${val}`;
+            trayEl.appendChild(mini);
+
+            currentEl.innerText = state.current;
+            playSfx(800 + (val * 20), 0.2);
+
+            if (state.current > state.target) {
+                hintEl.innerText = "Too much! Use 'Clear' and try again.";
+                hintEl.style.display = 'block';
+            }
+        }
+
+        function clearTray() {
+            state.current = 0;
+            state.selectedCoins = [];
+            currentEl.innerText = "0";
+            trayEl.innerHTML = '';
+            hintEl.style.display = 'none';
+            playSfx(300, 0.2);
+        }
+
+        function checkPayment() {
+            if (state.current === state.target) {
+                state.totalBought++;
+                countEl.innerText = state.totalBought;
+                showWin();
+            } else {
+                shelf.classList.add('shake');
+                setTimeout(() => shelf.classList.remove('shake'), 500);
+                playSfx(200, 0.5, 'sawtooth');
+
+                // Hint system
+                const diff = state.target - state.current;
+                if (diff > 0) {
+                    let suggest = 1;
+                    if (diff >= 10) suggest = 10;
+                    else if (diff >= 5) suggest = 5;
+                    else if (diff >= 2) suggest = 2;
+                    hintEl.innerText = `Still need ₹${diff}. Try a ₹${suggest} coin!`;
+                } else {
+                    hintEl.innerText = `Oops! That's too much by ₹${Math.abs(diff)}. Clear and retry!`;
+                }
+                hintEl.style.display = 'block';
+            }
+        }
+
+        function showWin() {
+            const modal = document.getElementById('win-modal');
+            const toyIcon = document.getElementById('toy-icon').innerText;
+            const toyName = document.getElementById('toy-name').innerText;
+
+            document.getElementById('bought-toy').innerText = toyName;
+            document.getElementById('success-toy').innerText = toyIcon;
+
+            modal.style.display = 'flex';
+            playSfx(600, 0.5);
+            setTimeout(() => playSfx(800, 0.5), 150);
+        }
+
+        function nextToy() {
+            document.getElementById('win-modal').style.display = 'none';
+            spawnToy();
+        }
+
+        spawnToy();
+    </script>
+</body>
+
+</html>

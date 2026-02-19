@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Quiz Tournament - WonderKids Champion</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fdcb6e;
+            --success: #2ecc71;
+            --danger: #ff7675;
+            --bg: #f0f3f7;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #2d3436;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #2d3436;
+            font-weight: 700;
+        }
+
+        .tournament-hud {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .hud-item {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 800;
+            border: 2px solid #eee;
+        }
+
+        /* --- Main Arena --- */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- Sidebar Leaderboard --- */
+        .sidebar {
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .leaderboard-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+        }
+
+        .player-row.you {
+            background: #eef2ff;
+            border-color: var(--primary);
+        }
+
+        .rank {
+            font-weight: 900;
+            width: 25px;
+            color: #b2bec3;
+        }
+
+        .p-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dfe6e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .p-info {
+            flex: 1;
+        }
+
+        .p-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .p-score {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        /* --- Quiz Core --- */
+        .quiz-arena {
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .timer-container {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+        }
+
+        .round-tag {
+            background: var(--accent);
+            color: #d35400;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .question-box {
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        .question-box h2 {
+            font-size: 2rem;
+            font-family: 'Nunito', sans-serif;
+            color: #2d3436;
+            line-height: 1.3;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .opt-btn {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            border: 3px solid #f1f2f6;
+            font-size: 1.3rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .opt-btn:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            background: #f8f9fa;
+        }
+
+        .opt-btn.correct {
+            background: var(--success);
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .opt-btn.wrong {
+            background: var(--danger);
+            color: white;
+            border-color: #e74c3c;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* --- SVG Timer Ring --- */
+        .timer-ring {
+            width: 80px;
+            height: 80px;
+            transform: rotate(-90deg);
+        }
+
+        .timer-ring circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+
+        .circle-bg {
+            stroke: #eee;
+        }
+
+        .circle-bar {
+            stroke: var(--primary);
+            stroke-dasharray: 226;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-trophy"></i> Exit Arena</a>
+        <h1 style="margin: 0; color: var(--primary); font-family: 'Nunito', sans-serif;">Mini Quiz Tournament</h1>
+        <div class="tournament-hud">
+            <div class="hud-item">Round <span id="round-num">1</span>/3</div>
+            <div class="hud-item" style="color: var(--success)">Score: <span id="total-score">0</span></div>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <div class="leaderboard-title"><i class="fa-solid fa-ranking-star"></i> Live Rankings</div>
+            <div id="leaderboard-list" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Rankings injected here -->
+            </div>
+        </aside>
+
+        <section class="quiz-arena">
+            <div class="timer-container">
+                <svg class="timer-ring">
+                    <circle class="circle-bg" cx="40" cy="40" r="36"></circle>
+                    <circle id="timer-bar" class="circle-bar" cx="40" cy="40" r="36"></circle>
+                </svg>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.2rem;"
+                    id="timer-text">10</div>
+            </div>
+
+            <div class="round-tag" id="subject-tag">Subject: Math</div>
+            <div class="question-box">
+                <h2 id="question-text">Ready to start the Tournament?</h2>
+            </div>
+
+            <div class="options-grid" id="options">
+                <!-- Options here -->
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--primary);" id="finish-title">Tournament Over!</h1>
+            <p id="finish-desc" style="font-size: 1.2rem; line-height: 1.6; color: #555;">You've showcased incredible
+                knowledge!</p>
+            <div style="font-size: 5rem; margin: 30px 0;" id="finish-icon">🏆</div>
+            <div id="unlock-msg"
+                style="background: #eef2ff; padding: 15px; border-radius: 15px; font-weight: 800; color: var(--primary); display: none;">
+                🌟 UNLOCKED: New Champion Avatar!
+            </div>
+            <button class="btn-action" onclick="location.reload()">New Tournament</button>
+        </div>
+    </div>
+
+    <script>
+        const questionPool = {
+            1: [ // Easy - Math
+                { q: "What is 7 + 8?", a: "15", s: ["13", "14", "15", "16"], sub: "Math" },
+                { q: "How many days in a week?", a: "7", s: ["5", "6", "7", "8"], sub: "General" },
+                { q: "Part of plant that makes food?", a: "Leaf", s: ["Root", "Stem", "Leaf", "Flower"], sub: "Science" }
+            ],
+            2: [ // Medium
+                { q: "What is 12 x 3?", a: "36", s: ["32", "34", "36", "38"], sub: "Math" },
+                { q: "Closest planet to the Sun?", a: "Mercury", s: ["Venus", "Earth", "Mars", "Mercury"], sub: "Science" },
+                { q: "Vowel in the word 'DOG'?", a: "O", s: ["D", "O", "G", "None"], sub: "English" }
+            ],
+            3: [ // Hard
+                { q: "What is 100 - 45?", a: "55", s: ["45", "55", "65", "50"], sub: "Math" },
+                { q: "How many legs does a spider have?", a: "8", s: ["6", "8", "10", "12"], sub: "Science" },
+                { q: "Which is a proper noun?", a: "India", s: ["City", "India", "Book", "River"], sub: "English" }
+            ]
+        };
+
+        let players = [
+            { name: "SuperKid99", score: 0, avatar: "🦊", isYou: false },
+            { name: "QuizMistress", score: 0, avatar: "🐼", isYou: false },
+            { name: "LogicKing", score: 0, avatar: "🦁", isYou: false },
+            { name: "You (Champion)", score: 0, avatar: "👤", isYou: true }
+        ];
+
+        let state = {
+            round: 1,
+            qIdx: 0,
+            score: 0,
+            timer: 10,
+            interval: null,
+            currentQ: null,
+            canAnswer: false
+        };
+
+        function initTournament() {
+            updateLeaderboard();
+            startRound();
+        }
+
+        function startRound() {
+            document.getElementById('round-num').innerText = state.round;
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (state.qIdx >= 3) {
+                if (state.round < 3) {
+                    state.round++;
+                    state.qIdx = 0;
+                    startRound();
+                    return;
+                } else {
+                    finishTournament();
+                    return;
+                }
+            }
+
+            const pool = questionPool[state.round];
+            state.currentQ = pool[state.qIdx];
+
+            document.getElementById('subject-tag').innerText = `Subject: ${state.currentQ.sub}`;
+            document.getElementById('question-text').innerText = state.currentQ.q;
+
+            const optionsEl = document.getElementById('options');
+            optionsEl.innerHTML = '';
+
+            state.currentQ.s.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optionsEl.appendChild(btn);
+            });
+
+            state.canAnswer = true;
+            startTimer();
+        }
+
+        function startTimer() {
+            state.timer = 10;
+            updateTimerUI();
+
+            if (state.interval) clearInterval(state.interval);
+            state.interval = setInterval(() => {
+                state.timer -= 0.1;
+                if (state.timer <= 0) {
+                    state.timer = 0;
+                    handleTimeout();
+                }
+                updateTimerUI();
+            }, 100);
+        }
+
+        function updateTimerUI() {
+            const bar = document.getElementById('timer-bar');
+            const offset = (state.timer / 10) * 226;
+            bar.style.strokeDashoffset = 226 - offset;
+            document.getElementById('timer-text').innerText = Math.ceil(state.timer);
+
+            if (state.timer < 3) bar.style.stroke = "var(--danger)";
+            else bar.style.stroke = "var(--primary)";
+        }
+
+        function checkAnswer(ans, btn) {
+            if (!state.canAnswer) return;
+            state.canAnswer = false;
+            clearInterval(state.interval);
+
+            if (ans === state.currentQ.a) {
+                const roundBonus = Math.floor(state.timer * 10);
+                state.score += 100 + roundBonus;
+                btn.classList.add('correct');
+                playSfx(880, 0.2);
+            } else {
+                btn.classList.add('wrong');
+                playSfx(200, 0.4, 'sawtooth');
+            }
+
+            // Simulate AI players scoring
+            players.forEach(p => {
+                if (!p.isYou) {
+                    if (Math.random() > (0.3 - state.round * 0.1)) { // Adaptive AI
+                        p.score += 80 + Math.floor(Math.random() * 50);
+                    }
+                } else {
+                    p.score = state.score;
+                }
+            });
+
+            document.getElementById('total-score').innerText = state.score;
+            updateLeaderboard();
+
+            setTimeout(() => {
+                state.qIdx++;
+                nextQuestion();
+            }, 1500);
+        }
+
+        function handleTimeout() {
+            if (!state.canAnswer) return;
+            state.canAnswer = false;
+            clearInterval(state.interval);
+
+            document.getElementById('question-text').innerText = "TIME OUT! ⏰";
+            playSfx(150, 0.5);
+
+            setTimeout(() => {
+                state.qIdx++;
+                nextQuestion();
+            }, 1500);
+        }
+
+        function updateLeaderboard() {
+            players.sort((a, b) => b.score - a.score);
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+
+            players.forEach((p, i) => {
+                const row = document.createElement('div');
+                row.className = `player-row ${p.isYou ? 'you' : ''}`;
+                row.style.transform = `translateY(${i * 5}px)`;
+                row.innerHTML = `
+                    <div class="rank">#${i + 1}</div>
+                    <div class="p-avatar">${p.avatar}</div>
+                    <div class="p-info">
+                        <div class="p-name">${p.name}</div>
+                    </div>
+                    <div class="p-score">${p.score}</div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function finishTournament() {
+            const modal = document.getElementById('finish-modal');
+            const title = document.getElementById('finish-title');
+            const icon = document.getElementById('finish-icon');
+
+            const isWinner = players[0].isYou;
+
+            if (isWinner) {
+                title.innerText = "GRAND CHAMPION! 🏆";
+                icon.innerText = "👑";
+                document.getElementById('unlock-msg').style.display = 'block';
+            } else {
+                title.innerText = "Amazing Effort! 🥈";
+                icon.innerText = "🥈";
+            }
+
+            modal.style.display = 'flex';
+            playSfx(1000, 1);
+        }
+
+        let audioCtx;
+        function playSfx(f, d, t = 'sine') {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = t;
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        initTournament();
+    </script>
+</body>
+
+</html>

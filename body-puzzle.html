@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Puzzle - Anatomy Adventure</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff7675;
+            --secondary: #74b9ff;
+            --success: #55efc4;
+            --bg: #f0f7fa;
+            --text: #2d3436;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 90%;
+            max-width: 1200px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            box-shadow: var(--shadow);
+            border: 2px solid #eee;
+        }
+
+        .hud-panel {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 20px;
+            border: 3px solid #eee;
+        }
+
+        /* --- Game Area --- */
+        .game-container {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            padding: 20px;
+        }
+
+        /* --- Body Outline --- */
+        .body-outline {
+            position: relative;
+            width: 350px;
+            height: 600px;
+            background: white;
+            border-radius: 100px 100px 40px 40px;
+            border: 8px solid #dfe6e9;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+        }
+
+        .head-outline {
+            width: 120px;
+            height: 140px;
+            background: #fff;
+            border: 5px solid #eee;
+            border-radius: 50% 50% 45% 45%;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .torso-outline {
+            width: 220px;
+            height: 300px;
+            background: #fff;
+            border: 5px solid #eee;
+            border-radius: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Target Slots */
+        .target-slot {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.03);
+            border: 3px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .target-slot.correct {
+            background: rgba(85, 239, 196, 0.2);
+            border: 3px solid var(--success);
+            box-shadow: 0 0 20px var(--success);
+        }
+
+        .target-slot.correct::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--success);
+            font-size: 1.5rem;
+            position: absolute;
+            z-index: 10;
+        }
+
+        /* --- Organ Tray --- */
+        .organ-tray {
+            width: 250px;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: var(--shadow);
+            border: 4px solid #fff;
+        }
+
+        .organ-item {
+            width: 80px;
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 3px solid #eee;
+            position: relative;
+            z-index: 50;
+        }
+
+        .organ-item:hover {
+            transform: scale(1.1);
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .organ-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+
+        .organ-item.matched {
+            display: none;
+        }
+
+        .organ-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            pointer-events: none;
+        }
+
+        .organ-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #636e72;
+            pointer-events: none;
+        }
+
+        /* --- Modals/Overlays --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Positions */
+        #slot-brain {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #slot-heart {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            top: 80px;
+            left: 45%;
+        }
+
+        #slot-lungs {
+            width: 140px;
+            height: 100px;
+            border-radius: 30px;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #slot-stomach {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            top: 160px;
+            left: 55%;
+        }
+
+        #slot-intestines {
+            width: 120px;
+            height: 80px;
+            border-radius: 20px;
+            top: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* --- Particles --- */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            pointer-events: none;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Science Lab</a>
+        <div class="hud-panel">
+            <div style="text-align: center;">
+                <span style="font-size: 1.5rem; font-weight: 800; color: var(--secondary);" id="level-txt">Level
+                    1</span>
+                <span style="font-size: 0.7rem; text-transform: uppercase; color: #636e72; display: block;">Vital
+                    Organs</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="organ-tray" id="tray">
+            <h3 style="margin-top: 0; font-size: 1rem; color: var(--secondary); text-align: center;">DRAG ORGANS</h3>
+            <!-- Organs will be injected here -->
+        </div>
+
+        <div class="body-outline">
+            <div class="head-outline">
+                <div class="target-slot" id="slot-brain" data-organ="brain"></div>
+            </div>
+            <div class="torso-outline">
+                <div class="target-slot" id="slot-lungs" data-organ="lungs"></div>
+                <div class="target-slot" id="slot-heart" data-organ="heart"></div>
+                <!-- Digestive system targets (hidden initially) -->
+                <div class="target-slot" id="slot-stomach" data-organ="stomach" style="display: none;"></div>
+                <div class="target-slot" id="slot-intestines" data-organ="intestines" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--success);" id="modal-title">Perfect Anatomy! 🫀</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;" id="modal-desc">You've placed the vital organs
+                correctly. Ready for the next system?</p>
+            <div style="font-size: 5rem; margin: 30px 0;" id="modal-icon">🧠</div>
+            <button class="btn" id="modal-btn" onclick="advanceLevel()">Upgrade System!</button>
+        </div>
+    </div>
+
+    <script>
+        const organData = [
+            { id: 'brain', name: 'Brain', icon: '🧠', level: 1 },
+            { id: 'heart', name: 'Heart', icon: '🫀', level: 1 },
+            { id: 'lungs', name: 'Lungs', icon: '🫁', level: 1 },
+            { id: 'stomach', name: 'Stomach', icon: '🥣', level: 2 },
+            { id: 'intestines', name: 'Intestines', icon: '➰', level: 2 }
+        ];
+
+        let state = {
+            level: 1,
+            matched: 0,
+            totalForLevel: 3
+        };
+
+        const tray = document.getElementById('tray');
+        const modal = document.getElementById('win-modal');
+
+        function initLevel() {
+            tray.innerHTML = '<h3 style="margin-top: 0; font-size: 1rem; color: var(--secondary); text-align: center;">DRAG ORGANS</h3>';
+            state.matched = 0;
+            state.totalForLevel = organData.filter(o => o.level <= state.level).length;
+
+            const organs = organData.filter(o => o.level === state.level);
+            organs.forEach(organ => {
+                const el = document.createElement('div');
+                el.className = 'organ-item';
+                el.draggable = true;
+                el.id = `organ-${organ.id}`;
+                el.innerHTML = `
+                    <span class="organ-icon">${organ.icon}</span>
+                    <span class="organ-label">${organ.name}</span>
+                `;
+
+                el.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', organ.id);
+                    el.classList.add('dragging');
+                    speakOrgan(organ.name);
+                });
+
+                el.addEventListener('dragend', () => el.classList.remove('dragging'));
+                tray.appendChild(el);
+            });
+
+            // Show relevant slots
+            organData.forEach(o => {
+                const slot = document.getElementById(`slot-${o.id}`);
+                if (o.level <= state.level) {
+                    slot.style.display = 'flex';
+                }
+            });
+
+            document.getElementById('level-txt').innerText = `Level ${state.level}`;
+        }
+
+        // Drop Logic
+        document.querySelectorAll('.target-slot').forEach(slot => {
+            slot.addEventListener('dragover', (e) => e.preventDefault());
+            slot.addEventListener('drop', (e) => {
+                const organId = e.dataTransfer.getData('text/plain');
+                if (slot.dataset.organ === organId) {
+                    handleMatch(organId, slot);
+                } else {
+                    playSfx(200, 0.2);
+                    slot.style.borderColor = '#ff7675';
+                    setTimeout(() => slot.style.borderColor = '#ccc', 500);
+                }
+            });
+        });
+
+        function handleMatch(organId, slot) {
+            if (slot.classList.contains('correct')) return;
+
+            const organ = organData.find(o => o.id === organId);
+            slot.classList.add('correct');
+            slot.innerHTML = `<span style="font-size: ${organId === 'lungs' ? '4rem' : '2.5rem'}; z-index: 5;">${organ.icon}</span>`;
+
+            const trayItem = document.getElementById(`organ-${organId}`);
+            if (trayItem) trayItem.classList.add('matched');
+
+            state.matched++;
+            playSfx(800, 0.3);
+
+            if (state.matched >= (state.level === 1 ? 3 : 2)) {
+                setTimeout(showCompletion, 1000);
+            }
+        }
+
+        function showCompletion() {
+            modal.style.display = 'flex';
+            if (state.level === 2) {
+                document.getElementById('modal-title').innerText = "Medicine Master! 🎓";
+                document.getElementById('modal-desc').innerText = "You've mastered the human body's core systems!";
+                document.getElementById('modal-btn').innerText = "Play Again";
+            }
+        }
+
+        function advanceLevel() {
+            if (state.level === 1) {
+                state.level = 2;
+                modal.style.display = 'none';
+                initLevel();
+            } else {
+                location.reload();
+            }
+        }
+
+        // Sound Functions
+        let audioCtx;
+        function playSfx(freq, dur) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(g);
+            g.connect(ctx = audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+        }
+
+        function speakOrgan(name) {
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(name);
+                msg.rate = 1.0;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        initLevel();
+    </script>
+</body>
+
+</html>

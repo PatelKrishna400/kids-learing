@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Division Bowling - Math Alley</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --lane-wood: #f39c12;
+            --lane-border: #d35400;
+            --pin-white: #ffffff;
+            --pin-red: #e74c3c;
+            --ball-color: #2c3e50;
+            --bg-alley: #2d3436;
+            --accent: #f1c40f;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-alley);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+        }
+
+        /* --- Header & Score --- */
+        header {
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .hud-panel {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #ccc;
+        }
+
+        /* --- Question Board --- */
+        .question-board {
+            background: white;
+            color: #2d3436;
+            padding: 20px 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin-top: 10px;
+            border: 5px solid var(--accent);
+            z-index: 100;
+        }
+
+        .question-text {
+            font-size: 3rem;
+            font-weight: 900;
+            font-family: 'Nunito', sans-serif;
+            letter-spacing: 2px;
+        }
+
+        /* --- Bowling Alley --- */
+        .alley-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            max-width: 800px;
+            perspective: 800px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .lane {
+            width: 400px;
+            height: 100%;
+            background: linear-gradient(to bottom, #f39c12 0%, #e67e22 100%);
+            transform: rotateX(45deg);
+            transform-origin: bottom center;
+            position: relative;
+            border-left: 15px solid #d35400;
+            border-right: 15px solid #d35400;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+        }
+
+        .pin-area {
+            position: absolute;
+            top: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            transform: rotateX(-45deg);
+        }
+
+        .pin {
+            width: 60px;
+            height: 100px;
+            background: var(--pin-white);
+            border-radius: 20px 20px 40px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-bottom: 8px solid #ddd;
+        }
+
+        .pin::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            height: 10px;
+            background: var(--pin-red);
+        }
+
+        .pin:hover {
+            transform: scale(1.1) translateY(-10px);
+            filter: brightness(1.1);
+        }
+
+        .pin-number {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #2d3436;
+            font-family: 'Nunito', sans-serif;
+            text-shadow: 0 2px 0 white;
+            z-index: 5;
+        }
+
+        .bowling-ball {
+            position: absolute;
+            bottom: 40px;
+            width: 80px;
+            height: 80px;
+            background: var(--ball-color);
+            border-radius: 50%;
+            z-index: 200;
+            box-shadow: inset -10px -10px 20px rgba(0, 0, 0, 0.5), 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .ball-holes {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .hole {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        /* --- Animations --- */
+        .pin-hit {
+            animation: fall 0.6s forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: rotate(90deg) translateY(100px);
+                opacity: 0;
+            }
+        }
+
+        .miss {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* --- Success Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 400px;
+            color: #2d3436;
+        }
+
+        .btn {
+            background: var(--lane-border);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            background: var(--glass);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .strike-text {
+            position: absolute;
+            font-size: 5rem;
+            font-weight: 950;
+            color: var(--accent);
+            font-family: 'Nunito', sans-serif;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+            z-index: 500;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        @keyframes strikePop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <div class="hud-panel">
+            <div class="hud-stat">
+                <span class="stat-val" id="score">0</span>
+                <span class="stat-label">Strikes</span>
+            </div>
+            <div class="hud-stat">
+                <span class="stat-val" id="level">1</span>
+                <span class="stat-label">Level</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="question-board">
+        <div class="stat-label">Solve the Division!</div>
+        <div class="question-text" id="question">12 ÷ 3</div>
+    </div>
+
+    <div class="alley-container">
+        <div class="lane"></div>
+        <div class="pin-area" id="pin-area">
+            <!-- Pins will be here -->
+        </div>
+        <div class="bowling-ball" id="ball">
+            <div class="ball-holes">
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+            </div>
+        </div>
+        <div class="strike-text" id="strike-text">STRIKE!</div>
+    </div>
+
+    <div class="modal" id="win-modal">
+        <div class="modal-card">
+            <h1 style="color: var(--lane-border);">Perfect Roll! 🎳</h1>
+            <p>You solved the math and knocked down the correct pin!</p>
+            <div style="font-size: 4rem; margin: 20px 0;">🏆</div>
+            <button class="btn" onclick="nextQuestion()">Bowl Again!</button>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            dividend: 12,
+            divisor: 3,
+            answer: 4,
+            score: 0,
+            level: 1,
+            isRolling: false
+        };
+
+        const questionEl = document.getElementById('question');
+        const pinArea = document.getElementById('pin-area');
+        const ball = document.getElementById('ball');
+        const scoreEl = document.getElementById('score');
+        const strikeText = document.getElementById('strike-text');
+
+        // Audio Context
+        let audioCtx;
+        function playSfx(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            if (type === 'roll') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 1);
+            } else if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
+            } else {
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            }
+
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        function generateQuestion() {
+            state.divisor = Math.floor(Math.random() * 5) + 2; // 2 to 6
+            state.answer = Math.floor(Math.random() * 8) + 1; // 1 to 9
+            state.dividend = state.divisor * state.answer;
+
+            questionEl.innerText = `${state.dividend} ÷ ${state.divisor}`;
+            spawnPins();
+        }
+
+        function spawnPins() {
+            pinArea.innerHTML = '';
+            const answers = [state.answer];
+            while (answers.length < 4) {
+                const rand = Math.floor(Math.random() * 15) + 1;
+                if (!answers.includes(rand)) answers.push(rand);
+            }
+            answers.sort(() => Math.random() - 0.5);
+
+            answers.forEach(val => {
+                const pin = document.createElement('div');
+                pin.className = 'pin';
+                pin.innerHTML = `<span class="pin-number">${val}</span>`;
+                pin.onclick = () => rollBall(val, pin);
+                pinArea.appendChild(pin);
+            });
+        }
+
+        function rollBall(value, pinEl) {
+            if (state.isRolling) return;
+            state.isRolling = true;
+
+            const rect = pinEl.getBoundingClientRect();
+            const alleyRect = document.querySelector('.alley-container').getBoundingClientRect();
+            const targetX = rect.left - alleyRect.left + (rect.width / 2) - (ball.offsetWidth / 2);
+
+            playSfx('roll');
+            ball.style.transform = `translate(${targetX - (alleyRect.width / 2 - ball.offsetWidth / 2)}px, -${alleyRect.height - 200}px) scale(0.6)`;
+
+            setTimeout(() => {
+                const isCorrect = value === state.answer;
+                if (isCorrect) {
+                    playSfx('hit');
+                    pinEl.classList.add('pin-hit');
+                    showStrike();
+                    state.score += 10;
+                    scoreEl.innerText = state.score;
+                    setTimeout(() => {
+                        document.getElementById('win-modal').style.display = 'flex';
+                    }, 800);
+                } else {
+                    document.body.classList.add('miss');
+                    setTimeout(() => document.body.classList.remove('miss'), 500);
+                    resetBall();
+                }
+            }, 1000);
+        }
+
+        function showStrike() {
+            strikeText.style.animation = 'strikePop 1s forwards';
+            setTimeout(() => { strikeText.style.animation = ''; }, 1000);
+        }
+
+        function resetBall() {
+            ball.style.transition = 'none';
+            ball.style.transform = 'translate(0, 0) scale(1)';
+            setTimeout(() => {
+                ball.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                state.isRolling = false;
+            }, 50);
+        }
+
+        function nextQuestion() {
+            document.getElementById('win-modal').style.display = 'none';
+            resetBall();
+            generateQuestion();
+        }
+
+        generateQuestion();
+    </script>
+</body>
+
+</html>

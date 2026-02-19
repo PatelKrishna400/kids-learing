@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Explorer - Geography Quest</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --bg-world: #f0f3f5;
+            --text-dark: #2c3e50;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-world);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-dark);
+        }
+
+        /* --- Header & Stats --- */
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-area {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: white;
+            padding: 8px 18px;
+            border-radius: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow);
+            border: 2px solid #eee;
+        }
+
+        .stat-val {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        /* --- Game Layout --- */
+        .game-main {
+            flex: 1;
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Side Panel: Countries */
+        .country-panel {
+            width: 300px;
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+        }
+
+        .country-panel h3 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .name-card {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 3px solid #eee;
+            border-radius: 18px;
+            font-weight: 700;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .name-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+            background: white;
+        }
+
+        .name-card:active {
+            cursor: grabbing;
+            scale: 0.95;
+        }
+
+        .name-card.matched {
+            opacity: 0.3;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+
+        /* Grid: Flags */
+        .flag-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .flag-card {
+            background: white;
+            border-radius: 25px;
+            aspect-ratio: 4/5;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid transparent;
+            position: relative;
+        }
+
+        .flag-card:hover {
+            transform: scale(1.05);
+        }
+
+        .flag-card.drag-over {
+            border-color: var(--primary);
+            background: #ebf5fb;
+        }
+
+        .flag-card.correct {
+            border-color: var(--success);
+            background: #eafaf1;
+        }
+
+        .flag-card.wrong {
+            border-color: var(--danger);
+            animation: shake 0.5s;
+        }
+
+        .flag-img-container {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 5rem;
+            margin-bottom: 10px;
+        }
+
+        .flag-label {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            min-height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 2px dashed #eee;
+            padding-top: 10px;
+        }
+
+        /* --- Audio Button --- */
+        .audio-btn {
+            background: none;
+            border: none;
+            color: #bdc3c7;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .name-card:hover .audio-btn {
+            color: var(--primary);
+        }
+
+        /* --- Unlockable Mode --- */
+        .unlock-banner {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 800;
+            box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            z-index: 200;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Animations --- */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-10px);
+            }
+
+            40% {
+                transform: translateX(10px);
+            }
+
+            60% {
+                transform: translateX(-10px);
+            }
+
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: #eee;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <div style="text-align: center;">
+            <h1 style="margin: 0; font-family: 'Nunito', sans-serif; font-weight: 900; color: var(--primary);">Flag
+                Match Quest</h1>
+            <div class="progress-container">
+                <div class="progress-bar" id="master-progress"></div>
+            </div>
+        </div>
+        <div class="stats-area">
+            <div class="stat-badge">
+                <i class="fa-solid fa-check" style="color: var(--success);"></i>
+                <span class="stat-val" id="correct-count">0</span>
+            </div>
+            <div class="stat-badge">
+                <i class="fa-solid fa-bullseye" style="color: var(--primary);"></i>
+                <span id="accuracy-val">100%</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="game-main">
+        <aside class="country-panel">
+            <h3>Drop onto Flag</h3>
+            <div id="country-list">
+                <!-- Shuffled country names go here -->
+            </div>
+        </aside>
+
+        <section class="flag-grid" id="flag-grid">
+            <!-- Shuffled flag cards go here -->
+        </section>
+    </main>
+
+    <div class="unlock-banner" id="capital-unlock" onclick="startCapitalMode()">
+        <i class="fa-solid fa-crown"></i>
+        <span>NEW MODE: Capital Quiz Unlocked!</span>
+    </div>
+
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <h1 id="modal-title">Incredible! 🌍</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6; color: #555;" id="modal-desc">You identified 6 countries with
+                perfect accuracy!</p>
+            <div style="font-size: 5rem; margin: 30px 0;">🗺️</div>
+            <button class="btn" onclick="location.reload()">Explore More!</button>
+        </div>
+    </div>
+
+    <script>
+        const countryDB = [
+            { id: 'in', name: 'India', flag: '🇮🇳', capital: 'New Delhi' },
+            { id: 'jp', name: 'Japan', flag: '🇯🇵', capital: 'Tokyo' },
+            { id: 'br', name: 'Brazil', flag: '🇧🇷', capital: 'Brasília' },
+            { id: 'us', name: 'USA', flag: '🇺🇸', capital: 'Washington D.C.' },
+            { id: 'fr', name: 'France', flag: '🇫🇷', capital: 'Paris' },
+            { id: 'au', name: 'Australia', flag: '🇦🇺', capital: 'Canberra' },
+            { id: 'ca', name: 'Canada', flag: '🇨🇦', capital: 'Ottawa' },
+            { id: 'za', name: 'South Africa', flag: '🇿🇦', capital: 'Pretoria' },
+            { id: 'gb', name: 'UK', flag: '🇬🇧', capital: 'London' }
+        ];
+
+        let state = {
+            gameSet: [],
+            correct: 0,
+            attempts: 0,
+            draggedCountry: null,
+            isCapitalMode: false
+        };
+
+        const countryList = document.getElementById('country-list');
+        const flagGrid = document.getElementById('flag-grid');
+        const correctEl = document.getElementById('correct-count');
+        const accuracyEl = document.getElementById('accuracy-val');
+        const progressBar = document.getElementById('master-progress');
+
+        function init() {
+            // Pick 6 random countries for the session
+            state.gameSet = [...countryDB].sort(() => Math.random() - 0.5).slice(0, 6);
+            renderGame();
+        }
+
+        function renderGame() {
+            // Render names (shuffled)
+            countryList.innerHTML = '';
+            const names = [...state.gameSet].sort(() => Math.random() - 0.5);
+            names.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'name-card';
+                el.id = `name-${c.id}`;
+                el.draggable = true;
+                el.innerHTML = `
+                    <span>${c.name}</span>
+                    <button class="audio-btn" onclick="speak('${c.name}')"><i class="fa-solid fa-volume-high"></i></button>
+                `;
+                el.addEventListener('dragstart', (e) => {
+                    state.draggedCountry = c;
+                    el.style.opacity = '0.5';
+                });
+                el.addEventListener('dragend', () => el.style.opacity = '1');
+                countryList.appendChild(el);
+            });
+
+            // Render flags (shuffled)
+            flagGrid.innerHTML = '';
+            const flags = [...state.gameSet].sort(() => Math.random() - 0.5);
+            flags.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'flag-card';
+                card.id = `flag-${c.id}`;
+                card.innerHTML = `
+                    <div class="flag-img-container">${c.flag}</div>
+                    <div class="flag-label" id="label-${c.id}">?</div>
+                `;
+
+                // Drag Events
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!card.classList.contains('correct')) card.classList.add('drag-over');
+                });
+                card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    card.classList.remove('drag-over');
+                    checkMatch(c.id, card);
+                });
+
+                flagGrid.appendChild(card);
+            });
+        }
+
+        function checkMatch(flagId, cardEl) {
+            state.attempts++;
+            const isMatch = state.draggedCountry.id === flagId;
+
+            if (isMatch) {
+                state.correct++;
+                cardEl.classList.add('correct');
+                cardEl.querySelector('.flag-label').innerText = state.isCapitalMode ? state.draggedCountry.capital : state.draggedCountry.name;
+                document.getElementById(`name-${flagId}`).classList.add('matched');
+                playSfx(400, 800);
+            } else {
+                cardEl.classList.add('wrong');
+                setTimeout(() => cardEl.classList.remove('wrong'), 500);
+                playSfx(200, 100);
+            }
+
+            updateHUD();
+            if (state.correct === state.gameSet.length) {
+                finishGame();
+            }
+        }
+
+        function updateHUD() {
+            correctEl.innerText = state.correct;
+            const accuracy = Math.round((state.correct / state.attempts) * 100) || 100;
+            accuracyEl.innerText = `${accuracy}%`;
+            progressBar.style.width = `${(state.correct / state.gameSet.length) * 100}%`;
+
+            if (state.correct === 6 && accuracy > 80) {
+                document.getElementById('capital-unlock').style.display = 'flex';
+            }
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.rate = 0.9;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function playSfx(f1, f2) {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.frequency.setValueAtTime(f1, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(f2, ctx.currentTime + 0.1);
+            g.gain.setValueAtTime(0.1, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+        }
+
+        function finishGame() {
+            const modal = document.getElementById('finish-modal');
+            modal.style.display = 'flex';
+            document.getElementById('modal-desc').innerText = `You matched all ${state.gameSet.length} countries at ${accuracyEl.innerText} accuracy!`;
+        }
+
+        function startCapitalMode() {
+            state.isCapitalMode = true;
+            document.getElementById('capital-unlock').style.display = 'none';
+            state.correct = 0;
+            state.attempts = 0;
+            updateHUD();
+
+            // Re-render with capitals
+            countryList.innerHTML = '';
+            const caps = [...state.gameSet].sort(() => Math.random() - 0.5);
+            caps.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'name-card';
+                el.id = `name-${c.id}`;
+                el.draggable = true;
+                el.innerHTML = `<span><b>Capital:</b> ${c.capital}</span>`;
+                el.addEventListener('dragstart', (e) => {
+                    state.draggedCountry = c;
+                    el.style.opacity = '0.5';
+                });
+                countryList.appendChild(el);
+            });
+
+            // Reset flags
+            document.querySelectorAll('.flag-card').forEach(card => {
+                card.classList.remove('correct');
+                card.querySelector('.flag-label').innerText = '?';
+            });
+            document.querySelectorAll('.name-card').forEach(nc => nc.classList.remove('matched'));
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

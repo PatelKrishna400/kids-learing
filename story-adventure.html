@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Adventure RPG - WonderKids Quest</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e67e22;
+            --secondary: #d35400;
+            --bg: #fdf2e9;
+            --text: #2c3e50;
+            --panel: rgba(255, 255, 255, 0.95);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--text);
+        }
+
+        /* --- Header --- */
+        header {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Adventure Stage --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            transition: background 1s ease-in-out;
+        }
+
+        .scene-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .char-portrait {
+            position: absolute;
+            bottom: 250px;
+            width: 300px;
+            height: 400px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            z-index: 5;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.2));
+        }
+
+        .char-left {
+            left: 10%;
+            transform: translateX(-20px);
+        }
+
+        .char-right {
+            right: 10%;
+            transform: translateX(20px);
+        }
+
+        .char-active {
+            transform: translateX(0) scale(1.05);
+        }
+
+        /* --- Dialogue Panel --- */
+        .quest-panel {
+            width: 90%;
+            max-width: 900px;
+            background: var(--panel);
+            border-radius: 40px;
+            padding: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            border: 4px solid var(--primary);
+            position: absolute;
+            bottom: 40px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .char-name {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: white;
+            background: var(--primary);
+            padding: 8px 25px;
+            border-radius: 15px;
+            display: inline-block;
+            align-self: flex-start;
+            margin-top: -60px;
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+        }
+
+        .dialogue-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.6;
+            color: #34495e;
+            min-height: 80px;
+        }
+
+        .choices-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .choice-btn {
+            padding: 20px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .choice-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2);
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Narration HUD --- */
+        .narration-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--panel);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary);
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+            border: none;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(15px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-map"></i> Kingdom Hub</a>
+        <h1 style="margin: 0; color: var(--primary); font-family: 'Nunito', sans-serif;">WonderKids Adventure</h1>
+        <div class="hud-panel">
+            <div class="stat-badge" title="Wisdom"><i class="fa-solid fa-brain" style="color: #3498db"></i> <span
+                    id="stat-wisdom">10</span></div>
+            <div class="stat-badge" title="Kindness"><i class="fa-solid fa-heart" style="color: #e74c3c"></i> <span
+                    id="stat-kindness">10</span></div>
+        </div>
+    </header>
+
+    <main id="scene-container">
+        <div class="scene-overlay"></div>
+        <button class="narration-btn" onclick="toggleNarration()">
+            <i class="fa-solid fa-volume-high" id="narration-icon"></i>
+        </button>
+
+        <div class="char-portrait char-left" id="portrait-left"></div>
+        <div class="char-portrait char-right" id="portrait-right"></div>
+
+        <div class="quest-panel">
+            <div class="char-name" id="display-name">Narrator</div>
+            <div class="dialogue-text" id="dialogue-text">Once upon a time in the Kingdom of Knowledge...</div>
+            <div class="choices-container" id="choices-grid">
+                <!-- Choices here -->
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="ending-modal">
+        <div class="modal-card">
+            <h1 id="ending-title">Adventure Complete!</h1>
+            <p id="ending-desc" style="font-size: 1.2rem; line-height: 1.6; color: #555;"></p>
+            <div style="font-size: 5rem; margin: 30px 0;" id="ending-emoji">📜</div>
+            <button class="btn-action" onclick="location.reload()">New Quest</button>
+        </div>
+    </div>
+
+    <script>
+        const story = {
+            start: {
+                text: "You stand at the edge of the Whispering Woods. To your left is the Path of Science, and to your right is the Village of Words. Where shall you go?",
+                speaker: "Narrator",
+                choices: [
+                    { text: "Visit Path of Science", next: "forest", stats: { wisdom: 2 } },
+                    { text: "Go to Word Village", next: "village", stats: { wisdom: 2 } }
+                ],
+                bg: "linear-gradient(to bottom, #7bed9f, #2ed573)",
+                leftImg: "https://illustrations.popsy.co/white/location-search.svg"
+            },
+            forest: {
+                text: "The trees hum with logic. A Friendly Owl blocks your path. 'To pass,' the Owl hoots, 'tell me: is 15 + 15 equal to 30 or 40?'",
+                speaker: "Sylvan the Owl",
+                choices: [
+                    { text: "It is 30!", next: "forest_success", stats: { wisdom: 5 } },
+                    { text: "It is 40!", next: "forest_fail", stats: { wisdom: -2 } }
+                ],
+                bg: "linear-gradient(to bottom, #2d3436, #00b894)",
+                leftImg: "https://illustrations.popsy.co/white/meditating.svg"
+            },
+            village: {
+                text: "The villagers are having a spelling festival! A little girl asks: 'How do you spell the opposite of SMALL?'",
+                speaker: "Lily the Villager",
+                choices: [
+                    { text: "B-I-G", next: "village_success", stats: { wisdom: 5, kindness: 2 } },
+                    { text: "L-A-R-G-E", next: "village_success", stats: { wisdom: 5, kindness: 2 } }
+                ],
+                bg: "linear-gradient(to bottom, #fab1a0, #ff7675)",
+                rightImg: "https://illustrations.popsy.co/white/surreal-city.svg"
+            },
+            forest_success: {
+                text: "The Owl nods wisely. 'You are a master of numbers! Take this Crystal of Logic as a gift.'",
+                speaker: "Sylvan the Owl",
+                choices: [
+                    { text: "Continue Journey", next: "epilogue_good" }
+                ],
+                bg: "linear-gradient(to bottom, #55efc4, #00b894)"
+            },
+            forest_fail: {
+                text: "The Owl looks disappointed. 'Oh dear, math seems tricky today. Let's try to find a study sprout instead.'",
+                speaker: "Sylvan the Owl",
+                choices: [
+                    { text: "Go Home", next: "epilogue_bad" }
+                ],
+                bg: "linear-gradient(to bottom, #636e72, #2d3436)"
+            },
+            village_success: {
+                text: "The girl cheers! 'You're right! You helped us win the festival. Here is a Heart of Kindness.'",
+                speaker: "Lily the Villager",
+                choices: [
+                    { text: "Continue Journey", next: "epilogue_good" }
+                ],
+                bg: "linear-gradient(to bottom, #fd79a8, #e84393)"
+            },
+            epilogue_good: {
+                text: "Your journey has been a great success! You used your brain and your heart to help the kingdom.",
+                speaker: "Narrator",
+                choices: [
+                    { text: "Finish Quest", next: "end" }
+                ],
+                bg: "linear-gradient(to bottom, #ffeaa7, #fdcb6e)"
+            },
+            epilogue_bad: {
+                text: "You decided to head home early to study. There's always tomorrow for a new adventure!",
+                speaker: "Narrator",
+                choices: [
+                    { text: "Finish Quest", next: "end" }
+                ],
+                bg: "linear-gradient(to bottom, #dfe6e9, #b2bec3)"
+            }
+        };
+
+        let state = {
+            currentNode: 'start',
+            wisdom: 10,
+            kindness: 10,
+            isNarrationOn: true
+        };
+
+        const dialogueText = document.getElementById('dialogue-text');
+        const displayName = document.getElementById('display-name');
+        const choicesGrid = document.getElementById('choices-grid');
+        const portraitLeft = document.getElementById('portrait-left');
+        const portraitRight = document.getElementById('portrait-right');
+        const main = document.getElementById('scene-container');
+
+        function updateScene() {
+            const node = story[state.currentNode];
+
+            // Animation
+            dialogueText.classList.remove('fade-in');
+            void dialogueText.offsetWidth;
+            dialogueText.classList.add('fade-in');
+
+            // Text
+            dialogueText.innerText = node.text;
+            displayName.innerText = node.speaker;
+            if (state.isNarrationOn) speak(node.text);
+
+            // BG
+            if (node.bg) main.style.background = node.bg;
+
+            // Portraits
+            if (node.leftImg) {
+                portraitLeft.style.backgroundImage = `url('${node.leftImg}')`;
+                portraitLeft.style.display = 'block';
+                portraitLeft.classList.add('char-active');
+            } else {
+                portraitLeft.style.display = 'none';
+            }
+
+            if (node.rightImg) {
+                portraitRight.style.backgroundImage = `url('${node.rightImg}')`;
+                portraitRight.style.display = 'block';
+                portraitRight.classList.add('char-active');
+            } else {
+                portraitRight.style.display = 'none';
+            }
+
+            // Choices
+            choicesGrid.innerHTML = '';
+            node.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = `<i class="fa-solid fa-chevron-right"></i> ${choice.text}`;
+                btn.onclick = () => makeChoice(choice);
+                choicesGrid.appendChild(btn);
+            });
+
+            // HUD
+            document.getElementById('stat-wisdom').innerText = state.wisdom;
+            document.getElementById('stat-kindness').innerText = state.kindness;
+        }
+
+        function makeChoice(choice) {
+            if (choice.next === 'end') {
+                showEnding();
+                return;
+            }
+
+            if (choice.stats) {
+                state.wisdom += choice.stats.wisdom || 0;
+                state.kindness += choice.stats.kindness || 0;
+            }
+
+            state.currentNode = choice.next;
+            playSfx(600, 0.1);
+            updateScene();
+        }
+
+        function showEnding() {
+            const modal = document.getElementById('ending-modal');
+            const title = document.getElementById('ending-title');
+            const desc = document.getElementById('ending-desc');
+            const emoji = document.getElementById('ending-emoji');
+
+            if (state.wisdom > 15 && state.kindness > 10) {
+                title.innerText = "Knight of Knowledge! 🛡️";
+                desc.innerText = "You balanced wisdom and kindness perfectly. The kingdom is safe in your hands!";
+                emoji.innerText = "🏰✨👑";
+            } else {
+                title.innerText = "The Journey Ends 🌅";
+                desc.innerText = "You completed your quest and learned many new things. Every expert was once a beginner!";
+                emoji.innerText = "📖🎒🌟";
+            }
+
+            modal.style.display = 'flex';
+            playSfx(1000, 0.5);
+        }
+
+        function toggleNarration() {
+            state.isNarrationOn = !state.isNarrationOn;
+            const icon = document.getElementById('narration-icon');
+            icon.className = state.isNarrationOn ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            if (!state.isNarrationOn) window.speechSynthesis.cancel();
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.rate = 1.0;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        let audioCtx;
+        function playSfx(f, d) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + d);
+        }
+
+        updateScene();
+    </script>
+</body>
+
+</html>
