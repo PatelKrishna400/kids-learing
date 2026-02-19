@@ -202,38 +202,48 @@
             border-color: var(--primary);
             background: #f0effc;
         }
+
+        /* Ramayan Theme */
+        body.theme-ramayan {
+            background: #ff7f50;
+        }
+
+        .theme-ramayan .map-container {
+            background: linear-gradient(rgba(255, 127, 80, 0.8), rgba(255, 159, 67, 0.8)),
+                url('https://images.unsplash.com/photo-1590059530536-cc4340798132?q=80&w=2000&auto=format&fit=crop');
+            /* Forest background */
+            background-blend-mode: overlay;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .theme-ramayan .story-node {
+            border-color: #ff9f43;
+            background: #fff;
+            color: #ff7f50;
+        }
+
+        .theme-ramayan .story-node:hover {
+            background: #ff9f43;
+            color: white;
+        }
+
+        .player-ramayan {
+            background: #fff9f0 !important;
+            border: 15px solid #ff9f43;
+            border-image: url('https://www.transparenttextures.com/patterns/gold-scale.png') 30 round;
+        }
     </style>
 </head>
 
-<body>
-    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back home</a>
+<body class="theme-default">
+    <a href="index.html" class="back-btn" id="categoryBackLink"><i class="fa-solid fa-arrow-left"></i> Back to
+        Palace</a>
 
     <div class="map-container" id="storyMap">
-        <!-- Path Nodes (Initial) -->
-        <div class="story-node"
-            onclick="openStory(1, 'The Brave Robot', 'Once upon a time, there was a little robot named Pip who wanted to explore the moon...')">
-            1
-            <div class="node-label">The Brave Robot</div>
-        </div>
-
-        <div class="story-node"
-            onclick="openStory(2, 'The Flying Whale', 'Deep in the cotton-candy clouds lived a giant blue whale whose fins were actually wings...')">
-            2
-            <div class="node-label">The Flying Whale</div>
-        </div>
-
-        <div class="story-node locked">
-            <i class="fa-solid fa-lock"></i>
-            <div class="node-label">Locked Story</div>
-        </div>
-
-        <div class="story-node locked">
-            <i class="fa-solid fa-lock"></i>
-            <div class="node-label">Locked Story</div>
-        </div>
-
+        <!-- Nodes will be injected by JS -->
         <div id="loader" class="infinite-loader">
-            <i class="fa-solid fa-cloud"></i> Discovering more stories...
+            <i class="fa-solid fa-scroll"></i> Preparing your journey...
         </div>
     </div>
 
@@ -265,100 +275,124 @@
     </div>
 
     <script>
-        // Fullscreen Story Logic
-        let currentStoryId = null;
-        let unlockedLevels = 2; // Start with 2 unlocked
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get('id') || 'general';
 
-        const storiesData = {
-            1: {
-                question: "What was the robot's name?",
-                options: ["Pip", "Pop", "Zap"],
-                answer: "Pip"
+        // Story Database
+        const storyMasterData = {
+            'ramayan': {
+                title: "The Epic Ramayan",
+                theme: "theme-ramayan",
+                levels: [
+                    {
+                        id: 1,
+                        name: "Introduction of Ramayan",
+                        icon: "fa-om",
+                        content: `Long ago in the kingdom of Ayodhya, lived a wise King named Dasharatha. He had four sons, and the eldest was Prince Rama. Rama was known for his truth and bravery. This story is about his journey of courage and goodness, where he, alongside his brother Lakshmana and wife Sita, showed the world the power of dharma!`,
+                        quiz: {
+                            question: "Who was the eldest son of King Dasharatha?",
+                            options: ["Rama", "Lakshmana", "Bharata"],
+                            answer: "Rama"
+                        }
+                    },
+                    { id: 2, name: "The Gurukul Days", icon: "fa-book", locked: true },
+                    { id: 3, name: "Sita's Swayamvar", icon: "fa-ring", locked: true }
+                ]
             },
-            2: {
-                question: "Where did the whale live?",
-                options: ["Ocean", "Clouds", "Forest"],
-                answer: "Clouds"
+            'general': {
+                title: "Adventure World",
+                theme: "theme-default",
+                levels: [
+                    { id: 1, name: "The Brave Robot", content: "Once upon a time, there was a little robot named Pip who wanted to explore the moon...", quiz: { question: "What was the robot's name?", options: ["Pip", "Pop", "Zap"], answer: "Pip" } },
+                    { id: 2, name: "The Flying Whale", content: "Deep in the cotton-candy clouds lived a giant blue whale whose fins were actually wings...", quiz: { question: "Where did the whale live?", options: ["Ocean", "Clouds", "Forest"], answer: "Clouds" } }
+                ]
             }
         };
 
-        function openStory(id, title, content) {
-            currentStoryId = id;
+        const currentStory = storyMasterData[storyId] || storyMasterData['general'];
+        document.title = currentStory.title + " - WonderKids";
+        document.body.className = currentStory.theme;
+
+        function initMap() {
+            const map = document.getElementById('storyMap');
+            const loader = document.getElementById('loader');
+
+            // Clear existing nodes but keep loader
+            const nodes = map.querySelectorAll('.story-node');
+            nodes.forEach(n => n.remove());
+
+            currentStory.levels.forEach((lvl, index) => {
+                const node = document.createElement('div');
+                node.className = `story-node ${lvl.locked ? 'locked' : ''}`;
+
+                if (lvl.locked) {
+                    node.innerHTML = `<i class="fa-solid fa-lock"></i>`;
+                } else {
+                    node.innerText = lvl.id;
+                    node.onclick = () => openStory(lvl.id, lvl.name, lvl.content, lvl.quiz);
+                }
+
+                const label = document.createElement('div');
+                label.className = 'node-label';
+                label.innerText = lvl.name;
+                node.appendChild(label);
+
+                map.insertBefore(node, loader);
+            });
+
+            loader.style.display = 'none';
+        }
+
+        function openStory(id, title, content, quiz) {
             document.getElementById('storyTitle').innerText = title;
             document.getElementById('storyBody').innerHTML = content;
             document.getElementById('storyPlayer').style.display = 'flex';
             document.getElementById('quizOverlay').style.display = 'none';
 
-            // Enter Fullscreen if possible
+            // Active reference for quiz
+            window.currentQuiz = quiz;
+
+            if (storyId === 'ramayan') {
+                document.getElementById('storyPlayer').classList.add('player-ramayan');
+            }
+
             if (document.documentElement.requestFullscreen) {
-                document.getElementById('storyPlayer').requestFullscreen();
+                document.getElementById('storyPlayer').requestFullscreen().catch(() => { });
             }
         }
 
         function showQuiz() {
-            const data = storiesData[currentStoryId];
-            if (!data) {
-                alert("Quiz coming soon for this level!");
+            if (!window.currentQuiz) {
+                alert("Quiz coming soon!");
                 closeStory();
                 return;
             }
 
-            document.getElementById('quizQuestion').innerText = data.question;
+            document.getElementById('quizQuestion').innerText = window.currentQuiz.question;
             const optionsDiv = document.getElementById('quizOptions');
             optionsDiv.innerHTML = '';
 
-            data.options.forEach(opt => {
+            window.currentQuiz.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt);
+                btn.onclick = () => {
+                    if (opt === window.currentQuiz.answer) {
+                        alert("✨ Perfect! Level Complete.");
+                        closeStory();
+                    } else {
+                        alert("❌ Oops! Try again.");
+                    }
+                };
                 optionsDiv.appendChild(btn);
             });
 
             document.getElementById('quizOverlay').style.display = 'flex';
         }
 
-        function checkAnswer(selected) {
-            const data = storiesData[currentStoryId];
-            if (selected === data.answer) {
-                alert("✨ Perfect! Correct answer.");
-                unlockNextLevel();
-                closeStory();
-            } else {
-                alert("❌ Oops! Try again.");
-            }
-        }
-
-        function unlockNextLevel() {
-            if (currentStoryId === unlockedLevels) {
-                unlockedLevels++;
-                const nodes = document.querySelectorAll('.story-node');
-                const nextNode = nodes[unlockedLevels - 1]; // Node index starts at 0
-                if (nextNode && nextNode.classList.contains('locked')) {
-                    nextNode.classList.remove('locked');
-                    nextNode.innerHTML = unlockedLevels;
-
-                    const nextId = unlockedLevels;
-                    const nextTitle = `Adventure ${nextId}`;
-                    const nextText = `Welcome to level ${nextId}! Your journey across the magical world continues with even bigger surprises...`;
-
-                    nextNode.onclick = () => openStory(nextId, nextTitle, nextText);
-
-                    // Add dummy quiz for newly unlocked level
-                    storiesData[nextId] = {
-                        question: `Which level did you just unlock?`,
-                        options: [`Level ${nextId}`, `Level ${nextId - 1}`, `Level 1`],
-                        answer: `Level ${nextId}`
-                    };
-                }
-            }
-        }
-
         function closeStory() {
             document.getElementById('storyPlayer').style.display = 'none';
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            }
+            if (document.fullscreenElement) document.exitFullscreen();
             window.speechSynthesis.cancel();
         }
 
@@ -366,29 +400,10 @@
             const text = document.getElementById('storyBody').innerText;
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9;
-            utterance.pitch = 1.1;
             window.speechSynthesis.speak(utterance);
         }
 
-        // Infinite Scroll Mock
-        let nodeCount = 4;
-        window.addEventListener('scroll', () => {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                addNewNode();
-            }
-        });
-
-        function addNewNode() {
-            nodeCount++;
-            const map = document.getElementById('storyMap');
-            const loader = document.getElementById('loader');
-
-            const newNode = document.createElement('div');
-            newNode.className = 'story-node locked';
-            newNode.innerHTML = `<i class="fa-solid fa-lock"></i><div class="node-label">Story ${nodeCount}</div>`;
-
-            map.insertBefore(newNode, loader);
-        }
+        initMap();
     </script>
 </body>
 

@@ -198,6 +198,9 @@
         <div class="game-modal">
             <div class="modal-header">
                 <button class="back-modal-btn" id="gameModalBack"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <div class="coin-display" style="position: static; transform: none; box-shadow: none;">
+                    <i class="fa-solid fa-coins"></i> <span id="modalUserCoins">50</span>
+                </div>
                 <h2 id="modalTitle">Learning Games 🎮</h2>
                 <button class="close-modal">&times;</button>
             </div>
@@ -220,6 +223,34 @@
         </div>
     </div>
 
+    <!-- Stories Modal (Gamified Interface) -->
+    <div id="storiesModal" class="modal-overlay">
+        <div class="game-modal full-screen">
+            <div class="modal-header">
+                <div class="coin-display" style="position: static; margin-right: auto;">
+                    <i class="fa-solid fa-coins"></i> <span id="storyUserCoins">50</span>
+                </div>
+                <h2 style="margin: 0 auto; font-size: 1.5rem;">Interactive Stories 📚</h2>
+                <button class="close-modal"
+                    onclick="document.getElementById('storiesModal').classList.remove('active')">&times;</button>
+            </div>
+
+            <div class="modal-body" style="background: #fdfcf0; border-radius: 20px; padding: 20px;">
+                <div class="category-tabs"
+                    style="display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;">
+                    <button class="tab-btn active" onclick="filterStories('mythology', this)">Mythology</button>
+                    <button class="tab-btn" onclick="filterStories('legends', this)">Legends</button>
+                    <button class="tab-btn" onclick="filterStories('fables', this)">Fables</button>
+                </div>
+
+                <div id="storiesGrid" class="category-menu"
+                    style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                    <!-- Stories will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
         // Game Logic - Persistent Coins & Daily Rewards
@@ -228,6 +259,8 @@
 
         function updateCoinDisplay() {
             coinDisplay.innerText = coins;
+            if (document.getElementById('modalUserCoins')) document.getElementById('modalUserCoins').innerText = coins;
+            if (document.getElementById('storyUserCoins')) document.getElementById('storyUserCoins').innerText = coins;
             localStorage.setItem('wonderKids_coins', coins);
         }
 
@@ -321,6 +354,9 @@
             { id: 'sentence-builder', title: 'Sentence Builder', type: 'special', color: 'linear-gradient(135deg, #4a90e2, #5c67f2)' },
             { id: 'solar-explorer', title: 'Solar System Explorer', type: 'special', color: 'linear-gradient(135deg, #0b0d17, #4a90e2)' },
             { id: 'multi-monster', title: 'Multiplication Monster', type: 'special', color: 'linear-gradient(135deg, #9b59b6, #8e44ad)' },
+            { id: 'puzzle-map-india', title: 'Puzzle Map India', type: 'special', color: 'linear-gradient(135deg, #ff9f43, #ff7f50)' },
+            { id: 'coding-robot', title: 'Robot Coder (Blockly)', type: 'special', color: 'linear-gradient(135deg, #3498db, #2980b9)' },
+            { id: 'treasure-hunt', title: 'Treasure Hunt Numbers', type: 'special', color: 'linear-gradient(135deg, #27ae60, #f1c40f)' },
             { id: 'math-jump', title: 'Math Jump Adventure', type: 'special', color: 'linear-gradient(135deg, #87CEEB, #2ecc71)' }
         ];
 
@@ -449,6 +485,30 @@
                          <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
                          <div class="banner-content"><h3>${game.title}</h3></div>
                     `;
+                } else if (game.id === 'puzzle-map-india') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Puzzle Map India', 'puzzle-map-india.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'coding-robot') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Robot Coder', 'coding-robot.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'treasure-hunt') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Treasure Hunt Numbers', 'treasure-hunt.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/explorer.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
                 } else if (game.id === 'math-jump') {
                     banner.className = 'game-banner';
                     banner.style.background = game.color;
@@ -492,8 +552,66 @@
         });
 
         document.getElementById('storiesCard').addEventListener('click', () => {
-            window.location.href = "stories.html";
+            document.getElementById('storiesModal').classList.add('active');
+            filterStories('mythology', document.querySelector('#storiesModal .tab-btn'));
         });
+
+        const allStories = {
+            mythology: [
+                { id: 'ramayan', title: 'The Epic Ramayan', color: 'linear-gradient(135deg, #ff9f43, #ff7f50)', icon: 'fa-om', url: 'stories.html?id=ramayan' },
+                { id: 'mahabharat', title: 'The Great Mahabharat', color: 'linear-gradient(135deg, #ee5253, #ff6b6b)', icon: 'fa-dharmachakra', url: 'stories.html?id=mahabharat' },
+                { id: 'krishna', title: 'Lord Krishna Tales', color: 'linear-gradient(135deg, #4834d4, #686de0)', icon: 'fa-feather', url: 'stories.html?id=krishna' }
+            ],
+            legends: [
+                { id: 'akbar-birbal', title: 'Akbar & Birbal', color: 'linear-gradient(135deg, #f0932b, #ffbe76)', icon: 'fa-crown', url: 'stories.html?id=akbar-birbal' },
+                { id: 'tenali-raman', title: 'Tenali Raman Wisdom', color: 'linear-gradient(135deg, #6ab04c, #badc58)', icon: 'fa-brain', url: 'stories.html?id=tenali-raman' },
+                { id: 'maharana-pratap', title: 'Maharana Pratap', color: 'linear-gradient(135deg, #eb4d4b, #ff7979)', icon: 'fa-shield-halved', url: 'stories.html?id=pratap' }
+            ],
+            fables: [
+                { id: 'panchatantra', title: 'Panchatantra Tales', color: 'linear-gradient(135deg, #009432, #A3CB38)', icon: 'fa-paw', url: 'stories.html?id=panchatantra' },
+                { id: 'jataka-tales', title: 'Jataka Tales', color: 'linear-gradient(135deg, #1289A7, #12CBC4)', icon: 'fa-lotus', url: 'stories.html?id=jataka' },
+                { id: 'vikram-betal', title: 'Vikram and Betal', color: 'linear-gradient(135deg, #130f40, #535c68)', icon: 'fa-ghost', url: 'stories.html?id=vikram' }
+            ]
+        };
+
+        function filterStories(category, btn) {
+            const tabs = document.querySelectorAll('#storiesModal .tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const grid = document.getElementById('storiesGrid');
+            grid.innerHTML = '';
+
+            allStories[category].forEach(story => {
+                const banner = document.createElement('div');
+                banner.className = 'game-banner';
+                banner.style.background = story.color;
+                banner.style.width = "100%"; // Full width in grid
+                banner.onclick = () => {
+                    const cost = 1;
+                    if (coins >= cost) {
+                        coins -= cost;
+                        updateCoinDisplay();
+                        alert(`🪙 1 Coin used for Story! Enjoy!`);
+                        window.location.href = story.url;
+                    } else {
+                        alert("❌ Not enough coins!");
+                    }
+                };
+                banner.innerHTML = `
+                    <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left:15px; border: 2px solid white;">
+                        <i class="fa-solid ${story.icon}" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="banner-content" style="margin-left: 20px;">
+                        <h3 style="color: white; font-size: 1.2rem;">${story.title}</h3>
+                        <div style="background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 10px; color: white; display: inline-block; font-size: 0.8rem; margin-top:5px;">
+                             <i class="fa-solid fa-coins"></i> 1 
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(banner);
+            });
+        }
 
     </script>
 </body>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt Numbers - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --jungle-green: #27ae60;
+            --path-color: #f1c40f;
+            --wall-color: #1e8449;
+            --text-color: #2c3e50;
+            --primary: #e67e22;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--jungle-green);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            color: #ff4d4d;
+            padding: 8px 15px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            color: var(--text-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Game Layout */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .mission-panel {
+            background: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 4px solid var(--primary);
+            text-align: center;
+        }
+
+        .mission-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-color);
+        }
+
+        /* Maze Grid */
+        .maze-container {
+            position: relative;
+            background: var(--wall-color);
+            padding: 5px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .maze-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 2px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background: var(--wall-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .cell.path {
+            background: #abeac3;
+        }
+
+        .cell.target {
+            background: #fdfefe;
+        }
+
+        /* Player */
+        #player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+        }
+
+        /* Chests */
+        .chest {
+            width: 40px;
+            height: 40px;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            animation: float 2s infinite ease-in-out;
+            position: relative;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .chest.opened::after {
+            content: attr(data-number);
+            position: absolute;
+            top: -30px;
+            background: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            color: var(--primary);
+            animation: popUp 0.3s forwards;
+        }
+
+        @keyframes popUp {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Controls Area */
+        .controls {
+            margin-top: 30px;
+            display: grid;
+            grid-template-areas: ". up ." "left down right";
+            gap: 10px;
+        }
+
+        .ctrl-btn {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            color: var(--jungle-green);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 40px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 8px solid var(--jungle-green);
+        }
+
+        .btn-start {
+            background: var(--jungle-green);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <h1 class="game-title">Treasure Hunt Numbers</h1>
+        <div class="game-stats">
+            <div class="stat-card" style="color: #e67e22;"><i class="fa-solid fa-gem"></i> <span id="score">0</span>
+            </div>
+            <div class="stat-card" style="color: #27ae60;"><i class="fa-solid fa-star"></i> <span id="level">1</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="mission-panel">
+            <div id="mission-text" class="mission-text">Find a Multiple of 3</div>
+        </div>
+
+        <div class="maze-container">
+            <div class="maze-grid" id="maze">
+                <!-- Cells generated here -->
+                <div id="player">🐵</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="ctrl-btn" style="grid-area: up" onclick="move(0, -1)"><i
+                    class="fa-solid fa-chevron-up"></i></button>
+            <button class="ctrl-btn" style="grid-area: left" onclick="move(-1, 0)"><i
+                    class="fa-solid fa-chevron-left"></i></button>
+            <button class="ctrl-btn" style="grid-area: down" onclick="move(0, 1)"><i
+                    class="fa-solid fa-chevron-down"></i></button>
+            <button class="ctrl-btn" style="grid-area: right" onclick="move(1, 0)"><i
+                    class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </main>
+
+    <div id="startOverlay" class="overlay active">
+        <div class="modal">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🌴🏛️</div>
+            <h2>Jungle Navigator!</h2>
+            <p>Help the monkey find the correct treasure chests.</p>
+            <p style="margin-top: 10px; color: #666;">Use arrow keys or buttons to move and open chests!</p>
+            <button class="btn-start" onclick="startGame()">START HUNT</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 10;
+        let playerPos = { x: 0, y: 0 };
+        let currentLevel = 1;
+        let score = 0;
+        let currentRule = { divisor: 3, text: "Find a Multiple of 3" };
+        let chests = [];
+        let maze = [];
+
+        // Simplified maze generation logic
+        function generateMaze() {
+            const mazeEl = document.getElementById('maze');
+            mazeEl.querySelectorAll('.cell').forEach(c => c.remove());
+            maze = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+
+            // Create a path using a simple snake/random walk
+            let cx = 0, cy = 0;
+            maze[cy][cx] = 1;
+            for (let i = 0; i < 50; i++) {
+                const dir = Math.floor(Math.random() * 4);
+                if (dir === 0 && cx < GRID_SIZE - 1) cx++;
+                else if (dir === 1 && cx > 0) cx--;
+                else if (dir === 2 && cy < GRID_SIZE - 1) cy++;
+                else if (dir === 3 && cy > 0) cy--;
+                maze[cy][cx] = 1;
+            }
+
+            // Ensure player starting position is clear
+            maze[0][0] = 1;
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = `cell ${maze[y][x] === 1 ? 'path' : ''}`;
+                    mazeEl.appendChild(cell);
+                }
+            }
+
+            placeChests();
+            updatePlayerUI();
+        }
+
+        function placeChests() {
+            chests = [];
+            const mazeEl = document.getElementById('maze');
+            const pathCells = [];
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (maze[y][x] === 1 && (x > 1 || y > 1)) pathCells.push({ x, y });
+                }
+            }
+
+            // Select 4 random locations for chests
+            const locations = pathCells.sort(() => Math.random() - 0.5).slice(0, 4);
+
+            // Rule generation
+            const divisors = [2, 3, 4, 5, 10];
+            const d = divisors[Math.floor(Math.random() * divisors.length)];
+            currentRule = { divisor: d, text: `Find a Multiple of ${d}` };
+            document.getElementById('mission-text').innerText = currentRule.text;
+
+            locations.forEach((loc, idx) => {
+                let num;
+                if (idx === 0) {
+                    // One correct answer
+                    num = d * (Math.floor(Math.random() * 10) + 1);
+                } else {
+                    // Three wrong answers
+                    do { num = Math.floor(Math.random() * 50) + 1; } while (num % d === 0);
+                }
+
+                const chestEl = document.createElement('div');
+                chestEl.className = 'chest';
+                chestEl.innerHTML = '🎁';
+                chestEl.dataset.number = num;
+                chestEl.style.position = 'absolute';
+                chestEl.style.left = (loc.x * 52 + 5) + 'px';
+                chestEl.style.top = (loc.y * 52 + 5) + 'px';
+                mazeEl.appendChild(chestEl);
+
+                chests.push({ x: loc.x, y: loc.y, number: num, element: chestEl, opened: false });
+            });
+        }
+
+        function move(dx, dy) {
+            const newX = playerPos.x + dx;
+            const newY = playerPos.y + dy;
+
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && maze[newY][newX] === 1) {
+                playerPos.x = newX;
+                playerPos.y = newY;
+                updatePlayerUI();
+                checkChest();
+            }
+        }
+
+        function updatePlayerUI() {
+            const p = document.getElementById('player');
+            p.style.left = (playerPos.x * 52 + 5) + 'px';
+            p.style.top = (playerPos.y * 52 + 5) + 'px';
+        }
+
+        function checkChest() {
+            const chest = chests.find(c => c.x === playerPos.x && c.y === playerPos.y && !c.opened);
+            if (chest) {
+                chest.opened = true;
+                chest.element.classList.add('opened');
+                chest.element.innerHTML = '✨';
+
+                if (chest.number % currentRule.divisor === 0) {
+                    // WIN
+                    score += 100;
+                    currentLevel++;
+                    document.getElementById('score').innerText = score;
+                    document.getElementById('level').innerText = currentLevel;
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+                    setTimeout(() => {
+                        clearGame();
+                        generateMaze();
+                    }, 1500);
+                } else {
+                    // WRONG
+                    const utterance = new SpeechSynthesisUtterance("Not this one! Keep looking!");
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+        }
+
+        function clearGame() {
+            document.querySelectorAll('.chest').forEach(c => c.remove());
+            playerPos = { x: 0, y: 0 };
+        }
+
+        function startGame() {
+            document.getElementById('startOverlay').classList.remove('active');
+            generateMaze();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') move(0, -1);
+            if (e.key === 'ArrowDown') move(0, 1);
+            if (e.key === 'ArrowLeft') move(-1, 0);
+            if (e.key === 'ArrowRight') move(1, 0);
+        });
+
+    </script>
+</body>
+
+</html>

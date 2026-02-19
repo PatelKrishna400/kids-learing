@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Coder - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --grid-line: #ecf0f1;
+            --block-bg: #ffffff;
+            --bg: #f5f6fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            color: #ff4d4d;
+            padding: 8px 15px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* Layout */
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Toolbox & Workspace */
+        .programming-panel {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-box {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        /* Blocks */
+        .toolbox {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .block {
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+        }
+
+        .block-move {
+            background: var(--primary);
+        }
+
+        .block-left {
+            background: var(--warning);
+        }
+
+        .block-right {
+            background: var(--warning);
+        }
+
+        .block-loop {
+            background: var(--danger);
+        }
+
+        .workspace {
+            flex: 1;
+            min-height: 300px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 15px;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .workspace-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .workspace-item .delete-btn {
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Game Grid Area */
+        .grid-panel {
+            flex: 1;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 60px);
+            grid-template-rows: repeat(7, 60px);
+            gap: 2px;
+            background: var(--grid-line);
+            border: 4px solid var(--grid-line);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .grid-cell {
+            width: 60px;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .grid-cell.wall {
+            background: #34495e;
+            color: #5d6d7e;
+        }
+
+        .grid-cell.treasure {
+            color: #f1c40f;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* Robot */
+        #robot {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .btn-run {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-reset {
+            background: #bdc3c7;
+            color: white;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loop-input {
+            width: 60px !important;
+            padding: 4px !important;
+            border: none !important;
+            border-radius: 4px !important;
+            text-align: center;
+            font-weight: 700;
+            color: var(--danger);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <h1 class="game-title">Robot Coder</h1>
+        <div style="width: 100px;"></div>
+    </header>
+
+    <main>
+        <div class="programming-panel">
+            <div class="panel-box">
+                <div class="panel-title">Commands</div>
+                <div class="toolbox">
+                    <div class="block block-move" draggable="true" ondragstart="drag(event)" data-type="move"><i
+                            class="fa-solid fa-arrow-up"></i> Forward</div>
+                    <div class="block block-left" draggable="true" ondragstart="drag(event)" data-type="left"><i
+                            class="fa-solid fa-rotate-left"></i> Turn Left</div>
+                    <div class="block block-right" draggable="true" ondragstart="drag(event)" data-type="right"><i
+                            class="fa-solid fa-rotate-right"></i> Turn Right</div>
+                    <div class="block block-loop" draggable="true" ondragstart="drag(event)" data-type="loop"><i
+                            class="fa-solid fa-repeat"></i> Loop</div>
+                </div>
+            </div>
+
+            <div class="panel-box" style="flex: 1;">
+                <div class="panel-title">Your Code</div>
+                <div class="workspace" id="workspace" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- Dropped blocks here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-panel">
+            <div class="grid-container" id="grid">
+                <!-- Cells generated by JS -->
+                <div id="robot" style="left: 5px; top: 5px; transform: rotate(0deg);">🤖</div>
+            </div>
+
+            <div class="action-btns">
+                <button class="btn btn-reset" id="resetBtn" onclick="resetRobot()"><i
+                        class="fa-solid fa-rotate-left"></i> Reset</button>
+                <button class="btn btn-run" id="runBtn" onclick="runCode()"><i class="fa-solid fa-play"></i> Run
+                    Code</button>
+            </div>
+
+            <p style="margin-top: 20px; color: #7f8c8d; font-size: 0.9rem;">Guide the Robot to the Treasure 🏆!</p>
+        </div>
+    </main>
+
+    <div class="overlay" id="winOverlay">
+        <div class="modal">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🏆</div>
+            <h2>Well Done, Coder!</h2>
+            <p>You guided the robot to the treasure!</p>
+            <button class="btn btn-run" style="margin: 20px auto;" onclick="location.reload()">Next Level</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 7;
+        const CELL_SIZE = 60;
+        const map = [
+            [0, 0, 0, 1, 0, 0, 0],
+            [0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 2] // 2: Treasure
+        ];
+
+        let robotPos = { x: 0, y: 0 };
+        let robotDir = 0; // 0: Right, 90: Down, 180: Left, 270: Up
+        let commands = [];
+        let isRunning = false;
+
+        function initGrid() {
+            const gridEl = document.getElementById('grid');
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    if (map[y][x] === 1) cell.classList.add('wall');
+                    if (map[y][x] === 2) {
+                        cell.classList.add('treasure');
+                        cell.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                    }
+                    gridEl.appendChild(cell);
+                }
+            }
+            updateRobotUI();
+        }
+
+        function allowDrop(ev) { ev.preventDefault(); }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("type", ev.target.dataset.type);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const type = ev.dataTransfer.getData("type");
+            addCommand(type);
+        }
+
+        function addCommand(type) {
+            const workspace = document.getElementById('workspace');
+            const command = { type, id: Date.now(), count: 2 };
+
+            const div = document.createElement('div');
+            div.className = `workspace-item block-${type}`;
+            div.id = command.id;
+
+            let html = '';
+            if (type === 'move') html = '<span>Forward</span>';
+            if (type === 'left') html = '<span>Turn Left</span>';
+            if (type === 'right') html = '<span>Turn Right</span>';
+            if (type === 'loop') {
+                html = `<span>Loop <input type="number" class="loop-input" value="2" min="1" max="5" onchange="updateLoop(this, ${command.id})"> times</span>`;
+            }
+
+            div.innerHTML = `${html} <button class="delete-btn" onclick="removeCommand(${command.id})">×</button>`;
+            workspace.appendChild(div);
+            commands.push(command);
+        }
+
+        function updateLoop(input, id) {
+            const cmd = commands.find(c => c.id === id);
+            if (cmd) cmd.count = parseInt(input.value);
+        }
+
+        function removeCommand(id) {
+            const el = document.getElementById(id);
+            el.remove();
+            commands = commands.filter(c => c.id !== id);
+        }
+
+        async function runCode() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('runBtn').disabled = true;
+
+            const fullBatch = [];
+            commands.forEach(cmd => {
+                if (cmd.type === 'loop') {
+                    // Current simplified loop: repeats ALL previous commands
+                    // Actually, let's make it repeat itself as "move move move"
+                    for (let i = 0; i < cmd.count; i++) fullBatch.push('move');
+                } else {
+                    fullBatch.push(cmd.type);
+                }
+            });
+
+            for (const step of fullBatch) {
+                if (!isRunning) break;
+
+                if (step === 'move') {
+                    if (!moveRobot()) break;
+                } else if (step === 'left') {
+                    robotDir -= 90;
+                } else if (step === 'right') {
+                    robotDir += 90;
+                }
+
+                updateRobotUI();
+                await new Promise(r => setTimeout(r, 600));
+
+                if (map[robotPos.y][robotPos.x] === 2) {
+                    showWin();
+                    break;
+                }
+            }
+            isRunning = false;
+            document.getElementById('runBtn').disabled = false;
+        }
+
+        function moveRobot() {
+            let nextX = robotPos.x;
+            let nextY = robotPos.y;
+
+            const normalizedDir = ((robotDir % 360) + 360) % 360;
+            if (normalizedDir === 0) nextX++;
+            else if (normalizedDir === 90) nextY++;
+            else if (normalizedDir === 180) nextX--;
+            else if (normalizedDir === 270) nextY--;
+
+            if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE || map[nextY][nextX] === 1) {
+                shakeRobot();
+                isRunning = false;
+                return false;
+            }
+
+            robotPos.x = nextX;
+            robotPos.y = nextY;
+            return true;
+        }
+
+        function updateRobotUI() {
+            const rb = document.getElementById('robot');
+            rb.style.left = (robotPos.x * 62 + 5) + 'px'; // +2 for gap
+            rb.style.top = (robotPos.y * 62 + 5) + 'px';
+            rb.style.transform = `rotate(${robotDir}deg)`;
+        }
+
+        function shakeRobot() {
+            const rb = document.getElementById('robot');
+            rb.style.transition = 'none';
+            rb.style.transform += ' scale(1.3)';
+            setTimeout(() => {
+                rb.style.transition = 'all 0.4s';
+                rb.style.transform = `rotate(${robotDir}deg) scale(1)`;
+            }, 200);
+        }
+
+        function resetRobot() {
+            isRunning = false;
+            robotPos = { x: 0, y: 0 };
+            robotDir = 0;
+            updateRobotUI();
+        }
+
+        function showWin() {
+            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('winOverlay').classList.add('active');
+        }
+
+        initGrid();
+    </script>
+</body>
+
+</html>
