@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Sound Match - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --jungle-green: #2d6a4f;
+            --light-green: #74c69d;
+            --primary: #ff9f1c;
+            --bg: #f0fdf4;
+            --text: #1b4332;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(var(--light-green) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            color: #ff4d4d;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .score-badge {
+            background: var(--jungle-green);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Game Area */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .jungle-deco {
+            position: absolute;
+            font-size: 5rem;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .audio-container {
+            margin-bottom: 40px;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .btn-play-sound {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 8px solid white;
+            background: var(--primary);
+            color: white;
+            font-size: 3.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(255, 159, 28, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-play-sound:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 35px rgba(255, 159, 28, 0.5);
+        }
+
+        .btn-play-sound.playing {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.7);
+            }
+
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 20px rgba(255, 159, 28, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 159, 28, 0);
+            }
+        }
+
+        .hint-text {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: var(--jungle-green);
+            font-weight: 600;
+        }
+
+        .animal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            z-index: 5;
+        }
+
+        .animal-card {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            border: 6px solid transparent;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-color: var(--light-green);
+        }
+
+        .animal-card img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+        }
+
+        .animal-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: capitalize;
+        }
+
+        .animal-card.correct {
+            border-color: #2ecc71;
+            background: #f0fdf4;
+        }
+
+        .animal-card.wrong {
+            border-color: #e74c3c;
+            background: #fff5f5;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* Win Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .win-card {
+            background: white;
+            padding: 40px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .btn-next {
+            background: var(--jungle-green);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <h1 class="game-title">Animal Sound Match</h1>
+        <div class="score-badge">
+            <i class="fa-solid fa-star"></i>
+            <span id="score">0</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="jungle-deco" style="top: 10%; left: 10%;">🌿</div>
+        <div class="jungle-deco" style="bottom: 10%; right: 10%;">🌴</div>
+        <div class="jungle-deco" style="top: 40%; right: 5%;">🍃</div>
+        <div class="jungle-deco" style="bottom: 40%; left: 5%;">🪴</div>
+
+        <div class="audio-container">
+            <button class="btn-play-sound" id="playSoundBtn" onclick="playCurrentAnimalSound()">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <div class="hint-text">Click to hear the sound!</div>
+        </div>
+
+        <div class="animal-grid" id="animalGrid">
+            <!-- Animals injected here -->
+        </div>
+    </main>
+
+    <div class="overlay" id="winOverlay">
+        <div class="win-card">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🐾</div>
+            <h2>Great Job!</h2>
+            <p>You know your animals very well!</p>
+            <button class="btn-next" onclick="nextRound()">Next Animal <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
+    <audio id="errorSound" src="https://assets.mixkit.co/active_storage/sfx/2560/2560-preview.mp3"></audio>
+
+    <script>
+        const animals = [
+            { id: 'lion', name: 'Lion', emoji: '🦁', sound: 'roar', illustration: 'https://illustrations.popsy.co/white/lion.svg' },
+            { id: 'elephant', name: 'Elephant', emoji: '🐘', sound: 'trumpet', illustration: 'https://illustrations.popsy.co/white/elephant.svg' },
+            { id: 'monkey', name: 'Monkey', emoji: '🐒', sound: 'ooh ooh aah aah', illustration: 'https://illustrations.popsy.co/white/monkey.svg' },
+            { id: 'frog', name: 'Frog', emoji: '🐸', sound: 'ribbit', illustration: 'https://illustrations.popsy.co/white/frog.svg' },
+            { id: 'bird', name: 'Bird', emoji: '🐦', sound: 'tweet tweet', illustration: 'https://illustrations.popsy.co/white/bird.svg' },
+            { id: 'cow', name: 'Cow', emoji: '🐮', sound: 'moo', illustration: 'https://illustrations.popsy.co/white/cow.svg' },
+            { id: 'cat', name: 'Cat', emoji: '🐱', sound: 'meow', illustration: 'https://illustrations.popsy.co/white/cat.svg' },
+            { id: 'dog', name: 'Dog', emoji: '🐶', sound: 'woof woof', illustration: 'https://illustrations.popsy.co/white/dog.svg' }
+        ];
+
+        let currentAnimal = null;
+        let score = 0;
+        let choices = [];
+        let canPlay = true;
+
+        function initRound() {
+            canPlay = true;
+            document.getElementById('playSoundBtn').classList.remove('playing');
+
+            // Select random animal
+            currentAnimal = animals[Math.floor(Math.random() * animals.length)];
+
+            // Get 3 other random animals
+            const others = animals.filter(a => a.id !== currentAnimal.id)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+
+            choices = [currentAnimal, ...others].sort(() => Math.random() - 0.5);
+
+            renderGrid();
+            setTimeout(playCurrentAnimalSound, 500);
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('animalGrid');
+            grid.innerHTML = '';
+
+            choices.forEach(animal => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.innerHTML = `
+                    <div style="font-size: 5rem">${animal.emoji}</div>
+                    <div class="animal-name">${animal.name}</div>
+                `;
+                card.onclick = () => checkAnswer(animal, card);
+                grid.appendChild(card);
+            });
+        }
+
+        function playCurrentAnimalSound() {
+            if (!currentAnimal) return;
+
+            const btn = document.getElementById('playSoundBtn');
+            btn.classList.add('playing');
+
+            // Using Speech Synthesis to "act out" the animal sound for reliability
+            const utterance = new SpeechSynthesisUtterance(currentAnimal.sound);
+            utterance.rate = 0.8;
+            utterance.pitch = 0.8;
+
+            // Some custom voice handling for better "animal" sounds
+            if (currentAnimal.id === 'lion') utterance.pitch = 0.1;
+            if (currentAnimal.id === 'bird') utterance.pitch = 2.0;
+
+            utterance.onend = () => btn.classList.remove('playing');
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function checkAnswer(animal, card) {
+            if (!canPlay) return;
+
+            if (animal.id === currentAnimal.id) {
+                // Correct
+                canPlay = false;
+                score += 10;
+                document.getElementById('score').innerText = score;
+                card.classList.add('correct');
+                document.getElementById('successSound').play();
+
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                setTimeout(() => {
+                    document.getElementById('winOverlay').classList.add('active');
+                }, 1000);
+            } else {
+                // Wrong
+                card.classList.add('wrong');
+                document.getElementById('errorSound').play();
+                setTimeout(() => card.classList.remove('wrong'), 500);
+            }
+        }
+
+        function nextRound() {
+            document.getElementById('winOverlay').classList.remove('active');
+            initRound();
+        }
+
+        initRound();
+    </script>
+</body>
+
+</html>

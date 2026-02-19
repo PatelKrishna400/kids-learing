@@ -322,18 +322,13 @@ img {
 }
 
 /* Placeholder for character */
-.hero-character-placeholder {
-    width: 300px;
-    height: 400px;
-    background: transparent;
-    /* Replace with Image */
+.hero-mascot {
+    width: 400px;
+    height: 500px;
     position: relative;
     z-index: 2;
-    background-image: url('https://illustrations.popsy.co/amber/surr-working.svg');
-    /* Using a reliable placeholder illustration source */
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1));
+    animation: float 6s ease-in-out infinite;
 }
 
 .floating-card {
@@ -473,6 +468,17 @@ img {
 .feature-card p {
     color: #666;
     font-size: 1rem;
+}
+
+.card-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.card-btns button {
+    width: 100%;
 }
 
 /* CTA Section */
@@ -795,14 +801,16 @@ footer {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    /* Blur background to prevent distraction */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 2000;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-overlay.active {
@@ -812,12 +820,23 @@ footer {
 
 .game-modal {
     background: white;
-    width: 90%;
-    max-width: 500px;
-    padding: 30px;
+    width: 95%;
+    max-width: 400px;
+    /* Further reduced */
+    max-height: 80vh;
+    padding: 15px;
     border-radius: 30px;
     transform: translateY(20px);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.game-modal.full-screen {
+    max-width: 900px;
+    /* Large enough for full view on most screens */
+    height: 90vh;
+    max-height: 90vh;
 }
 
 .modal-overlay.active .game-modal {
@@ -828,50 +847,260 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
+}
+
+.modal-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    background: #f0f0f0;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+#modalTitle {
+    font-size: 1.1rem;
+    margin: 0;
 }
 
 .close-modal {
-    background: none;
-    font-size: 2rem;
-    color: #666;
+    background: #FF5E5E;
+    /* Modern red for close */
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    box-shadow: 0 4px 8px rgba(255, 94, 94, 0.3);
+}
+
+.close-modal:hover {
+    transform: rotate(90deg) scale(1.1);
+    background: #ff4747;
 }
 
 .modal-body {
-    display: flex;
-    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) #f0f0f0;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 15px;
+    display: none;
+}
+
+.levels-grid.active {
+    display: grid;
 }
 
 .level-card {
+    background: #fff;
+    border: 2px solid #eee;
+    padding: 20px 10px;
+    border-radius: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
-    border-radius: 20px;
+    gap: 10px;
+}
+
+.level-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.level-card i {
+    font-size: 2rem;
+    color: var(--primary);
+}
+
+.level-card span {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.level-card .cost {
+    font-size: 0.8rem;
+    color: #888;
     background: #f8f9fa;
-    transition: background 0.2s;
-}
-
-.level-card:hover:not(.locked) {
-    background: #f0f0f0;
-}
-
-.level-info {
-    flex: 1;
-}
-
-.level-info h4 {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.level-info p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #666;
+    padding: 4px 10px;
+    border-radius: 10px;
 }
 
 .level-card.locked {
     opacity: 0.6;
+}
+
+.cost-tag {
+    margin-top: 15px;
+    background: #fff9db;
+    color: #f08c00;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-block;
+    border: 1px solid #ffe066;
+}
+
+/* Alphabet Master Animated Banner */
+.alphabet-master-banner {
+    width: 320px;
+    margin: 0 auto 15px auto;
+    height: 90px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s;
+    border: 3px solid #fff;
+    box-shadow: 0 5px 10px rgba(108, 92, 231, 0.15);
+    display: flex;
+    align-items: center;
+}
+
+.alphabet-master-banner:hover {
+    transform: scale(1.02);
+}
+
+.banner-content {
+    position: relative;
+    z-index: 10;
+    margin-left: 95px;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.banner-content h3 {
+    color: white;
+    margin-bottom: 0;
+    font-size: 1.25rem;
+    font-family: 'Fredoka', sans-serif;
+}
+
+
+.kid-container {
+    position: absolute;
+    left: 10px;
+    bottom: 5px;
+    width: 90px;
+    height: 90px;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.kid-illustration {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+}
+
+.number-master-banner {
+    width: 320px;
+    margin: 0 auto 15px auto;
+    height: 90px;
+    background: linear-gradient(135deg, #2ecc71, #55efc4);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s;
+    border: 3px solid #fff;
+    box-shadow: 0 5px 10px rgba(46, 204, 113, 0.15);
+    display: flex;
+    align-items: center;
+}
+
+.number-master-banner:hover {
+    transform: scale(1.02);
+}
+
+.number-master-banner .banner-content {
+    margin-left: 15px;
+}
+
+/* 50 Games Grid System */
+.category-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 15px;
+    padding: 10px;
+    justify-items: center;
+}
+
+/* Generic Game Banner Style */
+.game-banner {
+    width: 320px;
+    height: 90px;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 3px solid #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    background: #fff;
+}
+
+.game-banner:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.game-banner .banner-content {
+    margin-left: 95px;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.game-banner .kid-container {
+    width: 70px;
+    height: 70px;
+    left: 10px;
+    bottom: 5px;
+    z-index: 20;
 }

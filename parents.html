@@ -380,7 +380,8 @@
                         class="fa-solid fa-ticket-simple"></i></div>
                 <div class="stat-info">
                     <h4>Unlock Level</h4>
-                    <p class="value" style="color: #FF6B6B;">Watch Ad (+1 🎫)</p>
+                    <p class="value" style="color: #FF6B6B;" id="adStatus">Watch Ad (+1 🎫)</p>
+                    <small id="adLimitInfo" style="color: #888; font-size: 0.7rem;">20 Remaining Today</small>
                 </div>
             </div>
             <div class="stat-card">
@@ -545,53 +546,125 @@
             <div class="pricing-grid">
                 <div class="parent-price-card">
                     <h3>Weekly Spark</h3>
-                    <div class="price-val">₹80</div>
+                    <div class="price-val">100 🎫</div>
                     <ul class="price-features">
                         <li>50 Daily Coins</li>
-                        <li><strong>100 Unlock Tickets</strong> 🎫</li>
                         <li>Basic Progress Reports</li>
+                        <li>Weekly Achievement Badge</li>
                     </ul>
-                    <button class="btn-primary plan-btn" style="width: 100%;" data-tickets="100">Choose Plan</button>
+                    <button class="btn-primary plan-btn" style="width: 100%;" data-cost="100">Choose Plan</button>
                 </div>
                 <div class="parent-price-card" style="border-color: var(--parent-primary);">
                     <div
                         style="background:var(--parent-primary); color:white; padding: 2px 10px; border-radius: 10px; font-size: 0.7rem; display: inline-block; margin-bottom: 10px;">
                         BEST VALUE</div>
                     <h3>Monthly Magic</h3>
-                    <div class="price-val">₹250</div>
+                    <div class="price-val">300 🎫</div>
                     <ul class="price-features">
                         <li>100 Daily Coins</li>
-                        <li><strong>300 Unlock Tickets</strong> 🎫</li>
                         <li>Advanced AI Analytics</li>
+                        <li>Monthly Progress Certificate</li>
                     </ul>
-                    <button class="btn-primary plan-btn" style="width: 100%;" data-tickets="300">Choose Plan</button>
+                    <button class="btn-primary plan-btn" style="width: 100%;" data-cost="300">Choose Plan</button>
                 </div>
                 <div class="parent-price-card">
                     <h3>Yearly Hero</h3>
-                    <div class="price-val">₹3000</div>
+                    <div class="price-val">3500 🎫</div>
                     <ul class="price-features">
                         <li>500 Daily Coins</li>
-                        <li><strong>3500 Unlock Tickets</strong> 🎫</li>
-                        <li>Personalized Tutor</li>
+                        <li>Personalized AI Tutor</li>
+                        <li>Full Academic Breakdown</li>
                     </ul>
-                    <button class="btn-primary plan-btn" style="width: 100%;" data-tickets="3500">Choose Plan</button>
+                    <button class="btn-primary plan-btn" style="width: 100%;" data-cost="3500">Choose Plan</button>
                 </div>
             </div>
         </div>
     </div>
     <script>
+        const AD_LIMIT = 20;
+        const COOLDOWN_MS = 60 * 1000; // 1 minute
+
+        function getAdState() {
+            const today = new Date().toDateString();
+            let state = JSON.parse(localStorage.getItem('wonderKids_adState')) || {};
+
+            if (state.date !== today) {
+                state = { date: today, count: 0, lastTime: 0 };
+            }
+            return state;
+        }
+
+        function saveAdState(state) {
+            localStorage.setItem('wonderKids_adState', JSON.stringify(state));
+        }
+
+        function updateAdUI() {
+            const state = getAdState();
+            const now = Date.now();
+            const timeDiff = now - state.lastTime;
+            const statusText = document.getElementById('adStatus');
+            const limitText = document.getElementById('adLimitInfo');
+            const adCard = statusText.closest('.stat-card');
+
+            limitText.innerText = `${AD_LIMIT - state.count} Remaining Today`;
+
+            if (state.count >= AD_LIMIT) {
+                statusText.innerText = "Daily Limit Reached";
+                adCard.style.opacity = "0.6";
+                adCard.style.pointerEvents = "none";
+                return;
+            }
+
+            if (timeDiff < COOLDOWN_MS) {
+                const remaining = Math.ceil((COOLDOWN_MS - timeDiff) / 1000);
+                statusText.innerText = `Wait ${remaining}s...`;
+                adCard.style.opacity = "0.6";
+                adCard.style.pointerEvents = "none";
+                setTimeout(updateAdUI, 1000);
+            } else {
+                statusText.innerText = "Watch Ad (+1 🎫)";
+                adCard.style.opacity = "1";
+                adCard.style.pointerEvents = "auto";
+            }
+        }
+
         function earnAdTicket() {
+            const state = getAdState();
+            const now = Date.now();
+
+            if (state.count >= AD_LIMIT) {
+                alert("🚫 You've reached your daily limit of 20 ads. Come back tomorrow!");
+                return;
+            }
+
+            if (now - state.lastTime < COOLDOWN_MS) {
+                alert("⏳ Please wait a minute before watching another ad.");
+                return;
+            }
+
             // Mock Ad Experience
             const confirmAd = confirm("📺 Play a short ad to earn 1 Level-Unlock Ticket for your child?");
             if (confirmAd) {
                 alert("✨ Ad completed! 1 Ticket has been added to the balance.");
+
+                // Update State
+                state.count++;
+                state.lastTime = Date.now();
+                saveAdState(state);
+
+                // Update Ticket Display
                 const ticketVal = document.getElementById('ticketCount');
                 if (ticketVal) {
                     let currentNum = parseInt(ticketVal.innerText);
                     ticketVal.innerText = (currentNum + 1);
                 }
+
+                updateAdUI();
             }
         }
+
+        // Initialize UI
+        updateAdUI();
 
         // Plan Purchase Logic
         document.querySelectorAll('.plan-btn').forEach(btn => {
@@ -611,18 +684,25 @@
                         }
                     });
                 } else {
-                    // Step 2: Actually Buy (Mocking payment)
-                    const ticketsToAdd = parseInt(this.dataset.tickets);
-                    const confirmPurchase = confirm(`💳 Confirm purchase of ${ticketsToAdd} Tickets?`);
+                    // Step 2: Use Tickets to Buy
+                    const cost = parseInt(this.dataset.cost);
+                    const ticketDisplay = document.getElementById('ticketCount');
+                    const currentTickets = parseInt(ticketDisplay.innerText);
 
-                    if (confirmPurchase) {
-                        alert(`🎉 Success! ${ticketsToAdd} Tickets added to your child's account.`);
-                        const ticketVal = document.getElementById('ticketCount');
-                        if (ticketVal) {
-                            let currentNum = parseInt(ticketVal.innerText);
-                            ticketVal.innerText = (currentNum + ticketsToAdd);
+                    if (currentTickets >= cost) {
+                        const confirmPurchase = confirm(`🎫 Confirm using ${cost} Tickets to buy this plan?`);
+                        if (confirmPurchase) {
+                            // Deduct tickets
+                            ticketDisplay.innerText = currentTickets - cost;
+                            alert(`🎉 Success! Plan activated using ${cost} Tickets.`);
+
+                            // Reset button
+                            this.innerText = "Choose Plan";
+                            this.style.background = "";
+                            this.style.borderColor = "";
                         }
-                        // Reset button
+                    } else {
+                        alert(`❌ Not enough tickets! You need ${cost} 🎫 but only have ${currentTickets} 🎫.\n\nTip: Watch ads or refer friends to earn more!`);
                         this.innerText = "Choose Plan";
                         this.style.background = "";
                         this.style.borderColor = "";

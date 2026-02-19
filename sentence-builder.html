@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentence Builder - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --board-bg: #f8f9fa;
+            --magnet-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #e0e5ec;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            color: #ff4d4d;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Classroom Board */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .whiteboard {
+            width: 100%;
+            max-width: 1000px;
+            height: 400px;
+            background: white;
+            border-radius: 20px;
+            border: 15px solid #dcdde1;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.02), 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        /* Slot positions */
+        .sentence-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            min-height: 80px;
+            width: 100%;
+        }
+
+        .word-slot {
+            min-width: 100px;
+            height: 60px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.02);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .word-slot.active {
+            border-color: var(--primary);
+            background: rgba(74, 144, 226, 0.1);
+        }
+
+        /* Magnetic Tiles */
+        .tiles-tray {
+            margin-top: 50px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .word-tile {
+            padding: 15px 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            cursor: grab;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            border: 1px solid #eee;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .word-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .word-tile:active {
+            cursor: grabbing;
+        }
+
+        .word-tile.dragging {
+            opacity: 0.5;
+            scale: 1.1;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-check {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-hint {
+            background: #f1c40f;
+            color: white;
+        }
+
+        .btn-speak {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Grade Selection */
+        .grade-menu {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .grade-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .grade-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Feedback Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <h1 class="game-title">Sentence Builder</h1>
+        <div class="game-stats">
+            <div class="stat-badge"><i class="fa-solid fa-star"></i> <span id="score">0</span></div>
+            <div class="stat-badge" style="background: #f1c40f;"><i class="fa-solid fa-trophy"></i> Level <span
+                    id="level">1</span></div>
+        </div>
+    </header>
+
+    <main>
+        <div class="grade-menu">
+            <button class="grade-btn active" onclick="setGrade(1)">Grade 1</button>
+            <button class="grade-btn" onclick="setGrade(3)">Grade 3</button>
+            <button class="grade-btn" onclick="setGrade(5)">Grade 5</button>
+        </div>
+
+        <div class="whiteboard">
+            <div class="sentence-area" id="sentence-area">
+                <!-- Word slots will be injected here -->
+            </div>
+        </div>
+
+        <div class="tiles-tray" id="tiles-tray">
+            <!-- Shuffled word tiles will be injected here -->
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-speak" onclick="speakFullSentence()"><i class="fa-solid fa-volume-high"></i> Hear
+                It</button>
+            <button class="btn btn-hint" onclick="showHint()"><i class="fa-solid fa-lightbulb"></i> Hint</button>
+            <button class="btn btn-check" onclick="checkSentence()"><i class="fa-solid fa-check"></i> Check</button>
+        </div>
+    </main>
+
+    <div class="overlay" id="winOverlay">
+        <div class="modal">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🌟</div>
+            <h2>Perfect!</h2>
+            <p id="winMessage">"The dog is running."</p>
+            <button class="btn-next" onclick="nextPuzzle()">Next Sentence <i
+                    class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        const sentences = {
+            1: [
+                "The cat is sleeping.",
+                "The dog is running.",
+                "I like to play.",
+                "The sun is big.",
+                "I see a bird."
+            ],
+            3: [
+                "The friendly owl flew high.",
+                "We are going to the beach.",
+                "My brother plays several instruments.",
+                "She always brings apples for lunch.",
+                "The blue car drove down the street."
+            ],
+            5: [
+                "The scientist carefully observed the exciting experiment.",
+                "During the summer, we frequently visited the library.",
+                "The mysterious explorer discovered a hidden ancient cave.",
+                "Vibrant flowers bloomed beautifully in the spring garden.",
+                "The courageous firefighter rescued the kitten from the tree."
+            ]
+        };
+
+        let currentGrade = 1;
+        let currentSentence = "";
+        let targetWords = [];
+        let currentOrder = [];
+        let score = 0;
+        let level = 1;
+
+        function initLevel() {
+            const list = sentences[currentGrade];
+            currentSentence = list[Math.floor(Math.random() * list.length)];
+            targetWords = currentSentence.replace(/[.!]/g, "").split(" ");
+
+            const area = document.getElementById('sentence-area');
+            const tray = document.getElementById('tiles-tray');
+
+            area.innerHTML = '';
+            tray.innerHTML = '';
+            currentOrder = new Array(targetWords.length).fill(null);
+
+            // Create slots
+            targetWords.forEach((_, idx) => {
+                const slot = document.createElement('div');
+                slot.className = 'word-slot';
+                slot.dataset.index = idx;
+                slot.ondragover = (e) => e.preventDefault();
+                slot.ondrop = handleDrop;
+                area.appendChild(slot);
+            });
+
+            // Create shuffled tiles
+            const shuffled = [...targetWords].sort(() => Math.random() - 0.5);
+            shuffled.forEach((word, idx) => {
+                const tile = document.createElement('div');
+                tile.className = 'word-tile';
+                tile.innerText = word;
+                tile.draggable = true;
+                tile.dataset.word = word;
+                tile.id = `tile-${idx}`;
+                tile.ondragstart = handleDragStart;
+                tray.appendChild(tile);
+            });
+        }
+
+        let draggedId = null;
+
+        function handleDragStart(e) {
+            draggedId = e.target.id;
+            e.dataTransfer.setData('text/plain', e.target.id);
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text');
+            const tile = document.getElementById(id);
+            tile.classList.remove('dragging');
+
+            const slot = e.target.closest('.word-slot');
+            if (slot && !slot.hasChildNodes()) {
+                slot.appendChild(tile);
+                currentOrder[slot.dataset.index] = tile.dataset.word;
+            }
+        }
+
+        // To allow moving tiles back to tray
+        document.getElementById('tiles-tray').ondragover = (e) => e.preventDefault();
+        document.getElementById('tiles-tray').ondrop = (e) => {
+            const id = e.dataTransfer.getData('text');
+            const tile = document.getElementById(id);
+            document.getElementById('tiles-tray').appendChild(tile);
+
+            // Clean up slots
+            document.querySelectorAll('.word-slot').forEach(s => {
+                if (!s.hasChildNodes()) {
+                    currentOrder[s.dataset.index] = null;
+                }
+            });
+        };
+
+        function setGrade(g) {
+            currentGrade = g;
+            document.querySelectorAll('.grade-btn').forEach(b => {
+                if (b.innerText.includes(g)) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+            initLevel();
+        }
+
+        function checkSentence() {
+            const userSentence = currentOrder.join(" ");
+            const target = targetWords.join(" ");
+
+            if (userSentence === target) {
+                score += 50;
+                document.getElementById('score').innerText = score;
+                document.getElementById('winMessage').innerText = `"${currentSentence}"`;
+                document.getElementById('winOverlay').classList.add('active');
+
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                speakText(currentSentence);
+            } else {
+                alert("Almost there! Try rearranging the words.");
+            }
+        }
+
+        function speakFullSentence() {
+            speakText(currentSentence);
+        }
+
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function showHint() {
+            const emptyIdx = currentOrder.indexOf(null);
+            if (emptyIdx === -1) return;
+
+            const correctWord = targetWords[emptyIdx];
+            const tiles = document.querySelectorAll('.word-tile');
+
+            tiles.forEach(t => {
+                if (t.dataset.word === correctWord && t.parentElement.id === 'tiles-tray') {
+                    t.style.background = "#f1c40f";
+                    t.style.color = "white";
+                    setTimeout(() => {
+                        t.style.background = "white";
+                        t.style.color = "var(--text-color)";
+                    }, 2000);
+                }
+            });
+        }
+
+        function nextPuzzle() {
+            document.getElementById('winOverlay').classList.remove('active');
+            level++;
+            document.getElementById('level').innerText = level;
+            initLevel();
+        }
+
+        initLevel();
+    </script>
+</body>
+
+</html>

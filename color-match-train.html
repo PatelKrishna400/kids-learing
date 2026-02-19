@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Match Train - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --sky-blue: #a2d2ff;
+            --grass-green: #9edb86;
+            --track-gray: #777;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: linear-gradient(to bottom, var(--sky-blue) 0%, #fff 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Landscape */
+        .landscape {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+            background: var(--grass-green);
+            z-index: 1;
+        }
+
+        .tracks {
+            position: absolute;
+            bottom: 80px;
+            width: 100%;
+            height: 20px;
+            background: repeating-linear-gradient(90deg, #555 0, #555 10px, transparent 10px, transparent 40px);
+            border-top: 4px solid #444;
+            border-bottom: 4px solid #444;
+        }
+
+        /* UI */
+        .game-header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #ff4d4d;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        /* Game Elements */
+        .spawn-area {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 150px;
+        }
+
+        .color-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 15px;
+            cursor: grab;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s;
+            z-index: 100;
+            border: 4px solid white;
+        }
+
+        .color-box:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .color-box i {
+            font-size: 3rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Train */
+        .train-container {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            display: flex;
+            gap: 10px;
+            transition: left 0.5s ease-out;
+            z-index: 5;
+            padding-left: 50px;
+        }
+
+        .engine {
+            width: 150px;
+            height: 100px;
+            background: #333;
+            border-radius: 20px 50px 10px 10px;
+            position: relative;
+        }
+
+        .engine::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 30px;
+            width: 30px;
+            height: 40px;
+            background: #444;
+            border-radius: 5px;
+        }
+
+        .smoke {
+            position: absolute;
+            top: -50px;
+            left: 35px;
+            width: 20px;
+            height: 20px;
+            background: rgba(200, 200, 200, 0.6);
+            border-radius: 50%;
+            animation: smokeRise 2s infinite;
+        }
+
+        @keyframes smokeRise {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-50px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .compartment {
+            width: 140px;
+            height: 90px;
+            background: #ddd;
+            border-radius: 10px;
+            border: 5px solid #bbb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .compartment.highlight {
+            transform: scale(1.1);
+            filter: brightness(1.1);
+            box-shadow: 0 0 20px white;
+        }
+
+        .compartment::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 20px;
+            width: 30px;
+            height: 30px;
+            background: #222;
+            border-radius: 50%;
+            box-shadow: 70px 0 #222;
+        }
+
+        .compartment-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .btn-play {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .streak-badge {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: 900;
+            color: #f1c40f;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            pointer-events: none;
+            opacity: 0;
+            animation: streakFade 1s forwards;
+        }
+
+        @keyframes streakFade {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -100%) scale(1);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-header">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="streak">x1</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="spawn-area" id="spawnArea">
+        <!-- Color blocks spawn here -->
+    </div>
+
+    <div class="landscape">
+        <div class="tracks"></div>
+        <div class="train-container" id="train">
+            <div class="engine">
+                <div class="smoke"></div>
+                <div class="smoke" style="animation-delay: 0.7s"></div>
+            </div>
+            <!-- Compartments added by JS -->
+        </div>
+    </div>
+
+    <div id="startOverlay" class="overlay">
+        <div class="modal-card">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🚂</div>
+            <h2>Color Express!</h2>
+            <p>Drag the color boxes into the matching train compartments!</p>
+            <button class="btn-play" onclick="startGame()">LETS GO!</button>
+        </div>
+    </div>
+
+    <script>
+        const colorData = [
+            { name: 'Red', hex: '#e74c3c', icon: 'fa-apple-whole' },
+            { name: 'Blue', hex: '#3498db', icon: 'fa-droplet' },
+            { name: 'Green', hex: '#2ecc71', icon: 'fa-leaf' },
+            { name: 'Yellow', hex: '#f1c40f', icon: 'fa-sun' },
+            { name: 'Purple', hex: '#9b59b6', icon: 'fa-grapes' },
+            { name: 'Orange', hex: '#e67e22', icon: 'fa-carrot' }
+        ];
+
+        let score = 0;
+        let streak = 0;
+        let activeBox = null;
+        let offset = { x: 0, y: 0 };
+        let gameActive = false;
+
+        const train = document.getElementById('train');
+        const spawnArea = document.getElementById('spawnArea');
+
+        function initTrain() {
+            // Shuffle colors for compartments
+            const shuffled = [...colorData].sort(() => Math.random() - 0.5);
+            shuffled.forEach(color => {
+                const comp = document.createElement('div');
+                comp.className = 'compartment';
+                comp.style.backgroundColor = color.hex;
+                comp.dataset.color = color.name;
+                comp.innerHTML = `<span class="compartment-label">${color.name}</span>`;
+                train.appendChild(comp);
+            });
+        }
+
+        function spawnBox() {
+            if (!gameActive) return;
+
+            const color = colorData[Math.floor(Math.random() * colorData.length)];
+            const box = document.createElement('div');
+            box.className = 'color-box';
+            box.style.backgroundColor = color.hex;
+            box.dataset.color = color.name;
+            box.innerHTML = `<i class="fa-solid ${color.icon}"></i>`;
+
+            // Random position in top half
+            box.style.left = (Math.random() * (window.innerWidth - 120) + 10) + 'px';
+            box.style.top = (Math.random() * (window.innerHeight / 2 - 120) + 100) + 'px';
+
+            box.addEventListener('pointerdown', startDrag);
+            spawnArea.appendChild(box);
+
+            // Animation in
+            box.style.transform = 'scale(0)';
+            box.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            setTimeout(() => box.style.transform = 'scale(1)', 10);
+        }
+
+        function startDrag(e) {
+            activeBox = e.target.closest('.color-box');
+            activeBox.setPointerCapture(e.pointerId);
+
+            const rect = activeBox.getBoundingClientRect();
+            offset.x = e.clientX - rect.left;
+            offset.y = e.clientY - rect.top;
+
+            activeBox.style.transition = 'none';
+            activeBox.style.zIndex = '1000';
+        }
+
+        window.addEventListener('pointermove', (e) => {
+            if (!activeBox) return;
+
+            activeBox.style.left = (e.clientX - offset.x) + 'px';
+            activeBox.style.top = (e.clientY - offset.y) + 'px';
+
+            checkHover();
+        });
+
+        window.addEventListener('pointerup', (e) => {
+            if (!activeBox) return;
+
+            const matchedComp = checkMatch();
+            if (matchedComp) {
+                handleSuccess(matchedComp);
+            } else {
+                handleFailure();
+            }
+
+            activeBox = null;
+        });
+
+        function checkHover() {
+            const boxRect = activeBox.getBoundingClientRect();
+            const boxCenter = { x: boxRect.left + 50, y: boxRect.top + 50 };
+
+            document.querySelectorAll('.compartment').forEach(comp => {
+                const rect = comp.getBoundingClientRect();
+                if (boxCenter.x > rect.left && boxCenter.x < rect.right &&
+                    boxCenter.y > rect.top && boxCenter.y < rect.bottom) {
+                    comp.classList.add('highlight');
+                } else {
+                    comp.classList.remove('highlight');
+                }
+            });
+        }
+
+        function checkMatch() {
+            const boxRect = activeBox.getBoundingClientRect();
+            const boxCenter = { x: boxRect.left + 50, y: boxRect.top + 50 };
+            let matched = null;
+
+            document.querySelectorAll('.compartment').forEach(comp => {
+                const rect = comp.getBoundingClientRect();
+                if (boxCenter.x > rect.left && boxCenter.x < rect.right &&
+                    boxCenter.y > rect.top && boxCenter.y < rect.bottom) {
+                    if (comp.dataset.color === activeBox.dataset.color) {
+                        matched = comp;
+                    }
+                }
+            });
+            return matched;
+        }
+
+        function handleSuccess(comp) {
+            streak++;
+            const multi = Math.floor(streak / 5) + 1;
+            score += 10 * multi;
+
+            document.getElementById('score').innerText = score;
+            document.getElementById('streak').innerText = `x${multi}`;
+
+            if (streak % 5 === 0) {
+                showStreakEffect(multi);
+            }
+
+            // Confetti
+            confetti({
+                particleCount: 20,
+                spread: 30,
+                origin: { x: (comp.getBoundingClientRect().left + 70) / window.innerWidth, y: comp.getBoundingClientRect().top / window.innerHeight }
+            });
+
+            // Shrink and remove box
+            activeBox.style.transition = 'all 0.3s';
+            activeBox.style.transform = 'scale(0)';
+            const boxToRemove = activeBox;
+            setTimeout(() => boxToRemove.remove(), 300);
+
+            // Reset compartment
+            comp.classList.remove('highlight');
+
+            // Spawn next after delay
+            setTimeout(spawnBox, 500);
+        }
+
+        function handleFailure() {
+            streak = 0;
+            document.getElementById('streak').innerText = `x1`;
+
+            // Snap back
+            activeBox.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            // Just let it stay where it is or return to random? 
+            // Let's just keep it there so they can try again or spawn new one
+            activeBox.style.zIndex = '100';
+        }
+
+        function showStreakEffect(multi) {
+            const el = document.createElement('div');
+            el.className = 'streak-badge';
+            el.innerText = `AWESOME x${multi}`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function startGame() {
+            document.getElementById('startOverlay').classList.add('hidden');
+            gameActive = true;
+            initTrain();
+            spawnBox();
+
+            // Slowly move train
+            let pos = 0;
+            setInterval(() => {
+                if (!gameActive) return;
+                pos -= 0.5;
+                if (pos < -1000) pos = 0;
+                // train.style.left = pos + 'px';
+                // Actually moving the train might make dragging too hard for kids.
+                // Let's just animate smoke and background instead.
+            }, 20);
+        }
+    </script>
+</body>
+
+</html>

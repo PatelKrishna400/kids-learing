@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Builder World - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f0f9ff;
+            --primary: #4cc9f0;
+            --secondary: #4895ef;
+            --accent: #f72585;
+            --text: #2b2d42;
+            --success: #4caf50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            color: #ff4d4d;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            border-color: #ff4d4d;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .level-indicator {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Game Layout */
+        main {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        /* Shapes Sidebar */
+        .shapes-drawer {
+            width: 250px;
+            background: white;
+            border-right: 4px dashed #ddd;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .drawer-label {
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle, #ffffff 0%, #e0f2fe 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Object Template */
+        .builder-canvas {
+            position: relative;
+            width: 600px;
+            height: 500px;
+            /* border: 1px solid #eee; */
+        }
+
+        .shape-slot {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.05);
+            border: 3px dashed rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .shape-slot.highlight {
+            background: rgba(76, 201, 240, 0.1);
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+
+        .shape-slot.filled {
+            background: transparent;
+            border-color: transparent;
+        }
+
+        /* Draggable Shapes */
+        .shape {
+            cursor: grab;
+            position: absolute;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
+        }
+
+        .shape:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+            z-index: 1000;
+        }
+
+        .shape.in-drawer {
+            position: static;
+        }
+
+        .shape.snapped {
+            cursor: default;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.05));
+        }
+
+        /* Shape definitions */
+        .square {
+            width: 100px;
+            height: 100px;
+            background: #FF9F1C;
+            border-radius: 8px;
+        }
+
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 60px solid transparent;
+            border-right: 60px solid transparent;
+            border-bottom: 100px solid #FF4D6D;
+            background: transparent !important;
+        }
+
+        .circle {
+            width: 80px;
+            height: 80px;
+            background: #4CC9F0;
+            border-radius: 50%;
+        }
+
+        .rectangle {
+            width: 120px;
+            height: 60px;
+            background: #7209B7;
+            border-radius: 8px;
+        }
+
+        /* Win Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.active {
+            display: flex;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .win-card {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.8);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .win-card h2 {
+            font-size: 3rem;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .win-card p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(76, 201, 240, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(76, 201, 240, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .glow {
+            animation: successGlow 1s ease-out;
+        }
+
+        @keyframes successGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+
+            100% {
+                box-shadow: 0 0 0 30px rgba(76, 175, 80, 0);
+            }
+        }
+
+        .instruction-tag {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            color: var(--secondary);
+            border: 2px solid var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <h1 class="game-title">Shape Builder World</h1>
+        <div class="level-indicator" id="levelText">Level 1: House</div>
+    </header>
+
+    <main>
+        <div class="shapes-drawer" id="drawer">
+            <span class="drawer-label">Drag shapes from here</span>
+            <!-- Shapes injected here -->
+        </div>
+
+        <div class="workspace" id="workspace">
+            <div class="instruction-tag" id="levelName">Let's build a House!</div>
+            <div class="builder-canvas" id="canvas">
+                <!-- Slots injected here -->
+            </div>
+        </div>
+    </main>
+
+    <div class="overlay" id="winOverlay">
+        <div class="win-card">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🏠</div>
+            <h2 id="winTitle">Amazing!</h2>
+            <p id="winMessage">You built a beautiful house!</p>
+            <button class="btn-next" onclick="nextLevel()">Next Build <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                name: "House",
+                icon: "🏠",
+                slots: [
+                    { type: 'square', x: 250, y: 250 }, // Base
+                    { type: 'triangle', x: 240, y: 150 }, // Roof
+                    { type: 'rectangle', x: 285, y: 300, w: 30, h: 50, color: '#8d6e63' } // Door
+                ]
+            },
+            {
+                name: "Tree",
+                icon: "🌳",
+                slots: [
+                    { type: 'square', x: 280, y: 300, w: 40, h: 100, color: '#5d4037' }, // Trunk
+                    { type: 'triangle', x: 240, y: 200 }, // Middle
+                    { type: 'triangle', x: 255, y: 150, scale: 0.8 } // Top
+                ]
+            },
+            {
+                name: "Car",
+                icon: "🚗",
+                slots: [
+                    { type: 'rectangle', x: 200, y: 250, w: 200, h: 80 }, // Body
+                    { type: 'rectangle', x: 240, y: 200, w: 120, h: 50 }, // Top
+                    { type: 'circle', x: 230, y: 310, w: 60, h: 60, color: '#333' }, // Wheel 1
+                    { type: 'circle', x: 310, y: 310, w: 60, h: 60, color: '#333' }  // Wheel 2
+                ]
+            }
+        ];
+
+        let currentLevel = 0;
+        let filledSlots = 0;
+        let activeShape = null;
+        let startPos = { x: 0, y: 0 };
+        let offset = { x: 0, y: 0 };
+
+        const canvas = document.getElementById('canvas');
+        const drawer = document.getElementById('drawer');
+        const winOverlay = document.getElementById('winOverlay');
+
+        function initLevel() {
+            const level = levels[currentLevel];
+            canvas.innerHTML = '';
+            drawer.innerHTML = '<span class="drawer-label">Drag shapes from here</span>';
+            filledSlots = 0;
+
+            document.getElementById('levelText').innerText = `Level ${currentLevel + 1}: ${level.name}`;
+            document.getElementById('levelName').innerText = `Let's build a ${level.name}!`;
+
+            // Create slots and corresponding shapes in drawer
+            level.slots.forEach((slot, index) => {
+                const slotEl = document.createElement('div');
+                slotEl.className = `shape-slot ${slot.type}`;
+                slotEl.style.left = slot.x + 'px';
+                slotEl.style.top = slot.y + 'px';
+
+                if (slot.w) slotEl.style.width = slot.w + 'px';
+                if (slot.h) slotEl.style.height = slot.h + 'px';
+                if (slot.scale) slotEl.style.transform = `scale(${slot.scale})`;
+
+                slotEl.dataset.type = slot.type;
+                slotEl.dataset.index = index;
+                canvas.appendChild(slotEl);
+
+                // Create draggable shape in drawer
+                createDraggableShape(slot, index);
+            });
+        }
+
+        function createDraggableShape(slot, index) {
+            const shape = document.createElement('div');
+            shape.className = `shape in-drawer ${slot.type}`;
+            if (slot.w) shape.style.width = slot.w + 'px';
+            if (slot.h) shape.style.height = slot.h + 'px';
+            if (slot.color) {
+                if (slot.type === 'triangle') shape.style.borderBottomColor = slot.color;
+                else shape.style.backgroundColor = slot.color;
+            }
+            if (slot.scale) shape.style.transform = `scale(${slot.scale})`;
+
+            shape.dataset.type = slot.type;
+            shape.dataset.index = index;
+
+            shape.onpointerdown = startDrag;
+            drawer.appendChild(shape);
+        }
+
+        function startDrag(e) {
+            if (this.classList.contains('snapped')) return;
+
+            activeShape = this;
+            activeShape.setPointerCapture(e.pointerId);
+
+            const rect = activeShape.getBoundingClientRect();
+            offset.x = e.clientX - rect.left;
+            offset.y = e.clientY - rect.top;
+
+            if (activeShape.classList.contains('in-drawer')) {
+                activeShape.classList.remove('in-drawer');
+                document.body.appendChild(activeShape);
+                activeShape.style.left = (e.clientX - offset.x) + 'px';
+                activeShape.style.top = (e.clientY - offset.y) + 'px';
+            }
+
+            activeShape.style.transition = 'none';
+        }
+
+        window.onpointermove = (e) => {
+            if (!activeShape) return;
+
+            activeShape.style.left = (e.clientX - offset.x) + 'px';
+            activeShape.style.top = (e.clientY - offset.y) + 'px';
+
+            // Check for nearby slot
+            checkNearSlot();
+        };
+
+        window.onpointerup = (e) => {
+            if (!activeShape) return;
+
+            const snapped = trySnap();
+            if (!snapped) {
+                // Return to drawer (for now just poof)
+                activeShape.remove();
+                // Recreate in drawer
+                const slot = levels[currentLevel].slots[activeShape.dataset.index];
+                createDraggableShape(slot, activeShape.dataset.index);
+            }
+
+            activeShape = null;
+        };
+
+        function checkNearSlot() {
+            const shapeRect = activeShape.getBoundingClientRect();
+            const slots = document.querySelectorAll('.shape-slot:not(.filled)');
+
+            slots.forEach(slot => {
+                const slotRect = slot.getBoundingClientRect();
+                const dist = Math.hypot(
+                    (shapeRect.left + shapeRect.width / 2) - (slotRect.left + slotRect.width / 2),
+                    (shapeRect.top + shapeRect.height / 2) - (slotRect.top + slotRect.height / 2)
+                );
+
+                if (dist < 50 && slot.dataset.type === activeShape.dataset.type) {
+                    slot.classList.add('highlight');
+                } else {
+                    slot.classList.remove('highlight');
+                }
+            });
+        }
+
+        function trySnap() {
+            const shapeRect = activeShape.getBoundingClientRect();
+            const slots = document.querySelectorAll('.shape-slot:not(.filled)');
+            let snapped = false;
+
+            slots.forEach(slot => {
+                const slotRect = slot.getBoundingClientRect();
+                const dist = Math.hypot(
+                    (shapeRect.left + shapeRect.width / 2) - (slotRect.left + slotRect.width / 2),
+                    (shapeRect.top + shapeRect.height / 2) - (slotRect.top + slotRect.height / 2)
+                );
+
+                if (dist < 50 && slot.dataset.type === activeShape.dataset.type && slot.dataset.index === activeShape.dataset.index) {
+                    // SNAP!
+                    slot.classList.remove('highlight');
+                    slot.classList.add('filled');
+
+                    activeShape.classList.add('snapped');
+                    activeShape.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    activeShape.style.left = slotRect.left + 'px';
+                    activeShape.style.top = slotRect.top + 'px';
+
+                    // Success feedback
+                    activeShape.classList.add('glow');
+                    setTimeout(() => activeShape.classList.remove('glow'), 1000);
+
+                    filledSlots++;
+                    snapped = true;
+
+                    if (filledSlots === levels[currentLevel].slots.length) {
+                        setTimeout(showWin, 600);
+                    }
+                }
+            });
+
+            return snapped;
+        }
+
+        function showWin() {
+            const level = levels[currentLevel];
+            document.getElementById('winTitle').innerText = "Awesome!";
+            document.getElementById('winMessage').innerText = `You built a great ${level.name}!`;
+            document.querySelector('.win-card div').innerText = level.icon;
+            winOverlay.classList.add('active');
+
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function nextLevel() {
+            winOverlay.classList.remove('active');
+            currentLevel = (currentLevel + 1) % levels.length;
+            initLevel();
+        }
+
+        initLevel();
+    </script>
+</body>
+
+</html>

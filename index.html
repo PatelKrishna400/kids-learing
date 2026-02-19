@@ -84,9 +84,9 @@
                 </div>
                 <div class="hero-blob"></div>
                 <!-- In a real scenario, this would be an image/illustration -->
-                <div class="hero-character-placeholder">
-                    <div class="character-head"></div>
-                    <div class="character-body"></div>
+                <div class="hero-mascot">
+                    <img src="assets/mascot_alphabet.png" alt="WonderKids Mascot"
+                        style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
             </div>
         </div>
@@ -112,7 +112,7 @@
                         <i class="fa-solid fa-gamepad"></i>
                     </div>
                     <h3>Gamified Learning</h3>
-                    <p>Earn badges, points, and rewards as you complete lessons and master new skills.</p>
+                    <p>Master skills with fun games!</p>
                 </div>
                 <div class="feature-card clickable" id="colorFillCard">
                     <div class="icon-box color-2">
@@ -197,26 +197,24 @@
     <div id="gameModal" class="modal-overlay">
         <div class="game-modal">
             <div class="modal-header">
-                <h2>Select Game Level 🎮</h2>
+                <button class="back-modal-btn" id="gameModalBack"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <h2 id="modalTitle">Learning Games 🎮</h2>
                 <button class="close-modal">&times;</button>
             </div>
+
             <div class="modal-body">
-                <div class="level-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/341/341258.png" alt="Level 1" width="60">
-                    <div class="level-info">
-                        <h4>Alphabet Master</h4>
-                        <p>Speak & Write Letters (A-D)</p>
+                <!-- Main Category View -->
+                <div id="categoryView" class="modal-view active">
+                    <div class="category-menu" id="mainGameGrid">
+                        <!-- Games will be injected here by JavaScript -->
                     </div>
-                    <button class="btn-primary play-level-btn" data-cost="10">Play (10 <i
-                            class="fa-solid fa-coins"></i>)</button>
                 </div>
-                <div class="level-card locked">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2912/2912761.png" alt="Locked" width="60">
-                    <div class="level-info">
-                        <h4>Dragon Cave</h4>
-                        <p>Unlock at Level 5</p>
+
+                <!-- Number Levels View -->
+                <div id="numberLevelsView" class="modal-view">
+                    <div id="numbersGrid" class="levels-grid active">
+                        <!-- Filled by JS -->
                     </div>
-                    <button class="btn-outline" disabled><i class="fa-solid fa-lock"></i> Locked</button>
                 </div>
             </div>
         </div>
@@ -224,62 +222,279 @@
 
     <script src="script.js"></script>
     <script>
-        // Game Logic
-        let coins = 50;
+        // Game Logic - Persistent Coins & Daily Rewards
+        let coins = parseInt(localStorage.getItem('wonderKids_coins')) || 50;
         const coinDisplay = document.getElementById('userCoins');
+
+        function updateCoinDisplay() {
+            coinDisplay.innerText = coins;
+            localStorage.setItem('wonderKids_coins', coins);
+        }
+
+        // Daily Reward Logic
+        function checkDailyReward() {
+            const lastReward = localStorage.getItem('wonderKids_lastReward');
+            const today = new Date().toDateString();
+
+            if (lastReward !== today) {
+                const dailyBonus = 20;
+                coins += dailyBonus;
+                localStorage.setItem('wonderKids_lastReward', today);
+                updateCoinDisplay();
+
+                const rewardNotice = document.createElement('div');
+                rewardNotice.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; 
+                    padding: 15px 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                `;
+                rewardNotice.innerHTML = `🎁 <strong>Daily Reward!</strong> +${dailyBonus} Coins added!`;
+                document.body.appendChild(rewardNotice);
+
+                setTimeout(() => {
+                    rewardNotice.style.opacity = '0';
+                    rewardNotice.style.transition = '0.5s';
+                    setTimeout(() => rewardNotice.remove(), 500);
+                }, 4000);
+            }
+        }
+
+        updateCoinDisplay();
+        checkDailyReward();
+
+        // Modal Logic
         const gameModal = document.getElementById('gameModal');
         const gamifiedCard = document.getElementById('gamifiedLearningCard');
         const closeBtn = document.querySelector('.close-modal');
+        const backBtn = document.getElementById('gameModalBack');
+        const categoryView = document.getElementById('categoryView');
+        const numberLevelsView = document.getElementById('numberLevelsView');
+        const numbersGrid = document.getElementById('numbersGrid');
+        const modalTitle = document.getElementById('modalTitle');
+        const actualModal = document.querySelector('.game-modal');
+
+        function playGame(gameName, url) {
+            const cost = 1;
+            if (coins >= cost) {
+                coins -= cost;
+                updateCoinDisplay();
+                alert(`🪙 1 Coin deducted! Enjoy ${gameName}!`);
+                window.location.href = url;
+            } else {
+                alert("❌ Not enough coins! You need 1 coin to play.");
+            }
+        }
+
+        function showNumberLevels() {
+            categoryView.classList.remove('active');
+            numberLevelsView.classList.add('active');
+            backBtn.classList.add('active');
+            actualModal.classList.remove('full-screen');
+            modalTitle.innerText = "Number Master 🔢";
+            populateNumbers();
+        }
+
+        function populateNumbers() {
+            numbersGrid.innerHTML = '';
+            for (let i = 1; i <= 100; i++) {
+                const card = document.createElement('div');
+                card.className = 'level-card';
+                card.innerHTML = `<i class="fa-solid fa-arrow-up-9-1"></i><span>${i}</span><div class="cost">1 🪙</div>`;
+                card.addEventListener('click', () => playGame(`Number ${i}`, 'alphabet-game.html'));
+                numbersGrid.appendChild(card);
+            }
+        }
+
+        const allGames = [
+            { id: 'alphabet', title: 'Alphabet Master', type: 'special' },
+            { id: 'number', title: 'Number Master', type: 'special' },
+            { id: 'balloon-pop', title: 'Alphabet Balloon Pop', type: 'special', color: 'linear-gradient(135deg, #FF8C42, #FFB633)' },
+            { id: 'shape-builder', title: 'Shape Builder World', type: 'special', color: 'linear-gradient(135deg, #4cc9f0, #4895ef)' },
+            { id: 'color-train', title: 'Color Match Train', type: 'special', color: 'linear-gradient(135deg, #a2d2ff, #777)' },
+            { id: 'word-builder', title: 'Word Builder Blocks', type: 'special', color: 'linear-gradient(135deg, #8d6e63, #d7ccc8)' },
+            { id: 'number-fishing', title: 'Number Fishing Game', type: 'special', color: 'linear-gradient(135deg, #00aaff, #0077be)' },
+            { id: 'science-lab', title: 'Science Lab Mini', type: 'special', color: 'linear-gradient(135deg, #9c27b0, #00bcd4)' },
+            { id: 'memory-game', title: 'Memory Card Match', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #a29bfe)' },
+            { id: 'animal-sounds', title: 'Animal Sound Match', type: 'special', color: 'linear-gradient(135deg, #2d6a4f, #74c69d)' },
+            { id: 'time-clock', title: 'Time Clock Challenge', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #3498db)' },
+            { id: 'math-racing', title: 'Math Racing', type: 'special', color: 'linear-gradient(135deg, #e74c3c, #f1c40f)' },
+            { id: 'sentence-builder', title: 'Sentence Builder', type: 'special', color: 'linear-gradient(135deg, #4a90e2, #5c67f2)' },
+            { id: 'solar-explorer', title: 'Solar System Explorer', type: 'special', color: 'linear-gradient(135deg, #0b0d17, #4a90e2)' },
+            { id: 'multi-monster', title: 'Multiplication Monster', type: 'special', color: 'linear-gradient(135deg, #9b59b6, #8e44ad)' },
+            { id: 'math-jump', title: 'Math Jump Adventure', type: 'special', color: 'linear-gradient(135deg, #87CEEB, #2ecc71)' }
+        ];
+
+        function populateGameGrid() {
+            const grid = document.getElementById('mainGameGrid');
+            grid.innerHTML = '';
+
+            allGames.forEach(game => {
+                const banner = document.createElement('div');
+
+                if (game.id === 'alphabet') {
+                    banner.className = 'alphabet-master-banner';
+                    banner.onclick = () => playGame('Alphabet Master', 'alphabet-game.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('assets/mascot_alphabet.png')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'number') {
+                    banner.className = 'number-master-banner';
+                    banner.onclick = () => playGame('Number Master', 'alphabet-game.html');
+                    banner.innerHTML = `
+                        <div class="kid-container" style="left: auto; right: 10px;"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/kid-with-tablet.svg'); transform: scaleX(-1);"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'balloon-pop') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Alphabet Balloon Pop', 'balloon-pop.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/dancing.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'shape-builder') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Shape Builder World', 'shape-builder.html');
+                    banner.innerHTML = `
+                         <div class="kid-container" style="left: auto; right: 10px;"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/abstract-shapes.svg');"></div></div>
+                         <div class="banner-content" style="margin-left: 15px;"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'color-train') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Color Match Train', 'color-match-train.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'word-builder') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Word Builder Blocks', 'word-builder.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/studying.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'number-fishing') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Number Fishing Game', 'number-fishing.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/meditating.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'science-lab') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Science Lab Mini', 'science-lab.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/shaking-hands.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'memory-game') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Memory Card Match', 'memory-game.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/student-going-to-school.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'animal-sounds') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Animal Sound Match', 'animal-sounds.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/monkey.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'time-clock') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Time Clock Challenge', 'time-clock.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/reading-a-book.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'math-racing') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Math Racing', 'math-racing.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/location-search.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'sentence-builder') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Sentence Builder', 'sentence-builder.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/reading-side.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'solar-explorer') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Solar System Explorer', 'solar-system.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/meditating.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'multi-monster') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Multiplication Monster', 'multiplication-monster.html');
+                    banner.innerHTML = `
+                         <div class="kid-container"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/surreal-city.svg')"></div></div>
+                         <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                } else if (game.id === 'math-jump') {
+                    banner.className = 'game-banner';
+                    banner.style.background = game.color;
+                    banner.onclick = () => playGame('Math Jump Adventure', 'math-jump.html');
+                    banner.innerHTML = `
+                        <div class="kid-container"><div class="kid-illustration" style="background-image: url('assets/mascot_math_cloud.png')"></div></div>
+                        <div class="banner-content"><h3>${game.title}</h3></div>
+                    `;
+                }
+                grid.appendChild(banner);
+            });
+        }
+        populateGameGrid();
+
+        backBtn.addEventListener('click', () => {
+            numberLevelsView.classList.remove('active');
+            categoryView.classList.add('active');
+            backBtn.classList.remove('active');
+            actualModal.classList.add('full-screen');
+            modalTitle.innerText = "Learning Games 🎮";
+        });
 
         gamifiedCard.addEventListener('click', () => {
             gameModal.classList.add('active');
+            categoryView.classList.add('active');
+            numberLevelsView.classList.remove('active');
+            backBtn.classList.remove('active');
+            actualModal.classList.add('full-screen');
+            modalTitle.innerText = "Learning Games 🎮";
         });
 
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            gameModal.classList.remove('active');
-        });
+        closeBtn.addEventListener('click', () => gameModal.classList.remove('active'));
+        gameModal.addEventListener('click', (e) => { if (e.target === gameModal) gameModal.classList.remove('active'); });
 
-        gameModal.addEventListener('click', (e) => {
-            if (e.target === gameModal) {
-                gameModal.classList.remove('active');
-            }
-        });
-
-        const colorFillCard = document.getElementById('colorFillCard');
-
-        colorFillCard.addEventListener('click', () => {
-            const cost = 10;
-            if (coins >= cost) {
-                coins -= cost;
-                coinDisplay.innerText = coins;
-                alert("🎨 10 Coins deducted! Welcome to Colour Fill Magic.");
+        // Other cards
+        document.getElementById('colorFillCard').addEventListener('click', () => {
+            if (coins >= 1) {
+                coins -= 1; updateCoinDisplay();
                 window.location.href = "color-fill.html";
-            } else {
-                alert("❌ Not enough coins! You need 10 coins to start coloring.");
-            }
+            } else alert("❌ Not enough coins!");
         });
 
-        const storiesCard = document.getElementById('storiesCard');
-
-        storiesCard.addEventListener('click', () => {
+        document.getElementById('storiesCard').addEventListener('click', () => {
             window.location.href = "stories.html";
         });
 
-        document.querySelectorAll('.play-level-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const cost = parseInt(this.dataset.cost);
-                if (coins >= cost) {
-                    coins -= cost;
-                    coinDisplay.innerText = coins;
-                    alert("🪙 10 Coins deducted! Entering Alphabet Master...");
-                    window.location.href = "alphabet-game.html";
-                } else {
-                    alert("❌ Not enough coins! You need 10 coins to play.");
-                }
-            });
-        });
     </script>
 </body>
 

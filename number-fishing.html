@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Fishing - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --water-depth: #0077be;
+            --water-surface: #00aaff;
+            --sky: #87ceeb;
+            --sand: #f0e68c;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--sky);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Landscape */
+        .lake-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 70%;
+            background: linear-gradient(to bottom, var(--water-surface) 0%, var(--water-depth) 100%);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .wave {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 200%;
+            height: 40px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-400-50s-244.5 50-400 50v31.8h800v-31.8z' fill='%2300aaff'/%3E%3C/svg%3E");
+            background-size: 800px 40px;
+            animation: waveMove 10s linear infinite;
+        }
+
+        @keyframes waveMove {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-800px);
+            }
+        }
+
+        /* UI */
+        .game-header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #ff4d4d;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .target-box {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 4px solid #f1c40f;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        .target-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .target-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #f39c12;
+            line-height: 1;
+        }
+
+        /* Fishing Rod */
+        #rod {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 0;
+            background: #444;
+            z-index: 5;
+            transition: height 0.3s ease-out;
+            pointer-events: none;
+        }
+
+        #hook {
+            position: absolute;
+            bottom: -20px;
+            left: -8px;
+            width: 20px;
+            height: 25px;
+            border: 3px solid #666;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* Number Fish */
+        .number-fish {
+            position: absolute;
+            width: 80px;
+            height: 60px;
+            background: #ff7f50;
+            border-radius: 50% 10% 10% 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .number-fish::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 20px solid inherit;
+            border-left-color: inherit;
+        }
+
+        .fish-num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-left: -5px;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .btn-play {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .success-glow {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 50px white;
+            animation: pounce 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes pounce {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-header">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+
+        <div class="target-box">
+            <div class="target-label">Catch the Number</div>
+            <div class="target-num" id="nextNum">1</div>
+        </div>
+
+        <div class="stats">
+            <div class="target-box" style="border-color: #3498db;">
+                <div class="target-label">Score</div>
+                <div class="target-num" style="color: #3498db;" id="score">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lake-container" id="lake">
+        <div class="wave"></div>
+        <div id="rod">
+            <div id="hook"></div>
+        </div>
+    </div>
+
+    <div id="startOverlay" class="overlay">
+        <div class="modal-card">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🎣</div>
+            <h2>Number Fishing!</h2>
+            <p>Catch the numbers in correct order (1, 2, 3...) to win!</p>
+            <button class="btn-play" onclick="startGame()">START FISHING</button>
+        </div>
+    </div>
+
+    <div id="winOverlay" class="overlay hidden">
+        <div class="modal-card">
+            <div style="font-size: 5rem; margin-bottom: 20px;">🏆</div>
+            <h2>Amazing Job!</h2>
+            <p>You caught all the numbers in order!</p>
+            <button class="btn-play" style="background: var(--sky)" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        let currentTarget = 1;
+        let score = 0;
+        let gameActive = false;
+        const fishColors = ['#ff7f50', '#ffeb3b', '#2ecc71', '#9b59b6', '#3498db', '#f72585'];
+
+        function startGame() {
+            document.getElementById('startOverlay').classList.add('hidden');
+            gameActive = true;
+            spawnFishGroup();
+
+            window.addEventListener('mousemove', moveRod);
+            window.addEventListener('click', throwRod);
+        }
+
+        function spawnFishGroup() {
+            const lake = document.getElementById('lake');
+            const numbers = [];
+            // Spawn next 5 numbers
+            for (let i = 0; i < 8; i++) {
+                numbers.push(currentTarget + i);
+            }
+            // Shuffle a bit
+            numbers.sort(() => Math.random() - 0.5);
+
+            numbers.forEach((num, index) => {
+                createFish(num);
+            });
+        }
+
+        function createFish(num) {
+            const fish = document.createElement('div');
+            fish.className = 'number-fish';
+            fish.dataset.num = num;
+            fish.innerHTML = `<span class="fish-num">${num}</span>`;
+
+            const color = fishColors[Math.floor(Math.random() * fishColors.length)];
+            fish.style.backgroundColor = color;
+            fish.style.borderLeftColor = color; // For the tail
+
+            const lake = document.getElementById('lake');
+            const startX = Math.random() * (window.innerWidth - 100);
+            const startY = Math.random() * (lake.offsetHeight - 100) + 50;
+
+            fish.style.left = startX + 'px';
+            fish.style.top = startY + 'px';
+
+            lake.appendChild(fish);
+
+            // Floating animation
+            animateFish(fish);
+        }
+
+        function animateFish(fish) {
+            if (!fish.parentElement) return;
+
+            const speed = 1 + Math.random() * 2;
+            let x = parseFloat(fish.style.left);
+            let direction = Math.random() > 0.5 ? 1 : -1;
+
+            if (direction === -1) fish.style.transform = 'scaleX(-1)';
+
+            function move() {
+                if (!fish.parentElement || !gameActive) return;
+
+                x += direction * speed;
+
+                if (x > window.innerWidth - 100 || x < 0) {
+                    direction *= -1;
+                    fish.style.transform = direction === -1 ? 'scaleX(-1)' : 'scaleX(1)';
+                }
+
+                fish.style.left = x + 'px';
+                requestAnimationFrame(move);
+            }
+
+            move();
+        }
+
+        function moveRod(e) {
+            if (!gameActive) return;
+            const rod = document.getElementById('rod');
+            rod.style.left = e.clientX + 'px';
+        }
+
+        function throwRod(e) {
+            if (!gameActive) return;
+
+            const rod = document.getElementById('rod');
+            const hook = document.getElementById('hook');
+            const lake = document.getElementById('lake');
+
+            const clickY = e.clientY - (window.innerHeight - lake.offsetHeight);
+            if (clickY < 0) return;
+
+            rod.style.height = clickY + 'px';
+
+            // Check for collision at the end of the line
+            setTimeout(() => {
+                checkCatch(e.clientX, clickY);
+                setTimeout(() => {
+                    rod.style.height = '0px';
+                }, 200);
+            }, 300);
+        }
+
+        function checkCatch(x, y) {
+            const fishies = document.querySelectorAll('.number-fish');
+            const lakeRect = document.getElementById('lake').getBoundingClientRect();
+            const globalY = y + lakeRect.top;
+
+            let hit = false;
+            fishies.forEach(fish => {
+                const rect = fish.getBoundingClientRect();
+                if (x > rect.left && x < rect.right && globalY > rect.top && globalY < rect.bottom) {
+                    handleFishClick(fish);
+                    hit = true;
+                }
+            });
+        }
+
+        function handleFishClick(fish) {
+            const num = parseInt(fish.dataset.num);
+            if (num === currentTarget) {
+                // Success!
+                currentTarget++;
+                score += 10;
+                document.getElementById('score').innerText = score;
+                document.getElementById('nextNum').innerText = currentTarget;
+
+                // Visual Feedback
+                const glow = document.createElement('div');
+                glow.className = 'success-glow';
+                glow.style.left = fish.style.left;
+                glow.style.top = fish.style.top;
+                glow.style.width = '100px';
+                glow.style.height = '100px';
+                document.getElementById('lake').appendChild(glow);
+                setTimeout(() => glow.remove(), 500);
+
+                fish.remove();
+
+                // Spawn more if needed
+                if (document.querySelectorAll('.number-fish').length < 5) {
+                    for (let i = 0; i < 3; i++) {
+                        createFish(currentTarget + 7 + i);
+                    }
+                }
+
+                if (currentTarget > 20) {
+                    endGame();
+                }
+            } else {
+                // Wrong number - shake
+                fish.style.animation = 'none';
+                fish.offsetHeight; // trigger reflow
+                fish.style.transform += ' translateX(10px)';
+                setTimeout(() => fish.style.transform = fish.style.transform.replace(' translateX(10px)', ''), 100);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            document.getElementById('winOverlay').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+
+</html>

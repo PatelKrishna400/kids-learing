@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar System Explorer - WonderKids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --space-bg: #0b0d17;
+            --sun-color: #ffcc33;
+            --text-color: #ffffff;
+            --primary: #4a90e2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--space-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .badge {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            opacity: 0.3;
+            border: 2px solid transparent;
+        }
+
+        .badge.unlocked {
+            opacity: 1;
+            border-color: #f1c40f;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+
+        /* Space Scene */
+        main {
+            flex: 1;
+            position: relative;
+            perspective: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            pointer-events: none;
+        }
+
+        .solar-system {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+        }
+
+        .sun {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #ffcc33 0%, #ff8800 60%, transparent 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 80px #ffcc33;
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .sun:hover {
+            transform: scale(1.1);
+        }
+
+        .orbit {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .planet-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .planet:hover {
+            transform: scale(1.3);
+            z-index: 50 !important;
+        }
+
+        .planet-label {
+            position: absolute;
+            bottom: -25px;
+            white-space: nowrap;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+        }
+
+        /* Planet Styles */
+        .mercury {
+            width: 15px;
+            height: 15px;
+            background: #a5a5a5;
+        }
+
+        .venus {
+            width: 25px;
+            height: 25px;
+            background: #e3bb76;
+        }
+
+        .earth {
+            width: 28px;
+            height: 28px;
+            background: #2271b3;
+            box-shadow: 0 0 10px #2271b3;
+        }
+
+        .mars {
+            width: 20px;
+            height: 20px;
+            background: #e27b58;
+        }
+
+        .jupiter {
+            width: 60px;
+            height: 60px;
+            background: #d39c7e;
+        }
+
+        .saturn {
+            width: 50px;
+            height: 50px;
+            background: #c5ab6e;
+        }
+
+        .saturn::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 15px;
+            border: 4px solid rgba(197, 171, 110, 0.4);
+            border-radius: 50%;
+            transform: rotateX(70deg);
+        }
+
+        .uranus {
+            width: 35px;
+            height: 35px;
+            background: #b7d1d1;
+        }
+
+        .neptune {
+            width: 35px;
+            height: 35px;
+            background: #6081ff;
+        }
+
+        /* UI Overlays */
+        .info-popup {
+            position: fixed;
+            right: -400px;
+            top: 20%;
+            width: 350px;
+            background: rgba(11, 13, 23, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .info-popup.active {
+            right: 20px;
+        }
+
+        .info-popup h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+
+        .info-popup p {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .btn-quiz {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            width: 100%;
+        }
+
+        /* Quiz Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .quiz-card {
+            background: #1c1e26;
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid var(--primary);
+        }
+
+        .quiz-question {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .answer-btn:hover {
+            background: var(--primary);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <h1 class="game-title">Solar System Explorer</h1>
+        <div class="badge-container">
+            <div class="badge" id="badge-explorer" title="Planet Explorer"><i class="fa-solid fa-rocket"></i></div>
+            <div class="badge" id="badge-scholar" title="Space Scholar"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="badge" id="badge-master" title="System Master"><i class="fa-solid fa-crown"></i></div>
+        </div>
+    </header>
+
+    <main>
+        <div class="stars"></div>
+
+        <div class="solar-system" id="system">
+            <div class="sun" onclick="showPlanetInfo('sun')"></div>
+            <!-- Planets will be dynamically generated here -->
+        </div>
+
+        <div class="info-popup" id="infoPopup">
+            <h2 id="planetName">Earth</h2>
+            <p id="planetText">Earth is our home planet and the only one known to have life!</p>
+            <button class="btn-quiz" onclick="startMiniQuiz()">Take Mini Quiz 🚀</button>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="toggleOrbits()"><i class="fa-solid fa-circle-notch"></i>
+                Orbits</button>
+            <button class="control-btn" onclick="adjustSpeed()"><i class="fa-solid fa-gauge-high"></i> <span
+                    id="speedText">1x</span></button>
+        </div>
+    </main>
+
+    <div class="overlay" id="quizOverlay">
+        <div class="quiz-card">
+            <h3 class="quiz-question" id="quizQuestion">Loading...</h3>
+            <div class="answers-grid" id="answersGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const planets = [
+            { id: 'mercury', name: 'Mercury', distance: 80, size: 'mercury', speed: 4.7, fact: 'Mercury is the smallest planet and closest to the Sun!' },
+            { id: 'venus', name: 'Venus', distance: 120, size: 'venus', speed: 3.5, fact: 'Venus is the hottest planet in our solar system!' },
+            { id: 'earth', name: 'Earth', distance: 170, size: 'earth', speed: 2.9, fact: 'Earth is our home and the only planet with liquid water on its surface.' },
+            { id: 'mars', name: 'Mars', distance: 220, size: 'mars', speed: 2.4, fact: 'Mars is known as the Red Planet because of its iron-rich soil.' },
+            { id: 'jupiter', name: 'Jupiter', distance: 300, size: 'jupiter', speed: 1.3, fact: 'Jupiter is the largest planet—it\'s so big all others could fit inside it twice!' },
+            { id: 'saturn', name: 'Saturn', distance: 390, size: 'saturn', speed: 0.9, fact: 'Saturn has the most spectacular ring system made of ice and rock.' },
+            { id: 'uranus', name: 'Uranus', distance: 470, size: 'uranus', speed: 0.6, fact: 'Uranus is an ice giant that orbits the sun on its side!' },
+            { id: 'neptune', name: 'Neptune', distance: 540, size: 'neptune', speed: 0.5, fact: 'Neptune is the windiest planet—winds can reach 1,200 miles per hour!' }
+        ];
+
+        let timeScale = 1;
+        let orbitsVisible = true;
+        let currentPlanetId = null;
+        let score = 0;
+
+        function createSystem() {
+            const system = document.getElementById('system');
+
+            planets.forEach(p => {
+                // Create Orbit
+                const orbit = document.createElement('div');
+                orbit.className = 'orbit';
+                orbit.style.width = (p.distance * 2) + 'px';
+                orbit.style.height = (p.distance * 2) + 'px';
+                system.appendChild(orbit);
+
+                // Create Planet Container
+                const container = document.createElement('div');
+                container.className = 'planet-container';
+                container.id = `container-${p.id}`;
+                container.dataset.speed = p.speed;
+                container.dataset.angle = Math.random() * 360;
+
+                // Create Planet
+                const planet = document.createElement('div');
+                planet.className = `planet ${p.size}`;
+                planet.innerHTML = `<div class="planet-label">${p.name}</div>`;
+                planet.style.left = p.distance + 'px';
+                planet.onclick = (e) => {
+                    e.stopPropagation();
+                    showPlanetInfo(p.id);
+                };
+
+                container.appendChild(planet);
+                system.appendChild(container);
+            });
+
+            animate();
+        }
+
+        function animate() {
+            planets.forEach(p => {
+                const container = document.getElementById(`container-${p.id}`);
+                let angle = parseFloat(container.dataset.angle);
+                angle += (p.speed * 0.1 * timeScale);
+                container.dataset.angle = angle;
+                container.style.transform = `rotate(${angle}deg)`;
+            });
+            requestAnimationFrame(animate);
+        }
+
+        function showPlanetInfo(id) {
+            currentPlanetId = id;
+            const info = (id === 'sun') ? { name: 'The Sun', fact: 'The Sun is a massive star at the center of our Solar System!' } : planets.find(p => p.id === id);
+
+            document.getElementById('planetName').innerText = info.name;
+            document.getElementById('planetText').innerText = info.fact;
+            document.getElementById('infoPopup').classList.add('active');
+
+            speakFact(info.fact);
+
+            // Unlock first badge
+            document.getElementById('badge-explorer').classList.add('unlocked');
+        }
+
+        function speakFact(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        const quizData = {
+            'jupiter': { q: 'Which is the largest planet?', a: ['Jupiter', 'Mars', 'Earth', 'Venus'], c: 'Jupiter' },
+            'venus': { q: 'Which is the hottest planet?', a: ['Mercury', 'Venus', 'Saturn', 'Mars'], c: 'Venus' },
+            'saturn': { q: 'Which planet has the best rings?', a: ['Saturn', 'Uranus', 'Neptune', 'Earth'], c: 'Saturn' },
+            'earth': { q: 'Which planet do we live on?', a: ['Mars', 'Venus', 'Earth', 'Jupiter'], c: 'Earth' },
+            'mars': { q: 'Which planet is called Red Planet?', a: ['Mars', 'Jupiter', 'Mercury', 'Venus'], c: 'Mars' },
+            'sun': { q: 'What is at the center of the system?', a: ['The Moon', 'The Earth', 'The Sun', 'Mars'], c: 'The Sun' }
+        };
+
+        function startMiniQuiz() {
+            const quiz = quizData[currentPlanetId] || quizData['earth'];
+            const overlay = document.getElementById('quizOverlay');
+            const qText = document.getElementById('quizQuestion');
+            const grid = document.getElementById('answersGrid');
+
+            qText.innerText = quiz.q;
+            grid.innerHTML = '';
+
+            quiz.a.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.innerText = choice;
+                btn.onclick = () => checkAnswer(choice, quiz.c);
+                grid.appendChild(btn);
+            });
+
+            overlay.classList.add('active');
+        }
+
+        function checkAnswer(choice, correct) {
+            if (choice === correct) {
+                score++;
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                if (score >= 3) document.getElementById('badge-scholar').classList.add('unlocked');
+                if (score >= 6) document.getElementById('badge-master').classList.add('unlocked');
+
+                document.getElementById('quizOverlay').classList.remove('active');
+                document.getElementById('infoPopup').classList.remove('active');
+            } else {
+                alert("Almost! Try again! 🚀");
+            }
+        }
+
+        function toggleOrbits() {
+            orbitsVisible = !orbitsVisible;
+            document.querySelectorAll('.orbit').forEach(o => o.style.opacity = orbitsVisible ? '1' : '0');
+        }
+
+        function adjustSpeed() {
+            if (timeScale === 1) timeScale = 2;
+            else if (timeScale === 2) timeScale = 0.5;
+            else timeScale = 1;
+            document.getElementById('speedText').innerText = timeScale + 'x';
+        }
+
+        // Close popup when clicking elsewhere
+        window.onclick = (e) => {
+            if (!e.target.closest('.info-popup') && !e.target.closest('.planet') && !e.target.closest('.sun')) {
+                document.getElementById('infoPopup').classList.remove('active');
+            }
+        };
+
+        createSystem();
+    </script>
+</body>
+
+</html>
