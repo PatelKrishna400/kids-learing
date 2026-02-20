@@ -449,6 +449,11 @@
                 } else {
                     // WRONG
                     const utterance = new SpeechSynthesisUtterance("Not this one! Keep looking!");
+                    utterance.pitch = 1.6;
+                    utterance.rate = 1.0;
+                    const voices = window.speechSynthesis.getVoices();
+                    const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Female')) || voices[0];
+                    if (preferredVoice) utterance.voice = preferredVoice;
                     window.speechSynthesis.speak(utterance);
                 }
             }

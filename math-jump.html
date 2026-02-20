@@ -1,330 +1,257 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Jump Adventure - WonderKids</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --sky-blue: #87CEEB;
-            --grass-green: #2ecc71;
-            --cloud-white: #ffffff;
-            --accent: #FF6B6B;
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Math Jump Adventure - Infinite Vertical Level</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="voice-engine.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee3b2b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221210",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
         }
-
+    </script>
+    <style type="text/tailwindcss">
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Fredoka', sans-serif;
-            background: var(--sky-blue);
+            font-family: 'Be Vietnam Pro', sans-serif;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
         }
-
-        .game-header {
-            width: 100%;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            box-sizing: border-box;
+        .game-canvas {
+            background: linear-gradient(to top, #4ade80 0%, #87CEEB 40%, #1e40af 100%);
         }
-
-        .back-btn {
-            background: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
-            font-weight: 700;
-            color: #333;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            text-decoration: none;
+        .platform-glow {
+            box-shadow: 0 0 30px 10px rgba(238, 59, 43, 0.4);
         }
-
-        .score-box {
-            background: white;
-            padding: 12px 25px;
-            border-radius: 20px;
-            font-weight: 700;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .question-card {
-            background: white;
-            padding: 20px 40px;
-            border-radius: 30px;
-            font-size: 3rem;
-            font-weight: 700;
-            color: #333;
-            margin-top: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            z-index: 10;
-        }
-
-        .game-world {
-            position: relative;
-            flex: 1;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .character {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 100px;
-            background: url('assets/mascot_math_cloud.png') no-repeat center;
-            background-size: contain;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 20;
-        }
-
-        .platforms-container {
-            position: absolute;
-            top: 40%;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-
         .cloud-platform {
-            width: 140px;
-            height: 80px;
-            background: var(--cloud-white);
-            border-radius: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
-            cursor: pointer;
-            box-shadow: 0 10px 0 #eee, 0 15px 30px rgba(0, 0, 0, 0.1);
-            position: relative;
-            transition: transform 0.2s, background 0.5s, opacity 1s;
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f0f9ff 100%);
         }
-
-        .cloud-platform:hover {
-            transform: scale(1.05);
-        }
-
-        .cloud-platform::before,
-        .cloud-platform::after {
-            content: '';
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            z-index: -1;
-        }
-
-        .cloud-platform::before {
-            width: 80px;
-            height: 80px;
-            top: -30px;
-            left: 20px;
-        }
-
-        .cloud-platform::after {
-            width: 90px;
-            height: 90px;
-            top: -40px;
-            right: 15px;
-        }
-
-        .falling {
-            transform: translateY(1000px) rotate(20deg) !important;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .success-content h2 {
-            font-size: 4rem;
-            color: var(--grass-green);
-            margin: 0;
-        }
-
-        .success-content p {
-            font-size: 1.5rem;
-        }
-
-        .speak-btn {
-            background: #ff7675;
-            color: white;
-            border: none;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: 0.2s;
-        }
-
-        .speak-btn:hover {
-            transform: scale(1.1);
+        #character {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
     </style>
 </head>
 
-<body>
-    <div class="game-header">
-        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
-        <div class="score-box">Coins: <span id="coinCount">0</span> 🪙</div>
-    </div>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+    <div class="relative h-screen w-full flex flex-col overflow-hidden game-canvas" id="mainCanvas">
+        <header
+            class="absolute top-0 left-0 w-full z-20 flex justify-between items-start p-6 md:p-10 pointer-events-none">
+            <div class="flex flex-col gap-3 pointer-events-auto">
+                <div
+                    class="flex items-center gap-2 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-2 rounded-full border border-primary/20 shadow-lg">
+                    <span class="material-symbols-outlined text-primary"
+                        style="font-variation-settings: 'FILL' 1">favorite</span>
+                    <span class="material-symbols-outlined text-primary"
+                        style="font-variation-settings: 'FILL' 1">favorite</span>
+                    <span class="material-symbols-outlined text-primary"
+                        style="font-variation-settings: 'FILL' 1">favorite</span>
+                    <span class="material-symbols-outlined text-primary"
+                        style="font-variation-settings: 'FILL' 1">favorite</span>
+                    <span class="material-symbols-outlined text-slate-300">favorite</span>
+                    <span class="ml-2 font-bold text-sm text-slate-700 dark:text-slate-200">4/5</span>
+                </div>
+                <div class="w-48 bg-slate-200 dark:bg-slate-800 h-3 rounded-full overflow-hidden shadow-inner">
+                    <div class="h-full bg-primary" id="energyBar" style="width: 80%"></div>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-3 pointer-events-auto">
+                <div
+                    class="flex items-center gap-3 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-5 py-2 rounded-full border border-yellow-400/30 shadow-lg">
+                    <span class="material-symbols-outlined text-yellow-500 font-bold"
+                        style="font-variation-settings: 'FILL' 1">height</span>
+                    <span class="text-xl font-black text-slate-800 dark:text-white tracking-tight"
+                        id="heightScore">0m</span>
+                </div>
+                <button class="bg-primary text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                    onclick="window.location.href='index.html'">
+                    <span class="material-symbols-outlined">home</span>
+                </button>
+            </div>
+        </header>
 
-    <div class="question-card">
-        <button class="speak-btn" id="speakBtn"><i class="fa-solid fa-volume-high"></i></button>
-        <div id="equation">5 + 3 = ?</div>
-    </div>
+        <main class="relative flex-1 w-full flex flex-col items-center">
+            <div class="relative w-full h-full max-w-4xl mx-auto" id="platformsContainer">
+                <!-- Ground Zero -->
+                <div class="absolute left-1/2 bottom-[15%] -translate-x-1/2 z-30 flex flex-col items-center"
+                    id="characterContainer">
+                    <div class="relative w-28 h-28 bg-primary rounded-full border-4 border-white shadow-2xl flex items-center justify-center transform transition-transform cursor-pointer"
+                        id="character">
+                        <div class="flex flex-col items-center">
+                            <div class="flex gap-4 mb-2">
+                                <div class="w-3 h-3 bg-white rounded-full"></div>
+                                <div class="w-3 h-3 bg-white rounded-full"></div>
+                            </div>
+                            <div class="w-8 h-2 bg-white rounded-full"></div>
+                        </div>
+                        <div class="absolute -top-4 -left-2 w-6 h-6 bg-primary border-4 border-white rounded-lg"></div>
+                        <div class="absolute -top-4 -right-2 w-6 h-6 bg-primary border-4 border-white rounded-lg"></div>
+                    </div>
+                    <div class="w-48 h-12 bg-emerald-600 border-b-8 border-emerald-800 rounded-xl mt-4 shadow-2xl flex items-center justify-center"
+                        id="ground">
+                        <span class="text-white font-bold tracking-widest text-sm">GROUND ZERO</span>
+                    </div>
+                </div>
 
-    <div class="game-world">
-        <div class="platforms-container" id="platforms">
-            <!-- Platforms added by JS -->
+                <!-- Dynamic Platforms will be injected here -->
+            </div>
+
+            <div class="absolute bottom-6 z-40 w-full flex justify-center px-4 pointer-events-none">
+                <div class="bg-amber-100 border-4 md:border-8 border-amber-900 px-8 md:px-16 py-4 md:py-6 rounded-2xl shadow-2xl pointer-events-auto transform transition-all hover:scale-105 cursor-pointer"
+                    id="questionBox">
+                    <h2 class="text-4xl md:text-6xl font-black text-amber-950 tracking-tighter" id="equationTxt">5 + 3 =
+                        ?</h2>
+                </div>
+            </div>
+        </main>
+
+        <div class="absolute bottom-0 left-0 w-full h-32 z-0 pointer-events-none">
+            <div class="absolute bottom-0 left-0 w-full h-full bg-emerald-500 rounded-t-[100%] scale-x-110"></div>
+            <div
+                class="absolute bottom-0 left-0 w-full h-[70%] bg-emerald-400 opacity-50 rounded-t-[100%] scale-x-150 transform -translate-x-20">
+            </div>
+            <div class="absolute bottom-4 left-[10%] w-16 h-24 bg-emerald-700 rounded-full shadow-lg"></div>
+            <div class="absolute bottom-4 right-[10%] w-20 h-28 bg-emerald-800 rounded-full shadow-lg"></div>
         </div>
-        <div class="character" id="character"></div>
-    </div>
 
-    <div class="success-overlay" id="overlay">
-        <div class="success-content">
-            <h2 id="feedbackTitle">AMAZING!</h2>
-            <p>You found the correct number! 🌟</p>
+        <div
+            class="absolute top-32 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 dark:bg-background-dark/90 px-6 py-2 rounded-full shadow-xl border-2 border-primary/20">
+            <p class="text-slate-800 dark:text-slate-100 font-bold text-center text-sm" id="hintBox">Keep climbing to
+                find the answer!</p>
         </div>
     </div>
 
     <script>
-        let coins = parseInt(localStorage.getItem('wonderKids_coins')) || 50;
-        let currentLevel = 0;
-        let correctAnswer = 0;
+        let score = 0;
+        let correctAnswer = 8;
+        let isJumping = false;
 
-        const equationEl = document.getElementById('equation');
-        const platformsEl = document.getElementById('platforms');
-        const characterEl = document.getElementById('character');
-        const overlay = document.getElementById('overlay');
-        const coinCountEl = document.getElementById('coinCount');
-
-        function updateUI() {
-            coinCountEl.innerText = coins;
-            localStorage.setItem('wonderKids_coins', coins);
-        }
+        const platformsContainer = document.getElementById('platformsContainer');
+        const character = document.getElementById('character');
+        const characterContainer = document.getElementById('characterContainer');
+        const equationTxt = document.getElementById('equationTxt');
+        const heightScore = document.getElementById('heightScore');
+        const hintBox = document.getElementById('hintBox');
 
         function generateQuestion() {
-            const isAddition = Math.random() > 0.5;
-            let a, b;
+            const a = Math.floor(Math.random() * 5) + 1;
+            const b = Math.floor(Math.random() * 5) + 1;
+            correctAnswer = a + b;
+            equationTxt.innerText = `${a} + ${b} = ?`;
 
-            if (isAddition) {
-                a = Math.floor(Math.random() * 10) + 1;
-                b = Math.floor(Math.random() * 10) + 1;
-                correctAnswer = a + b;
-                equationEl.innerText = `${a} + ${b} = ?`;
-            } else {
-                a = Math.floor(Math.random() * 15) + 5;
-                b = Math.floor(Math.random() * a);
-                correctAnswer = a - b;
-                equationEl.innerText = `${a} - ${b} = ?`;
-            }
-
-            speakQuestion();
-            createPlatforms();
+            // Generate platforms
+            spawnPlatforms();
+            speak(`What is ${a} plus ${b}? Tap the right cloud!`);
         }
 
-        function speakQuestion() {
-            const text = `Find ${equationEl.innerText.replace('?', '')}`;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
+        function spawnPlatforms() {
+            // Clear old platforms except ground
+            const oldPlatforms = document.querySelectorAll('.dynamic-platform');
+            oldPlatforms.forEach(p => p.remove());
 
-        function createPlatforms() {
-            platformsEl.innerHTML = '';
-            const options = new Set();
-            options.add(correctAnswer);
+            const positions = [
+                { left: '20%', top: '25%', val: correctAnswer },
+                { left: '70%', top: '40%', val: correctAnswer + 2 },
+                { left: '40%', top: '55%', val: correctAnswer - 1 }
+            ];
 
-            while (options.size < 3) {
-                let wrong = correctAnswer + (Math.floor(Math.random() * 5) - 2);
-                if (wrong < 0) wrong = Math.floor(Math.random() * 20);
-                options.add(wrong);
-            }
+            // Shuffle
+            positions.sort(() => Math.random() - 0.5);
 
-            const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
-
-            shuffled.forEach((num, index) => {
-                const cloud = document.createElement('div');
-                cloud.className = 'cloud-platform';
-                cloud.innerText = num;
-                cloud.onclick = () => handleChoice(num, cloud);
-                platformsEl.appendChild(cloud);
+            positions.forEach((pos, i) => {
+                const platform = document.createElement('div');
+                platform.className = 'absolute dynamic-platform flex flex-col items-center transition-all duration-500';
+                platform.style.left = pos.left;
+                platform.style.top = pos.top;
+                platform.innerHTML = `
+                    <div class="w-24 h-24 bg-white/95 cloud-platform rounded-full border-b-4 border-sky-100 flex items-center justify-center shadow-lg mb-2 cursor-pointer hover:scale-110 transition-transform active:scale-95" onclick="jumpTo(${i}, ${pos.val}, this)">
+                        <span class="text-3xl font-black text-sky-600">${pos.val}</span>
+                    </div>
+                `;
+                platformsContainer.appendChild(platform);
             });
         }
 
-        function handleChoice(num, element) {
-            const rect = element.getBoundingClientRect();
-            const worldRect = document.querySelector('.game-world').getBoundingClientRect();
+        function jumpTo(index, val, el) {
+            if (isJumping) return;
+            isJumping = true;
 
-            // Jump animation
-            characterEl.style.left = (rect.left + rect.width / 2 - worldRect.left) + 'px';
-            characterEl.style.bottom = '60%';
+            const rect = el.getBoundingClientRect();
+            const containerRect = platformsContainer.getBoundingClientRect();
 
-            if (num === correctAnswer) {
+            const targetX = rect.left + rect.width / 2 - containerRect.left;
+            const targetY = rect.top + rect.height / 2 - containerRect.top;
+
+            // Simple jump animation
+            characterContainer.style.transition = "all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+            characterContainer.style.left = (rect.left + rect.width / 2) + "px";
+            characterContainer.style.top = (rect.top + rect.height / 2) + "px";
+            characterContainer.style.bottom = "auto";
+            characterContainer.style.transform = "translate(-50%, -100%)";
+
+            if (val === correctAnswer) {
                 setTimeout(() => {
-                    coins += 5;
-                    updateUI();
-                    overlay.style.display = 'flex';
+                    speak("Great job! Up we go!");
+                    score += 100;
+                    heightScore.innerText = score + "m";
+                    el.classList.add('platform-glow');
+                    hintBox.innerText = "Correct! Get ready for the next one!";
+
                     setTimeout(() => {
-                        overlay.style.display = 'none';
-                        resetCharacter();
+                        resetToGround();
                         generateQuestion();
-                    }, 2000);
-                }, 500);
+                    }, 1500);
+                }, 600);
             } else {
                 setTimeout(() => {
-                    element.classList.add('falling');
+                    speak("Oops! Try again!");
+                    el.style.transform = "translateY(500px) rotate(20deg)";
+                    el.style.opacity = "0";
+
                     setTimeout(() => {
-                        resetCharacter();
-                    }, 500);
-                }, 500);
+                        resetToGround();
+                        isJumping = false;
+                    }, 800);
+                }, 600);
             }
         }
 
-        function resetCharacter() {
-            characterEl.style.left = '50%';
-            characterEl.style.bottom = '50px';
+        function resetToGround() {
+            characterContainer.style.left = "50%";
+            characterContainer.style.bottom = "15%";
+            characterContainer.style.top = "auto";
+            characterContainer.style.transform = "translateX(-50%)";
+            isJumping = false;
         }
 
-        document.getElementById('speakBtn').onclick = speakQuestion;
+        document.getElementById('questionBox').onclick = () => {
+            speak(equationTxt.innerText.replace('?', ''));
+        };
 
-        updateUI();
-        generateQuestion();
+        // Initialize
+        setTimeout(generateQuestion, 500);
     </script>
 </body>
 

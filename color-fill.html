@@ -436,6 +436,17 @@
             [lastX, lastY] = [e.offsetX, e.offsetY];
         }
 
+        function speakKid(text) {
+            if (!('speechSynthesis' in window)) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.pitch = 1.6;
+            utterance.rate = 1.0;
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Female')) || voices[0];
+            if (preferredVoice) utterance.voice = preferredVoice;
+            window.speechSynthesis.speak(utterance);
+        }
+
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', () => isDrawing = false);
@@ -447,7 +458,7 @@
                     document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
                     tool.classList.add('active');
                     currentTool = tool.dataset.tool;
-                    window.speechSynthesis.speak(new SpeechSynthesisUtterance("Selected " + currentTool));
+                    speakKid("Selected " + currentTool);
                 });
             }
         });
@@ -457,7 +468,7 @@
                 document.querySelectorAll('.color-well').forEach(w => w.classList.remove('active'));
                 well.classList.add('active');
                 currentColor = well.dataset.color;
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance(well.dataset.name));
+                speakKid(well.dataset.name);
                 if (currentTool === 'eraser') document.querySelector('[data-tool="sketchpen"]').click();
             });
         });
@@ -517,7 +528,7 @@
         function loadTemplate(iconClass, name) {
             if (coins < 1) {
                 alert("You need 1 Coin to unlock this drawing!");
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Not enough coins"));
+                speakKid("Not enough coins");
                 return;
             }
 
@@ -538,7 +549,7 @@
                 ctx.lineWidth = 10;
                 ctx.strokeText(getIconChar(iconClass), canvas.width / 2, canvas.height / 2);
 
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Unlocked " + name));
+                speakKid("Unlocked " + name);
             }
         }
 

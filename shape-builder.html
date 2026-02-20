@@ -2,564 +2,448 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape Builder World - WonderKids</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Shape Builder World - 1000 Levels of Fun!</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="voice-engine.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee3b2b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221210",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
     <style>
-        :root {
-            --bg-color: #f0f9ff;
-            --primary: #4cc9f0;
-            --secondary: #4895ef;
-            --accent: #f72585;
-            --text: #2b2d42;
-            --success: #4caf50;
+        .shape-shadow {
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Fredoka', sans-serif;
-            user-select: none;
+        .silhouette-dash {
+            stroke-dasharray: 8, 8;
         }
 
-        body {
-            background-color: var(--bg-color);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        .glow-active {
+            box-shadow: 0 0 25px 10px rgba(254, 240, 138, 0.8);
         }
 
-        /* Header */
-        header {
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            z-index: 10;
-        }
-
-        .back-btn {
-            background: #fff;
-            border: 2px solid #eee;
-            color: #ff4d4d;
-            padding: 10px 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-btn:hover {
-            transform: scale(1.05);
-            border-color: #ff4d4d;
-        }
-
-        .game-title {
-            font-size: 1.8rem;
-            color: var(--text);
-            font-weight: 700;
-        }
-
-        .level-indicator {
-            background: var(--primary);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        /* Game Layout */
-        main {
-            flex: 1;
-            display: flex;
-            position: relative;
-        }
-
-        /* Shapes Sidebar */
-        .shapes-drawer {
-            width: 250px;
-            background: white;
-            border-right: 4px dashed #ddd;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-            align-items: center;
-            overflow-y: auto;
-        }
-
-        .drawer-label {
-            font-weight: 600;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-        }
-
-        /* Workspace */
-        .workspace {
-            flex: 1;
-            position: relative;
-            background: radial-gradient(circle, #ffffff 0%, #e0f2fe 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Object Template */
-        .builder-canvas {
-            position: relative;
-            width: 600px;
-            height: 500px;
-            /* border: 1px solid #eee; */
-        }
-
-        .shape-slot {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.05);
-            border: 3px dashed rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-
-        .shape-slot.highlight {
-            background: rgba(76, 201, 240, 0.1);
-            border-color: var(--primary);
-            transform: scale(1.02);
-        }
-
-        .shape-slot.filled {
-            background: transparent;
-            border-color: transparent;
-        }
-
-        /* Draggable Shapes */
-        .shape {
+        .shape-draggable {
+            touch-action: none;
             cursor: grab;
-            position: absolute;
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.2s;
-            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
         }
 
-        .shape:active {
+        .shape-draggable:active {
             cursor: grabbing;
-            transform: scale(1.1);
-            z-index: 1000;
         }
 
-        .shape.in-drawer {
-            position: static;
+        .drop-target-active {
+            background-color: rgba(254, 240, 138, 0.3) !important;
+            border-color: #fbbf24 !important;
         }
 
-        .shape.snapped {
-            cursor: default;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.05));
-        }
-
-        /* Shape definitions */
-        .square {
-            width: 100px;
-            height: 100px;
-            background: #FF9F1C;
-            border-radius: 8px;
-        }
-
-        .triangle {
+        .triangle-shape {
             width: 0;
             height: 0;
-            border-left: 60px solid transparent;
-            border-right: 60px solid transparent;
-            border-bottom: 100px solid #FF4D6D;
-            background: transparent !important;
+            border-left: 50% solid transparent;
+            border-right: 50% solid transparent;
+            border-bottom: 100% solid currentColor;
         }
 
-        .circle {
-            width: 80px;
-            height: 80px;
-            background: #4CC9F0;
-            border-radius: 50%;
+        .diamond-shape {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
         }
 
-        .rectangle {
-            width: 120px;
-            height: 60px;
-            background: #7209B7;
-            border-radius: 8px;
+        .trapezoid-shape {
+            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
         }
 
-        /* Win Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            backdrop-filter: blur(10px);
+        .floating {
+            animation: float 6s ease-in-out infinite;
         }
 
-        .overlay.active {
-            display: flex;
-            animation: fadeIn 0.5s forwards;
-        }
+        @keyframes float {
 
-        .win-card {
-            background: white;
-            padding: 50px;
-            border-radius: 40px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            transform: scale(0.8);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        .win-card h2 {
-            font-size: 3rem;
-            color: var(--success);
-            margin-bottom: 10px;
-        }
-
-        .win-card p {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .btn-next {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(76, 201, 240, 0.3);
-            transition: all 0.3s;
-        }
-
-        .btn-next:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 25px rgba(76, 201, 240, 0.4);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes popIn {
-            from {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .glow {
-            animation: successGlow 1s ease-out;
-        }
-
-        @keyframes successGlow {
-            0% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
-            }
-
+            0%,
             100% {
-                box-shadow: 0 0 0 30px rgba(76, 175, 80, 0);
+                transform: translateY(0);
             }
-        }
 
-        .instruction-tag {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            padding: 10px 30px;
-            border-radius: 50px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            font-weight: 600;
-            color: var(--secondary);
-            border: 2px solid var(--primary);
+            50% {
+                transform: translateY(-10px);
+            }
         }
     </style>
 </head>
 
-<body>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen overflow-hidden select-none">
+    <div class="layout-container flex h-screen flex-col">
+        <!-- HEADER -->
+        <header
+            class="flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-primary/10 px-6 py-4 sticky top-0 z-50">
+            <div class="flex items-center gap-3">
+                <div class="bg-primary p-2 rounded-lg text-white">
+                    <span class="material-symbols-outlined text-2xl" id="headerIcon">category</span>
+                </div>
+                <div>
+                    <h2 class="text-slate-900 dark:text-slate-100 text-xl font-black tracking-tight">Shape Builder</h2>
+                    <p class="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5" id="levelLabel">Level
+                        1</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="bg-slate-100 px-4 py-2 rounded-full flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-sm" id="levelNameIcon">home</span>
+                        <span class="text-slate-900 text-xs font-bold uppercase tracking-wider"
+                            id="levelNameText">House</span>
+                    </div>
+                    <button onclick="location.reload()"
+                        class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-full text-sm font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">refresh</span>
+                        Reset
+                    </button>
+                    <button onclick="window.location.href='index.html'"
+                        class="bg-slate-800 text-white p-2 rounded-full hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined">home</span>
+                    </button>
+                </div>
+            </div>
+        </header>
 
-    <header>
-        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
-        <h1 class="game-title">Shape Builder World</h1>
-        <div class="level-indicator" id="levelText">Level 1: House</div>
-    </header>
+        <main class="flex-1 flex overflow-hidden relative">
+            <!-- GAME PLAY AREA -->
+            <div class="flex-1 relative overflow-hidden bg-sky-100" id="gameWorld">
+                <!-- Decorations -->
+                <div class="absolute inset-0 z-0 opacity-40">
+                    <div class="absolute top-10 left-10 text-white"><span
+                            class="material-symbols-outlined text-[120px]">cloud</span></div>
+                    <div class="absolute top-24 right-32 text-white"><span
+                            class="material-symbols-outlined text-[100px]">cloud</span></div>
+                    <div
+                        class="absolute bottom-0 w-full h-1/3 bg-emerald-400 rounded-t-[100%] scale-x-125 transform translate-y-10">
+                    </div>
+                </div>
 
-    <main>
-        <div class="shapes-drawer" id="drawer">
-            <span class="drawer-label">Drag shapes from here</span>
-            <!-- Shapes injected here -->
-        </div>
+                <div class="relative z-10 h-full flex flex-col items-center justify-center p-8">
+                    <div
+                        class="mb-8 text-center bg-white/30 backdrop-blur-sm px-8 py-4 rounded-3xl border border-white/50">
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-800 mb-2 drop-shadow-sm" id="levelTitle">
+                            Build the House!</h1>
+                        <p class="text-slate-600 font-bold" id="levelSubtitle">Drag the colorful shapes to the dotted
+                            lines</p>
+                    </div>
 
-        <div class="workspace" id="workspace">
-            <div class="instruction-tag" id="levelName">Let's build a House!</div>
-            <div class="builder-canvas" id="canvas">
-                <!-- Slots injected here -->
+                    <!-- DROP ZONE -->
+                    <div class="relative w-[500px] h-[500px]" id="dropZoneContainer">
+                        <!-- Silhouette slots will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHAPE TRAY SIDEBAR -->
+            <aside
+                class="w-85 bg-white/90 backdrop-blur-xl border-l border-primary/10 p-6 flex flex-col gap-6 shadow-2xl z-20">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="material-symbols-outlined text-primary font-bold">inventory_2</span>
+                    <h3 class="text-slate-900 font-black text-lg uppercase tracking-tight">Shape Tray</h3>
+                </div>
+
+                <div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar" id="shapeTray">
+                    <!-- Draggable shapes will be injected here -->
+                </div>
+
+                <div class="pt-4 border-t border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Progress</span>
+                        <span class="text-xs font-bold text-primary" id="progressText">0%</span>
+                    </div>
+                    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary rounded-full transition-all duration-500" id="progressBar"
+                            style="width: 0%"></div>
+                    </div>
+                    <p class="text-[10px] text-center mt-3 text-slate-400 font-bold uppercase tracking-tight"
+                        id="levelCounter">Level 1 of 1000</p>
+                </div>
+            </aside>
+        </main>
+
+        <!-- HINT BOX -->
+        <div class="fixed bottom-10 left-10 z-30 max-w-xs animate-bounce" id="hintBox">
+            <div class="bg-white p-5 rounded-2xl shadow-2xl border-t-4 border-primary relative">
+                <div class="flex gap-3 items-start">
+                    <div class="bg-amber-100 p-2 rounded-full text-amber-600 shrink-0">
+                        <span class="material-symbols-outlined text-xl">lightbulb</span>
+                    </div>
+                    <p class="text-slate-800 font-bold text-sm leading-relaxed" id="hintText">
+                        Welcome! Find the <span class="text-blue-500 underline">Blue Square</span> to start building!
+                    </p>
+                </div>
+                <div class="absolute -bottom-2 left-8 w-4 h-4 bg-white rotate-45 border-r border-b border-slate-200">
+                </div>
             </div>
         </div>
-    </main>
 
-    <div class="overlay" id="winOverlay">
-        <div class="win-card">
-            <div style="font-size: 5rem; margin-bottom: 20px;">🏠</div>
-            <h2 id="winTitle">Amazing!</h2>
-            <p id="winMessage">You built a beautiful house!</p>
-            <button class="btn-next" onclick="nextLevel()">Next Build <i class="fa-solid fa-arrow-right"></i></button>
+        <!-- WIN OVERLAY -->
+        <div id="winOverlay"
+            class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center hidden p-4">
+            <div
+                class="bg-white rounded-[3rem] p-12 text-center max-w-md w-full shadow-2xl border-8 border-primary relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-yellow-400 rounded-full opacity-20"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-primary rounded-full opacity-10"></div>
+
+                <div class="text-8xl mb-6 floating" id="winIcon">🏠</div>
+                <h2 class="text-4xl font-black text-slate-800 mb-2">AMAZING!</h2>
+                <p class="text-slate-600 font-bold mb-8" id="winMessage">You've successfully built the House! Ready for
+                    more?</p>
+
+                <button onclick="nextLevel()"
+                    class="bg-primary text-white text-2xl font-black px-12 py-5 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all w-full flex items-center justify-center gap-3">
+                    NEXT LEVEL
+                    <span class="material-symbols-outlined text-3xl">arrow_forward</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        const levels = [
+        const levelData = [
             {
-                name: "House",
-                icon: "🏠",
-                slots: [
-                    { type: 'square', x: 250, y: 250 }, // Base
-                    { type: 'triangle', x: 240, y: 150 }, // Roof
-                    { type: 'rectangle', x: 285, y: 300, w: 30, h: 50, color: '#8d6e63' } // Door
+                id: 1, name: "House", title: "Build the House!", icon: "home", emoji: "🏠",
+                hint: "Find the <b>blue square</b> for the walls!",
+                bg: "bg-sky-100",
+                parts: [
+                    { id: "walls", type: "square", w: 300, h: 250, x: 100, y: 150, color: "bg-blue-500", label: "Walls" },
+                    { id: "roof", type: "triangle", w: 340, h: 180, x: 80, y: -30, color: "bg-red-500", label: "Roof" },
+                    { id: "door", type: "trapezoid", w: 80, h: 120, x: 210, y: 280, color: "bg-emerald-500", label: "Door" }
                 ]
             },
             {
-                name: "Tree",
-                icon: "🌳",
-                slots: [
-                    { type: 'square', x: 280, y: 300, w: 40, h: 100, color: '#5d4037' }, // Trunk
-                    { type: 'triangle', x: 240, y: 200 }, // Middle
-                    { type: 'triangle', x: 255, y: 150, scale: 0.8 } // Top
+                id: 3, name: "Rocket", title: "Build the Rocket!", icon: "rocket_launch", emoji: "🚀",
+                hint: "The <b>blue body</b> is the strongest part!",
+                bg: "bg-slate-900",
+                parts: [
+                    { id: "body", type: "square", w: 120, h: 220, x: 190, y: 150, color: "bg-blue-600", label: "Main Body", rounded: "rounded-t-full" },
+                    { id: "tip", type: "triangle", w: 120, h: 80, x: 190, y: 70, color: "bg-red-500", label: "Rocket Tip" },
+                    { id: "finL", type: "triangle", w: 60, h: 100, x: 130, y: 300, color: "bg-orange-500", label: "Left Fin", rotate: -30 },
+                    { id: "finR", type: "triangle", w: 60, h: 100, x: 310, y: 300, color: "bg-orange-500", label: "Right Fin", rotate: 30 }
                 ]
             },
             {
-                name: "Car",
-                icon: "🚗",
-                slots: [
-                    { type: 'rectangle', x: 200, y: 250, w: 200, h: 80 }, // Body
-                    { type: 'rectangle', x: 240, y: 200, w: 120, h: 50 }, // Top
-                    { type: 'circle', x: 230, y: 310, w: 60, h: 60, color: '#333' }, // Wheel 1
-                    { type: 'circle', x: 310, y: 310, w: 60, h: 60, color: '#333' }  // Wheel 2
+                id: 5, name: "Friendly Robot", title: "Assemble the Robot!", icon: "smart_toy", emoji: "🤖",
+                hint: "Start with the <b>grey body</b>!",
+                bg: "bg-slate-50",
+                parts: [
+                    { id: "body", type: "square", w: 180, h: 220, x: 160, y: 180, color: "bg-slate-400", label: "Body" },
+                    { id: "head", type: "square", w: 100, h: 90, x: 200, y: 80, color: "bg-emerald-400", label: "Head" },
+                    { id: "armL", type: "square", w: 40, h: 150, x: 110, y: 180, color: "bg-yellow-400", label: "Left Arm" },
+                    { id: "armR", type: "square", w: 40, h: 150, x: 350, y: 180, color: "bg-yellow-400", label: "Right Arm" }
                 ]
             }
         ];
 
-        let currentLevel = 0;
-        let filledSlots = 0;
-        let activeShape = null;
-        let startPos = { x: 0, y: 0 };
-        let offset = { x: 0, y: 0 };
+        let currentLevelIdx = 0;
+        let placedParts = 0;
+        let activeLevel = null;
 
-        const canvas = document.getElementById('canvas');
-        const drawer = document.getElementById('drawer');
+        const dropZone = document.getElementById('dropZoneContainer');
+        const shapeTray = document.getElementById('shapeTray');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const hintText = document.getElementById('hintText');
+        const levelLabel = document.getElementById('levelLabel');
+        const levelNameText = document.getElementById('levelNameText');
+        const levelTitle = document.getElementById('levelTitle');
         const winOverlay = document.getElementById('winOverlay');
 
-        function initLevel() {
-            const level = levels[currentLevel];
-            canvas.innerHTML = '';
-            drawer.innerHTML = '<span class="drawer-label">Drag shapes from here</span>';
-            filledSlots = 0;
+        function loadLevel(idx) {
+            activeLevel = levelData[idx];
+            placedParts = 0;
 
-            document.getElementById('levelText').innerText = `Level ${currentLevel + 1}: ${level.name}`;
-            document.getElementById('levelName').innerText = `Let's build a ${level.name}!`;
+            // UI Setup
+            levelLabel.innerText = `Level ${activeLevel.id}`;
+            levelNameText.innerText = activeLevel.name;
+            levelTitle.innerText = activeLevel.title;
+            hintText.innerHTML = activeLevel.hint;
+            document.getElementById('headerIcon').innerText = activeLevel.icon;
+            document.getElementById('levelNameIcon').innerText = activeLevel.icon;
+            document.getElementById('gameWorld').className = `flex-1 relative overflow-hidden transition-colors duration-1000 ${activeLevel.bg}`;
+            document.getElementById('levelCounter').innerText = `Level ${activeLevel.id} of 1000`;
 
-            // Create slots and corresponding shapes in drawer
-            level.slots.forEach((slot, index) => {
-                const slotEl = document.createElement('div');
-                slotEl.className = `shape-slot ${slot.type}`;
-                slotEl.style.left = slot.x + 'px';
-                slotEl.style.top = slot.y + 'px';
+            dropZone.innerHTML = '';
+            shapeTray.innerHTML = '';
+            winOverlay.classList.add('hidden');
+            updateProgress();
 
-                if (slot.w) slotEl.style.width = slot.w + 'px';
-                if (slot.h) slotEl.style.height = slot.h + 'px';
-                if (slot.scale) slotEl.style.transform = `scale(${slot.scale})`;
+            // Sockets
+            activeLevel.parts.forEach(p => {
+                const socket = document.createElement('div');
+                socket.id = `socket-${p.id}`;
+                socket.className = `absolute border-4 border-dashed border-slate-400/30 bg-white/5 transition-all duration-300 ${p.rounded || ''}`;
 
-                slotEl.dataset.type = slot.type;
-                slotEl.dataset.index = index;
-                canvas.appendChild(slotEl);
+                if (p.type === 'triangle') socket.classList.add('triangle-shape', 'border-0');
+                if (p.type === 'diamond') socket.classList.add('diamond-shape');
+                if (p.type === 'trapezoid') socket.classList.add('trapezoid-shape');
 
-                // Create draggable shape in drawer
-                createDraggableShape(slot, index);
+                socket.style.width = p.w + 'px';
+                socket.style.height = p.h + 'px';
+                socket.style.left = p.x + 'px';
+                socket.style.top = p.y + 'px';
+                if (p.rotate) socket.style.transform = `rotate(${p.rotate}deg)`;
+
+                dropZone.appendChild(socket);
+
+                // Draggable item in tray
+                createTrayItem(p);
             });
+
+            speak(`Level ${activeLevel.id}: ${activeLevel.title}`);
         }
 
-        function createDraggableShape(slot, index) {
+        function createTrayItem(p) {
+            const card = document.createElement('div');
+            card.className = "group cursor-grab active:cursor-grabbing hover:scale-105 transition-transform bg-white p-4 rounded-xl shadow-sm border-2 border-slate-100 hover:border-primary flex flex-col items-center shape-draggable";
+
             const shape = document.createElement('div');
-            shape.className = `shape in-drawer ${slot.type}`;
-            if (slot.w) shape.style.width = slot.w + 'px';
-            if (slot.h) shape.style.height = slot.h + 'px';
-            if (slot.color) {
-                if (slot.type === 'triangle') shape.style.borderBottomColor = slot.color;
-                else shape.style.backgroundColor = slot.color;
-            }
-            if (slot.scale) shape.style.transform = `scale(${slot.scale})`;
+            shape.className = `shape-shadow mb-3 ${p.color} ${p.rounded || ''}`;
+            shape.style.width = Math.min(p.w, 100) / 1.5 + 'px';
+            shape.style.height = Math.min(p.h, 100) / 1.5 + 'px';
 
-            shape.dataset.type = slot.type;
-            shape.dataset.index = index;
+            if (p.type === 'triangle') shape.className += " triangle-shape";
+            if (p.type === 'diamond') shape.className += " diamond-shape";
+            if (p.type === 'trapezoid') shape.className += " trapezoid-shape";
 
-            shape.onpointerdown = startDrag;
-            drawer.appendChild(shape);
+            card.appendChild(shape);
+            card.innerHTML += `<p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">${p.label}</p>`;
+
+            card.onmousedown = (e) => startDragging(e, p, card);
+            card.ontouchstart = (e) => startDragging(e.touches[0], p, card);
+
+            shapeTray.appendChild(card);
         }
 
-        function startDrag(e) {
-            if (this.classList.contains('snapped')) return;
+        function startDragging(e, part, sourceCard) {
+            if (sourceCard.classList.contains('opacity-40')) return;
 
-            activeShape = this;
-            activeShape.setPointerCapture(e.pointerId);
+            const clone = sourceCard.cloneNode(true);
+            clone.style.position = 'fixed';
+            clone.style.width = part.w + 'px';
+            clone.style.height = part.h + 'px';
+            clone.style.zIndex = '1000';
+            clone.classList.remove('hover:scale-105', 'bg-white', 'p-4', 'border-2');
+            clone.classList.add('pointer-events-none');
+            clone.querySelector('p').remove();
 
-            const rect = activeShape.getBoundingClientRect();
-            offset.x = e.clientX - rect.left;
-            offset.y = e.clientY - rect.top;
+            // Adjust shape inside clone
+            const shapeInClone = clone.querySelector('div');
+            shapeInClone.style.width = '100%';
+            shapeInClone.style.height = '100%';
+            if (part.rotate) shapeInClone.style.transform = `rotate(${part.rotate}deg)`;
 
-            if (activeShape.classList.contains('in-drawer')) {
-                activeShape.classList.remove('in-drawer');
-                document.body.appendChild(activeShape);
-                activeShape.style.left = (e.clientX - offset.x) + 'px';
-                activeShape.style.top = (e.clientY - offset.y) + 'px';
-            }
+            document.body.appendChild(clone);
 
-            activeShape.style.transition = 'none';
-        }
+            const moveAt = (pageX, pageY) => {
+                clone.style.left = pageX - part.w / 2 + 'px';
+                clone.style.top = pageY - part.h / 2 + 'px';
 
-        window.onpointermove = (e) => {
-            if (!activeShape) return;
+                // Highlight target
+                const socket = document.getElementById(`socket-${part.id}`);
+                const sRect = socket.getBoundingClientRect();
+                const dist = Math.hypot(pageX - (sRect.left + sRect.width / 2), pageY - (sRect.top + sRect.height / 2));
 
-            activeShape.style.left = (e.clientX - offset.x) + 'px';
-            activeShape.style.top = (e.clientY - offset.y) + 'px';
+                if (dist < 100) socket.classList.add('drop-target-active');
+                else socket.classList.remove('drop-target-active');
+            };
 
-            // Check for nearby slot
-            checkNearSlot();
-        };
+            const onMouseMove = (e) => moveAt(e.clientX, e.clientY);
+            const onTouchMove = (e) => moveAt(e.touches[0].clientX, e.touches[0].clientY);
 
-        window.onpointerup = (e) => {
-            if (!activeShape) return;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('touchmove', onTouchMove);
 
-            const snapped = trySnap();
-            if (!snapped) {
-                // Return to drawer (for now just poof)
-                activeShape.remove();
-                // Recreate in drawer
-                const slot = levels[currentLevel].slots[activeShape.dataset.index];
-                createDraggableShape(slot, activeShape.dataset.index);
-            }
+            const endDragging = (endX, endY) => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('touchmove', onTouchMove);
 
-            activeShape = null;
-        };
+                const socket = document.getElementById(`socket-${part.id}`);
+                const sRect = socket.getBoundingClientRect();
+                const dist = Math.hypot(endX - (sRect.left + sRect.width / 2), endY - (sRect.top + sRect.height / 2));
 
-        function checkNearSlot() {
-            const shapeRect = activeShape.getBoundingClientRect();
-            const slots = document.querySelectorAll('.shape-slot:not(.filled)');
+                if (dist < 80) {
+                    // SNAPPED
+                    socket.classList.remove('drop-target-active', 'border-dashed', 'bg-white/5');
+                    socket.className = `absolute ${part.color} ${part.rounded || ''} shadow-xl glow-active flex items-center justify-center z-10`;
+                    if (part.type === 'triangle') socket.classList.add('triangle-shape');
+                    if (part.type === 'diamond') socket.classList.add('diamond-shape');
+                    if (part.type === 'trapezoid') socket.classList.add('trapezoid-shape');
 
-            slots.forEach(slot => {
-                const slotRect = slot.getBoundingClientRect();
-                const dist = Math.hypot(
-                    (shapeRect.left + shapeRect.width / 2) - (slotRect.left + slotRect.width / 2),
-                    (shapeRect.top + shapeRect.height / 2) - (slotRect.top + slotRect.height / 2)
-                );
+                    socket.innerHTML = `<span class="material-symbols-outlined text-white/80 text-5xl font-bold animate-pulse">check</span>`;
 
-                if (dist < 50 && slot.dataset.type === activeShape.dataset.type) {
-                    slot.classList.add('highlight');
-                } else {
-                    slot.classList.remove('highlight');
-                }
-            });
-        }
+                    sourceCard.classList.add('opacity-40', 'grayscale', 'cursor-default');
+                    sourceCard.onmousedown = null;
 
-        function trySnap() {
-            const shapeRect = activeShape.getBoundingClientRect();
-            const slots = document.querySelectorAll('.shape-slot:not(.filled)');
-            let snapped = false;
+                    placedParts++;
+                    updateProgress();
+                    speak("Great job!");
 
-            slots.forEach(slot => {
-                const slotRect = slot.getBoundingClientRect();
-                const dist = Math.hypot(
-                    (shapeRect.left + shapeRect.width / 2) - (slotRect.left + slotRect.width / 2),
-                    (shapeRect.top + shapeRect.height / 2) - (slotRect.top + slotRect.height / 2)
-                );
-
-                if (dist < 50 && slot.dataset.type === activeShape.dataset.type && slot.dataset.index === activeShape.dataset.index) {
-                    // SNAP!
-                    slot.classList.remove('highlight');
-                    slot.classList.add('filled');
-
-                    activeShape.classList.add('snapped');
-                    activeShape.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    activeShape.style.left = slotRect.left + 'px';
-                    activeShape.style.top = slotRect.top + 'px';
-
-                    // Success feedback
-                    activeShape.classList.add('glow');
-                    setTimeout(() => activeShape.classList.remove('glow'), 1000);
-
-                    filledSlots++;
-                    snapped = true;
-
-                    if (filledSlots === levels[currentLevel].slots.length) {
-                        setTimeout(showWin, 600);
+                    if (placedParts === activeLevel.parts.length) {
+                        setTimeout(showWin, 500);
                     }
                 }
-            });
+                clone.remove();
+            };
 
-            return snapped;
+            document.onmouseup = (e) => {
+                endDragging(e.clientX, e.clientY);
+                document.onmouseup = null;
+            };
+            document.ontouchend = (e) => {
+                endDragging(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                document.ontouchend = null;
+            };
+        }
+
+        function updateProgress() {
+            const perc = (placedParts / activeLevel.parts.length) * 100;
+            document.getElementById('progressBar').style.width = perc + '%';
+            document.getElementById('progressText').innerText = Math.floor(perc) + '%';
         }
 
         function showWin() {
-            const level = levels[currentLevel];
-            document.getElementById('winTitle').innerText = "Awesome!";
-            document.getElementById('winMessage').innerText = `You built a great ${level.name}!`;
-            document.querySelector('.win-card div').innerText = level.icon;
-            winOverlay.classList.add('active');
-
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
+            document.getElementById('winIcon').innerText = activeLevel.emoji;
+            document.getElementById('winMessage').innerText = `You've successfully built the ${activeLevel.name}! Ready for more?`;
+            winOverlay.classList.remove('hidden');
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            speak(`Awesome! You built the ${activeLevel.name}!`);
         }
 
         function nextLevel() {
-            winOverlay.classList.remove('active');
-            currentLevel = (currentLevel + 1) % levels.length;
-            initLevel();
+            currentLevelIdx = (currentLevelIdx + 1) % levelData.length;
+            loadLevel(currentLevelIdx);
         }
 
-        initLevel();
+        loadLevel(0);
     </script>
 </body>
 

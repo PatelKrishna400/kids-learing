@@ -4,6 +4,13 @@ const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
 const navButtons = document.querySelector('.nav-buttons');
 
+// DEBUG: Log element availability
+console.log('=== script.js Debug ===');
+console.log('Navbar:', navbar ? 'FOUND' : 'MISSING');
+console.log('Hamburger:', hamburger ? 'FOUND' : 'MISSING');
+console.log('NavLinks:', navLinks ? 'FOUND' : 'MISSING');
+console.log('NavButtons:', navButtons ? 'FOUND' : 'MISSING');
+
 // Navbar Scroll Effect
 window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
@@ -68,7 +75,9 @@ if (loginBtn) {
         e.preventDefault();
         const username = prompt("Welcome Back! What's your explorer name?", "Kid Explorer");
         if (username) {
-            alert(`Welcome back, ${username}! Let's continue our adventure! 🚀`);
+            const welcomeMsg = `Welcome back, ${username}! Let's continue our adventure!`;
+            alert(welcomeMsg);
+            speak(welcomeMsg);
             loginBtn.innerText = username;
             loginBtn.style.color = 'var(--secondary)';
         }

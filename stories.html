@@ -716,7 +716,16 @@
         function speakStory() {
             const text = document.getElementById('storyBody').innerText;
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9;
+
+            // Kid Voice settings
+            utterance.pitch = 1.6; // High pitch for kid-like voice
+            utterance.rate = 1.0;  // Normal speaking rate
+
+            // Attempt to find a clear kid-friendly voice
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Female')) || voices[0];
+            if (preferredVoice) utterance.voice = preferredVoice;
+
             window.speechSynthesis.speak(utterance);
         }
 

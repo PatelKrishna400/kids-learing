@@ -365,14 +365,22 @@
             const btn = document.getElementById('playSoundBtn');
             btn.classList.add('playing');
 
-            // Using Speech Synthesis to "act out" the animal sound for reliability
             const utterance = new SpeechSynthesisUtterance(currentAnimal.sound);
-            utterance.rate = 0.8;
-            utterance.pitch = 0.8;
 
-            // Some custom voice handling for better "animal" sounds
-            if (currentAnimal.id === 'lion') utterance.pitch = 0.1;
-            if (currentAnimal.id === 'bird') utterance.pitch = 2.0;
+            // Kid Voice Baseline
+            let basePitch = 1.6;
+            utterance.rate = 1.0;
+
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Female')) || voices[0];
+            if (preferredVoice) utterance.voice = preferredVoice;
+
+            // Animal Specific Adjustments on top of Kid Voice
+            if (currentAnimal.id === 'lion') basePitch = 0.3;
+            if (currentAnimal.id === 'bird') basePitch = 2.0;
+            if (currentAnimal.id === 'monkey') basePitch = 1.8;
+
+            utterance.pitch = basePitch;
 
             utterance.onend = () => btn.classList.remove('playing');
             window.speechSynthesis.speak(utterance);

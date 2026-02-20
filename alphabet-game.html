@@ -1,351 +1,366 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alphabet Master - WonderKids Games</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Alphabet Fun - Letter A Learning</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="voice-engine.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee3b2b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221210",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
     <style>
         body {
-            background: linear-gradient(135deg, #6C5CE7, #a29bfe);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 20px;
+            font-family: 'Lexend', sans-serif;
         }
 
-        .game-container {
-            background: white;
-            color: var(--dark);
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            border-radius: 40px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-            position: relative;
+        .chalkboard-texture {
+            background-color: #2d3436;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        .level-indicator {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent);
-            padding: 10px 30px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--dark);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .letter-display {
-            font-size: 8rem;
-            font-weight: 900;
-            color: var(--primary);
-            margin: 20px 0;
-            text-shadow: 4px 4px 0px rgba(255, 107, 107, 0.1);
-        }
-
-        .instruction {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 30px;
-        }
-
-        .game-step {
-            margin-bottom: 30px;
-            padding: 20px;
-            border-radius: 20px;
-            background: #f8f9fa;
-            border: 2px solid #eee;
-            transition: all 0.3s;
-        }
-
-        .game-step.active {
-            border-color: var(--secondary);
-            background: #e3fcf9;
-        }
-
-        .game-step.done {
-            border-color: #4ECDC4;
-            background: rgba(78, 205, 196, 0.1);
-        }
-
-        .alphabet-input {
-            width: 80px;
-            height: 80px;
-            font-size: 3rem;
-            text-align: center;
-            border: 3px solid #ddd;
-            border-radius: 20px;
-            font-family: 'Fredoka', sans-serif;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .mic-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-        }
-
-        .mic-btn.listening {
-            background: #ff4757;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
-            }
-
-            70% {
-                transform: scale(1.1);
-                box-shadow: 0 0 0 15px rgba(255, 71, 87, 0);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
-            }
-        }
-
-        .status-msg {
-            margin-top: 20px;
-            font-weight: 700;
-            min-height: 1.5em;
-        }
-
-        .next-btn {
-            background: var(--secondary);
-            padding: 15px 40px;
-            border-radius: 30px;
-            color: white;
-            font-weight: 800;
-            font-size: 1.2rem;
-            display: none;
-            margin: 20px auto 0;
-        }
-
-        .back-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .voice-btn {
-            background: var(--purple);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
+        .dotted-letter {
+            stroke-dasharray: 15, 15;
         }
     </style>
 </head>
 
-<body>
-    <a href="index.html" class="back-home"><i class="fa-solid fa-arrow-left"></i> Back</a>
-
-    <div class="game-container">
-        <div class="level-indicator">Level <span id="currentLevel">A</span></div>
-
-        <div class="letter-display" id="letterDisplay">A</div>
-
-        <div class="voice-btn" onclick="speakLetter()">
-            <i class="fa-solid fa-volume-high"></i> Listen Letter
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <header
+        class="flex items-center justify-between px-6 py-4 bg-white dark:bg-zinc-900 shadow-sm border-b border-primary/10">
+        <div class="flex items-center gap-4">
+            <button
+                class="flex items-center justify-center bg-primary text-white p-3 rounded-xl hover:scale-105 transition-transform shadow-lg shadow-primary/20"
+                onclick="window.location.href='index.html'">
+                <span class="material-symbols-outlined text-3xl">home</span>
+            </button>
+            <div>
+                <h1 class="text-xl font-bold text-primary">Alphabet Fun</h1>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Lesson 1: Letter A</p>
+            </div>
         </div>
-
-        <div class="instruction">Master the Alphabet!</div>
-
-        <!-- Step 1: Write -->
-        <div class="game-step" id="writeStep">
-            <p><strong>Step 1:</strong> Type the letter</p>
-            <input type="text" maxlength="1" class="alphabet-input" id="letterInput" placeholder="?">
+        <div class="flex flex-col items-center gap-1 min-w-[300px]">
+            <div class="flex justify-between w-full px-1 text-sm font-bold text-slate-600">
+                <span>Your Progress</span>
+                <span class="text-primary flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: 'FILL' 1">star</span>
+                    3/5 Stars
+                </span>
+            </div>
+            <div class="w-full h-4 bg-primary/10 rounded-full overflow-hidden border-2 border-primary/20 p-0.5">
+                <div class="h-full bg-primary rounded-full w-[60%]"></div>
+            </div>
         </div>
-
-        <!-- Step 2: Speak -->
-        <div class="game-step" id="speakStep">
-            <p><strong>Step 2:</strong> Press and say it!</p>
-            <button class="mic-btn" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
-            <p id="transcript" style="margin-top:10px; font-style: italic; color: #888;">(Click to speak)</p>
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-sm font-bold">Little Explorer</span>
+                <span class="text-xs text-slate-500">Level 2</span>
+            </div>
+            <div class="size-12 rounded-full border-4 border-primary/20 overflow-hidden bg-white">
+                <img alt="User Avatar" class="w-full h-full object-cover" data-alt="Cartoon avatar of a smiling child"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiZiL64zVmzEca8CROZHO-eEASGyT4rzxZLChUU2ik--7iQC6y8p8Lv0Pl3F9231Njby5hoJefu3gbIc7lP9T4XVi4Hpv_SjBsIAjCS4kQDOpak-HSJnw7XCwTFDzhUh6AG6cnuZNTGi-VrTFEP5g8R9XhRH_WywBvDNbAcMQWn4NExBEGkNtNp8qgADmnw01KAlKgJYvgv4P2G8s-JVWWpgk8YYj_deJpEF-SSfl1lRLrHopNqLej4SmfEF3_s3s2S0HNyHBmts1m" />
+            </div>
         </div>
+    </header>
+    <main class="flex-1 flex flex-col lg:flex-row p-4 lg:p-6 gap-6 overflow-hidden">
+        <!-- Left Section: Tracing Canvas -->
+        <section class="flex-[1.5] flex flex-col gap-4">
+            <div class="flex items-center justify-between px-2">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="bg-primary/10 text-primary p-2 rounded-lg material-symbols-outlined">draw</span>
+                    Trace the Letter A
+                </h2>
+                <button
+                    class="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-full text-slate-700 font-bold transition-colors">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Clear Board
+                </button>
+            </div>
+            <div
+                class="relative flex-1 rounded-xl shadow-2xl chalkboard-texture flex items-center justify-center border-8 border-yellow-900 overflow-hidden min-h-[500px]">
+                <!-- Chalkboard Content -->
+                <svg class="w-full max-w-md drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" viewbox="0 0 400 400">
+                    <!-- Uppercase A Dotted -->
+                    <path class="dotted-letter opacity-40" d="M100,320 L200,80 L300,320 M150,220 L250,220" fill="none"
+                        stroke="white" stroke-linecap="round" stroke-width="12"></path>
 
-        <div class="status-msg" id="statusMsg"></div>
+                    <!-- Trace Steps -->
+                    <circle class="opacity-80" cx="100" cy="320" fill="#ee3b2b" r="14"></circle>
+                    <text fill="white" font-size="16" font-weight="bold" x="96" y="325">1</text>
 
-        <button class="next-btn" id="nextBtn">Unlock Next Level! 🚀</button>
-    </div>
+                    <circle class="opacity-80" cx="200" cy="80" fill="#2ecc71" r="14"></circle>
+                    <text fill="white" font-size="16" font-weight="bold" x="196" y="85">2</text>
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+                    <circle class="opacity-80" cx="150" cy="220" fill="#3498db" r="14"></circle>
+                    <text fill="white" font-size="16" font-weight="bold" x="146" y="225">3</text>
+                </svg>
+                <!-- Floating Chalk (Choke) Icon -->
+                <div class="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 cursor-none"
+                    id="chalkCursor">
+                    <div class="relative group">
+                        <div class="absolute -inset-4 bg-white/20 rounded-full blur-xl"></div>
+                        <div
+                            class="bg-white w-4 h-12 rounded-sm shadow-lg border-2 border-slate-300 rotate-12 flex items-center justify-center">
+                        </div>
+                    </div>
+                </div>
+                <!-- Chalkboard Corner Labels -->
+                <div class="absolute bottom-4 left-4 flex gap-2">
+                    <button id="whiteChalkBtn"
+                        class="size-10 rounded-full bg-white opacity-90 shadow-inner border-4 border-slate-200 hover:scale-110 transition-transform ring-offset-2"></button>
+                </div>
+            </div>
+        </section>
+        <!-- Right Section: Reward Sidebar -->
+        <aside class="flex-1 flex flex-col gap-6">
+            <!-- Learning Card -->
+            <div
+                class="bg-white dark:bg-zinc-900 rounded-xl p-8 shadow-xl border-t-8 border-primary flex flex-col items-center text-center gap-6">
+                <div class="relative group">
+                    <div
+                        class="absolute inset-0 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-colors">
+                    </div>
+                    <div
+                        class="relative w-48 h-48 bg-background-light rounded-full flex items-center justify-center border-4 border-primary/10 overflow-hidden">
+                        <img alt="Red Apple" class="w-40 h-40 object-contain"
+                            data-alt="A bright red 3D style apple with a green leaf"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmicPiIx4eOWv7mPVYatKie4DB7mm-AqVVwtBMnz9dhsTi_lKOr-Ru-m_sFEn0lTdeYQ0CC3RTzuMuyCeMehtMag9UKcaLORQprptEm0HdzGymiE6FJYZVoyQCs1ctVOxj77fIEofc2jR8rfj5wTrb2kh4VU2IjfbCgf6E28WCpgqbfi6MY--0qFqrKzUrbRvPiyk1XnzvH5i1zHq5I54kWmDzRSSpWfVs8TW8OnEbT5vacmfYQulAsdtlHF1NT_1dLrnJN5yPC0_I" />
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="text-4xl font-black text-slate-800 dark:text-white uppercase tracking-tight">A is for
+                        Apple!</h3>
+                    <div class="flex gap-2 justify-center">
+                        <span class="text-5xl font-black text-primary border-b-4 border-slate-300 px-2">A</span>
+                        <span class="text-5xl font-black text-slate-300 border-b-4 border-slate-300 px-2">_</span>
+                        <span class="text-5xl font-black text-slate-300 border-b-4 border-slate-300 px-2">_</span>
+                        <span class="text-5xl font-black text-primary border-b-4 border-slate-300 px-2">L</span>
+                        <span class="text-5xl font-black text-primary border-b-4 border-slate-300 px-2">E</span>
+                    </div>
+                    <p class="text-slate-500 font-medium text-lg">Can you say 'Apple'?</p>
+                </div>
+                <button
+                    class="group flex items-center gap-3 px-8 py-3 bg-primary text-white rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/30">
+                    <span class="material-symbols-outlined text-3xl">volume_up</span>
+                    Listen
+                </button>
+            </div>
+            <!-- Hint Section -->
+            <div
+                class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl flex items-center gap-4 border border-blue-100 dark:border-blue-800">
+                <div class="bg-blue-500 text-white p-2 rounded-lg">
+                    <span class="material-symbols-outlined">lightbulb</span>
+                </div>
+                <p class="text-sm font-medium text-blue-800 dark:text-blue-300">
+                    Follow the numbered dots - 1, 2, and 3!
+                </p>
+            </div>
+        </aside>
+    </main>
+    <!-- Footer Controls -->
+    <footer
+        class="px-6 py-4 flex justify-between items-center bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800">
+        <button class="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-400 cursor-not-allowed">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Previous Letter
+        </button>
+        <div class="flex gap-2">
+            <div class="size-3 rounded-full bg-primary"></div>
+            <div class="size-3 rounded-full bg-slate-300"></div>
+            <div class="size-3 rounded-full bg-slate-300"></div>
+        </div>
+        <button
+            class="flex items-center gap-2 px-8 py-3 bg-slate-800 text-white rounded-full font-bold hover:bg-slate-700 transition-colors shadow-lg">
+            Next Letter: B
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+    </footer>
     <script>
-        const levels = ['A', 'B', 'C', 'D'];
-        let currentIndex = 0;
-        let written = false;
-        let spoken = false;
+        // Local speak function removed - now using global window.speak from voice-engine.js
 
-        const letterDisplay = document.getElementById('letterDisplay');
-        const currentLevelSpan = document.getElementById('currentLevel');
-        const letterInput = document.getElementById('letterInput');
-        const micBtn = document.getElementById('micBtn');
-        const statusMsg = document.getElementById('statusMsg');
-        const nextBtn = document.getElementById('nextBtn');
-        const transcriptText = document.getElementById('transcript');
+        const findBtnByText = (text) => Array.from(document.querySelectorAll('button')).find(btn => btn.innerText.includes(text));
 
-        const writeStep = document.getElementById('writeStep');
-        const speakStep = document.getElementById('speakStep');
+        const listenBtn = findBtnByText('Listen');
+        if (listenBtn) listenBtn.onclick = () => speak('A is for Apple');
 
-        function speakLetter() {
-            const utterance = new SpeechSynthesisUtterance(levels[currentIndex]);
-            utterance.pitch = 1.2;
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // Logic for Writing
-        letterInput.addEventListener('input', () => {
-            if (letterInput.value.toUpperCase() === levels[currentIndex]) {
-                written = true;
-                writeStep.classList.add('done');
-                statusMsg.innerText = "Great writing! Now let's say it.";
-                statusMsg.style.color = "var(--secondary)";
-                checkCompletion();
-            }
-        });
-
-        // Logic for Speaking (Web Speech API)
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        // Phonetic mappings to help detection for single letters
-        const phoneticMap = {
-            'A': ['A', 'EY', 'AY', 'HAY', 'HEY', 'ACE'],
-            'B': ['B', 'BEE', 'BE', 'BEEA'],
-            'C': ['C', 'SEE', 'SEA', 'SI'],
-            'D': ['D', 'DEE', 'DI', 'TEA']
+        const nextBtn = findBtnByText('Next Letter');
+        if (nextBtn) nextBtn.onclick = () => {
+            alert('Great job! Moving to Letter B...');
         };
 
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
+        // State
+        let chalkSelected = false;
+        let isDrawing = false;
+        let currentStep = 1; // 1, 2, or 3
+        const chalk = document.getElementById('chalkCursor');
+        const whiteChalkBtn = document.getElementById('whiteChalkBtn');
+        const svg = document.querySelector('svg');
 
-            micBtn.addEventListener('click', () => {
-                try {
-                    recognition.start();
-                    micBtn.classList.add('listening');
-                    transcriptText.innerText = "Listening... Speak now!";
-                    statusMsg.innerText = "Listening...";
-                } catch (e) {
-                    console.log("Recognition already started or error: ", e);
-                }
-            });
+        // Chalk Selection
+        whiteChalkBtn.onclick = () => {
+            chalkSelected = true;
+            whiteChalkBtn.classList.add('ring-4', 'ring-primary');
+            chalk.style.display = 'block';
+            speak('Chalk selected! Start at number 1.');
+        };
 
-            recognition.onresult = (event) => {
-                const result = event.results[0][0].transcript.toUpperCase().trim();
-                transcriptText.innerText = `You said: "${result}"`;
-                micBtn.classList.remove('listening');
+        // Improved Chalk Sound Synthesis (White Noise)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playChalkSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
 
-                const targetLetter = levels[currentIndex];
-                const acceptedSounds = phoneticMap[targetLetter] || [targetLetter];
-
-                // Matches if result IS the letter, OR starts with it, OR matches phonetic map
-                const isMatch = result === targetLetter ||
-                    result.startsWith(targetLetter) ||
-                    acceptedSounds.some(sound => result.includes(sound));
-
-                if (isMatch) {
-                    spoken = true;
-                    speakStep.classList.add('done');
-                    statusMsg.innerText = "Perfect pronunciation! 🎉";
-                    statusMsg.style.color = "var(--secondary)";
-                    checkCompletion();
-                } else {
-                    statusMsg.innerText = `I heard "${result}", try saying "${targetLetter}" again!`;
-                    statusMsg.style.color = "var(--danger)";
-                }
-            };
-
-            recognition.onspeechend = () => {
-                recognition.stop();
-                micBtn.classList.remove('listening');
-            };
-
-            recognition.onend = () => {
-                micBtn.classList.remove('listening');
-            };
-
-            recognition.onerror = (event) => {
-                micBtn.classList.remove('listening');
-                console.error("Speech Error: ", event.error);
-                if (event.error === 'not-allowed') {
-                    transcriptText.innerText = "Mic blocked! Please allow microphone access.";
-                    statusMsg.innerText = "Check your browser mic permissions! 🔓";
-                } else {
-                    transcriptText.innerText = "Error: " + event.error;
-                    statusMsg.innerText = "Try clicking the mic again.";
-                }
-            };
-        } else {
-            transcriptText.innerText = "Speech not supported in this browser. Try Chrome!";
-            statusMsg.innerText = "Oops! Mic works best in Chrome/Edge.";
-        }
-
-        function checkCompletion() {
-            if (written && spoken) {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                nextBtn.style.display = 'block';
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
             }
+
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+            whiteNoise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            whiteNoise.start();
+            whiteNoise.stop(audioCtx.currentTime + 0.1);
         }
 
-        nextBtn.addEventListener('click', () => {
-            currentIndex++;
-            if (currentIndex < levels.length) {
-                // Reset for next level
-                const nextLevel = levels[currentIndex];
-                currentLevelSpan.innerText = nextLevel;
-                letterDisplay.innerText = nextLevel;
-                letterInput.value = '';
-                written = false;
-                spoken = false;
-                writeStep.classList.remove('done');
-                speakStep.classList.remove('done');
-                nextBtn.style.display = 'none';
-                statusMsg.innerText = "Level Up! " + nextLevel + " is next!";
-                transcriptText.innerText = "(Click to speak)";
-                speakLetter();
+        // Trace points for validation
+        const steps = {
+            1: { x: 100, y: 320 },
+            2: { x: 200, y: 80 },
+            3: { x: 150, y: 220 }
+        };
+
+        // Improved Tracing logic
+        const getSVGCoords = (e) => {
+            const pt = svg.createSVGPoint();
+            pt.x = e.clientX;
+            pt.y = e.clientY;
+            return pt.matrixTransform(svg.getScreenCTM().inverse());
+        };
+
+        svg.addEventListener('mousedown', (e) => {
+            if (!chalkSelected) {
+                speak('Select the white chalk first!');
+                return;
+            }
+
+            const svgP = getSVGCoords(e);
+            const step = steps[currentStep];
+            const dist = Math.sqrt(Math.pow(svgP.x - step.x, 2) + Math.pow(svgP.y - step.y, 2));
+
+            if (dist < 60) { // Increased hit area
+                isDrawing = true;
+                playChalkSound();
             } else {
-                statusMsg.innerText = "Master! You completed all levels! 🎓";
-                nextBtn.innerText = "Back to Home";
-                nextBtn.onclick = () => window.location.href = "index.html";
+                speak(`Follow the dots! Start at number ${currentStep}`);
             }
         });
 
-        // Initial voice
-        setTimeout(speakLetter, 500);
+        svg.addEventListener('mouseup', () => isDrawing = false);
+        svg.addEventListener('mouseleave', () => {
+            isDrawing = false;
+        });
 
+        svg.addEventListener('mousemove', (e) => {
+            if (!chalkSelected) return;
+
+            const rect = svg.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                chalk.style.left = e.clientX + 'px';
+                chalk.style.top = e.clientY + 'px';
+                chalk.style.position = 'fixed';
+                chalk.style.display = 'block';
+                chalk.style.pointerEvents = 'none'; // CRITICAL: Stop chalk from blocking clicks
+            } else {
+                chalk.style.display = 'none';
+            }
+
+            if (!isDrawing) return;
+
+            const pt = svg.createSVGPoint();
+            pt.x = e.clientX;
+            pt.y = e.clientY;
+            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", svgP.x);
+            circle.setAttribute("cy", svgP.y);
+            circle.setAttribute("r", "8");
+            circle.setAttribute("fill", "white");
+            circle.setAttribute("class", "drawing-dot");
+            svg.appendChild(circle);
+
+            if (Math.random() > 0.8) playChalkSound();
+
+            // Progress tracking
+            if (currentStep < 3) {
+                const nextStep = steps[currentStep + 1];
+                const distToNext = Math.sqrt(Math.pow(svgP.x - nextStep.x, 2) + Math.pow(svgP.y - nextStep.y, 2));
+                if (distToNext < 25) {
+                    currentStep++;
+                    speak(`Great! Move to point ${currentStep}`);
+                }
+            } else if (currentStep === 3) {
+                // Completed
+                const distToFinal = Math.sqrt(Math.pow(svgP.x - 300, 2) + Math.pow(svgP.y - 320, 2)); // Final point of letter A
+                if (distToFinal < 25) {
+                    speak('Excellent! A is for Apple!');
+                    confetti({ particleCount: 100, spread: 70 });
+                }
+            }
+        });
+
+        const clearBtn = findBtnByText('Clear Board');
+        if (clearBtn) clearBtn.onclick = () => {
+            document.querySelectorAll('.drawing-dot').forEach(dot => dot.remove());
+            isDrawing = false;
+            currentStep = 1;
+        };
     </script>
 </body>
 

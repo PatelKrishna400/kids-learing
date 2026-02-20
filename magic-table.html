@@ -9,6 +9,9 @@
         href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="gamification.js"></script>
+    <script src="gamification-hud.js"></script>
+    <script src="voice-engine.js"></script>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -50,6 +53,10 @@
             font-weight: 700;
             box-shadow: var(--shadow);
             border: 2px solid #eee;
+        }
+
+        #gamificationHud {
+            margin-left: auto;
         }
 
         .hud-panel {
@@ -279,16 +286,18 @@
 
     <header>
         <a href="index.html" class="back-btn"><i class="fa-solid fa-house"></i> Home</a>
-        <div class="hud-panel">
-            <div class="hud-stat">
-                <span class="stat-val" id="level-txt">Level 1</span>
-                <span class="stat-label">Multiplication Table</span>
-            </div>
-            <div class="hud-stat">
-                <span class="stat-val" id="accuracy-txt">0%</span>
-                <span class="stat-label">Progress</span>
-            </div>
+        <div id="gamificationHud"></div>
+    </header>
+    <div class="hud-panel">
+        <div class="hud-stat">
+            <span class="stat-val" id="level-txt">Level 1</span>
+            <span class="stat-label">Multiplication Table</span>
         </div>
+        <div class="hud-stat">
+            <span class="stat-val" id="accuracy-txt">0%</span>
+            <span class="stat-label">Progress</span>
+        </div>
+    </div>
     </header>
 
     <div class="game-container">
@@ -485,15 +494,104 @@
             osc.stop(audioCtx.currentTime + d);
         }
 
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.rate = 1.2;
-                window.speechSynthesis.speak(msg);
-            }
-        }
+        // Local speak function removed - now using global window.speak from voice-engine.js
 
         initTable();
+
+        // Initialize Gamification HUD
+        const hudContainer = document.getElementById('gamificationHud');
+        if (hudContainer && window.initGamificationHUD) {
+            window.initGamificationHUD(hudContainer, {
+                compact: true,
+                showAchievements: true,
+                showDailyChallenges: true
+            });
+        }
+
+        // Get game info from sessionStorage
+        const gameId = sessionStorage.getItem('currentGameId') || 'magic-table';
+        const gameCategory = sessionStorage.getItem('currentGameCategory') || 'math';
+
+        // Record game play start
+        const gamification = window.wonderKidsGamification;
+        const playResult = gamification.recordGamePlay(gameId, gameCategory, { score: 0 });
+        console.log('Game started!', playResult);
+
+        // Track game state for gamification
+        let gameCorrectAnswers = 0;
+        let gameTotalAttempts = 0;
+
+        // Enhanced checkAnswer with gamification
+        const originalCheckAnswer = checkAnswer;
+        checkAnswer = function () {
+            if (state.selectedRow === -1) return;
+            const correctResult = state.selectedRow * state.selectedCol;
+            const cell = document.getElementById(`cell-${state.selectedRow}-${state.selectedCol}`);
+            gameTotalAttempts++;
+
+            if (parseInt(state.currentInput) === correctResult) {
+                cell.innerText = correctResult;
+                cell.classList.add('correct');
+                cell.classList.remove('highlight');
+                state.correctCount++;
+                gameCorrectAnswers++;
+                state.selectedRow = -1;
+                state.selectedCol = -1;
+                activeCalc.innerText = "Correct!";
+                inputDisplay.innerText = "";
+                updateProgress();
+                playTone(800, 0.3);
+
+                // Record correct answer in gamification
+                const result = gamification.recordAnswer(gameCategory, 5, true);
+                console.log('Correct! XP earned:', result);
+
+                if ((state.correctCount / state.totalCells) >= 0.8) {
+                    setTimeout(showWin, 1000);
+                }
+            } else {
+                cell.classList.add('wrong');
+                playTone(200, 0.4);
+                setTimeout(() => cell.classList.remove('wrong'), 500);
+
+                // Record wrong answer
+                gamification.recordAnswer(gameCategory, 0, false);
+            }
+        };
+
+        // Enhanced showWin with gamification
+        const originalShowWin = showWin;
+        showWin = function () {
+            // Calculate accuracy
+            const accuracy = Math.round((gameCorrectAnswers / gameTotalAttempts) * 100);
+            const isPerfect = accuracy === 100;
+
+            // Record game completion
+            gamification.recordGamePlay(gameId, gameCategory, {
+                score: state.correctCount,
+                correct: gameCorrectAnswers,
+                accuracy: accuracy,
+                perfect: isPerfect
+            });
+
+            // Show level up if applicable
+            const newLevel = gamification.getLevel();
+            if (window.gamificationHUD) {
+                window.gamificationHUD.showLevelUp(newLevel);
+            }
+
+            // Check for new achievements
+            const achievements = gamification.checkAchievements();
+            if (achievements.length > 0 && window.gamificationHUD) {
+                achievements.forEach(achievement => {
+                    setTimeout(() => {
+                        window.gamificationHUD.showAchievementUnlock(achievement);
+                    }, 1500);
+                });
+            }
+
+            document.getElementById('win-modal').style.display = 'flex';
+        };
     </script>
 </body>
 

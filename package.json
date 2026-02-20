@@ -1,0 +1,11 @@
+{
+    "name": "kids-learning-voice-gen",
+    "version": "1.0.0",
+    "description": "AI Voice generation for kids learning app",
+    "main": "generate_audio.js",
+    "type": "module",
+    "dependencies": {
+        "@google/generative-ai": "^0.21.0",
+        "wav": "^1.0.2"
+    }
+}

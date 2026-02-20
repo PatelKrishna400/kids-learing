@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Number Fun - Learn Number Master</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="voice-engine.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#fbbf24",
+                        "accent": "#f59e0b",
+                        "background-light": "#fefce8",
+                        "background-dark": "#1c1917",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-display;
+            }
+        }
+        .chalkboard-texture {
+            background-color: #2d3436;
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .dotted-number {
+            stroke-dasharray: 15, 15;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+    <header
+        class="flex items-center justify-between px-6 py-4 bg-white dark:bg-zinc-900 shadow-sm border-b border-yellow-500/20">
+        <div class="flex items-center gap-4">
+            <button
+                class="flex items-center justify-center bg-accent text-white p-3 rounded-xl hover:scale-105 transition-transform shadow-lg shadow-yellow-500/20"
+                onclick="window.location.href='index.html'">
+                <span class="material-symbols-outlined text-3xl">home</span>
+            </button>
+            <div>
+                <h1 class="text-xl font-bold text-accent">Number Fun</h1>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Lesson <span
+                        id="currentLevelNum">1</span>: Number <span id="currentNumberText">1</span></p>
+            </div>
+        </div>
+        <div class="flex flex-col items-center gap-1 min-w-[300px]">
+            <div class="flex justify-between w-full px-1 text-sm font-bold text-slate-600">
+                <span>Progress</span>
+                <span class="text-accent flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: 'FILL' 1">star</span>
+                    <span id="progressText">1</span>/100 Numbers
+                </span>
+            </div>
+            <div class="w-full h-4 bg-yellow-100 rounded-full overflow-hidden border-2 border-yellow-200 p-0.5">
+                <div class="h-full bg-accent rounded-full transition-all duration-500" id="progressBar"
+                    style="width: 1%"></div>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-sm font-bold">Little Mathlete</span>
+                <span class="text-xs text-slate-500">Explorer Level</span>
+            </div>
+            <div class="size-12 rounded-full border-4 border-yellow-200 overflow-hidden bg-white">
+                <img alt="User Avatar" class="w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiZiL64zVmzEca8CROZHO-eEASGyT4rzxZLChUU2ik--7iQC6y8p8Lv0Pl3F9231Njby5hoJefu3gbIc7lP9T4XVi4Hpv_SjBsIAjCS4kQDOpak-HSJnw7XCwTFDzhUh6AG6cnuZNTGi-VrTFEP5g8R9XhRH_WywBvDNbAcMQWn4NExBEGkNtNp8qgADmnw01KAlKgJYvgv4P2G8s-JVWWpgk8YYj_deJpEF-SSfl1lRLrHopNqLej4SmfEF3_s3s2S0HNyHBmts1m" />
+            </div>
+        </div>
+    </header>
+    <main class="flex-1 flex flex-col lg:flex-row p-4 lg:p-6 gap-6 overflow-hidden">
+        <section class="flex-[1.5] flex flex-col gap-4">
+            <div class="flex items-center justify-between px-2">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="bg-yellow-100 text-accent p-2 rounded-lg material-symbols-outlined">draw</span>
+                    Trace the Number <span id="traceNumberText">1</span>
+                </h2>
+                <button
+                    class="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-full text-slate-700 font-bold transition-colors"
+                    id="clearBoardBtn">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Clear Board
+                </button>
+            </div>
+            <div
+                class="relative flex-1 rounded-xl shadow-2xl chalkboard-texture flex items-center justify-center border-8 border-yellow-900 overflow-hidden min-h-[500px]">
+                <svg class="h-[80%] aspect-square drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" viewBox="0 0 400 400"
+                    id="tracingSvg">
+                    <path class="dotted-number opacity-40" d="M150,120 L200,80 L200,320" fill="none" stroke="white"
+                        stroke-linecap="round" stroke-width="16" id="numberPath"></path>
+                    <circle class="opacity-80" cx="150" cy="120" fill="#f59e0b" r="12" id="startDot"></circle>
+                    <text fill="white" font-size="14" font-weight="bold" x="145" y="125" id="startLabel">1</text>
+                </svg>
+                <div class="absolute top-[120px] left-[150px] transform -translate-x-1/2 -translate-y-1/2 cursor-none"
+                    id="pencilCursor">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-yellow-400/20 rounded-full blur-xl"></div>
+                        <div
+                            class="bg-yellow-400 p-4 rounded-xl shadow-lg border-4 border-yellow-500 rotate-12 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-4xl text-yellow-900"
+                                style="font-variation-settings: 'FILL' 1">edit</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute bottom-4 left-4 flex gap-2">
+                    <div class="size-8 rounded-full bg-white opacity-90 shadow-inner"></div>
+                    <div class="size-8 rounded-full bg-yellow-400 opacity-90 shadow-inner"></div>
+                    <div class="size-8 rounded-full bg-orange-400 opacity-90 shadow-inner"></div>
+                </div>
+            </div>
+        </section>
+        <aside class="flex-1 flex flex-col gap-6">
+            <div
+                class="bg-white dark:bg-zinc-900 rounded-xl p-8 shadow-xl border-t-8 border-accent flex flex-col items-center text-center gap-6">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-yellow-400/20 rounded-full blur-3xl"></div>
+                    <div
+                        class="relative w-48 h-48 bg-yellow-50 rounded-full flex items-center justify-center border-4 border-yellow-100 overflow-hidden">
+                        <img alt="Yellow Sun" class="w-40 h-40 object-contain"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmicPiIx4eOWv7mPVYatKie4DB7mm-AqVVwtBMnz9dhsTi_lKOr-Ru-m_sFEn0lTdeYQ0CC3RTzuMuyCeMehtMag9UKcaLORQprptEm0HdzGymiE6FJYZVoyQCs1ctVOxj77fIEofc2jR8rfj5wTrb2kh4VU2IjfbCgf6E28WCpgqbfi6MY--0qFqrKzUrbRvPiyk1XnzvH5i1zHq5I54kWmDzRSSpWfVs8TW8OnEbT5vacmfYQulAsdtlHF1NT_1dLrnJN5yPC0_I"
+                            id="rewardImage" />
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-4xl font-black text-slate-800 dark:text-white uppercase tracking-tight"
+                        id="rewardTitle">1 is for Sun!</h3>
+                    <p class="text-slate-500 font-medium text-lg" id="rewardSubtitle">Can you say 'One'?</p>
+                </div>
+                <button
+                    class="flex items-center gap-3 px-8 py-3 bg-accent text-white rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-yellow-500/30"
+                    id="listenBtn">
+                    <span class="material-symbols-outlined text-3xl">volume_up</span>
+                    Listen
+                </button>
+            </div>
+            <div
+                class="flex-1 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl p-8 border-2 border-dashed border-yellow-400/30 flex flex-col items-center justify-center gap-8 text-center">
+                <div class="space-y-4">
+                    <p class="text-xl font-bold text-slate-700 dark:text-slate-300">Tap the mic and say '<span
+                            id="micTargetWord">One</span>'</p>
+                    <div class="relative flex items-center justify-center">
+                        <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping"></div>
+                        <div class="absolute -inset-4 bg-yellow-400/10 rounded-full"></div>
+                        <button
+                            class="relative z-10 size-32 rounded-full bg-accent text-white flex items-center justify-center shadow-2xl shadow-yellow-500/40 hover:scale-110 transition-transform"
+                            id="micBtn">
+                            <span class="material-symbols-outlined text-6xl"
+                                style="font-variation-settings: 'FILL' 1">mic</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-end gap-1.5 h-12">
+                    <div class="w-2 bg-yellow-400/40 rounded-full h-4"></div>
+                    <div class="w-2 bg-yellow-400/60 rounded-full h-8"></div>
+                    <div class="w-2 bg-accent rounded-full h-12"></div>
+                    <div class="w-2 bg-yellow-400/60 rounded-full h-6"></div>
+                    <div class="w-2 bg-yellow-400/40 rounded-full h-3"></div>
+                </div>
+            </div>
+            <div
+                class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl flex items-center gap-4 border border-orange-100 dark:border-orange-800">
+                <div class="bg-orange-500 text-white p-2 rounded-lg">
+                    <span class="material-symbols-outlined">lightbulb</span>
+                </div>
+                <p class="text-sm font-medium text-orange-800 dark:text-orange-300" id="hintText">
+                    Start at the orange dot, go up a little, then straight down!
+                </p>
+            </div>
+        </aside>
+    </main>
+    <footer
+        class="px-6 py-4 flex justify-between items-center bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800">
+        <button class="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-300 cursor-not-allowed"
+            id="prevBtn">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Previous
+        </button>
+        <div class="flex gap-2">
+            <div class="size-3 rounded-full bg-accent"></div>
+            <div class="size-3 rounded-full bg-slate-200"></div>
+            <div class="size-3 rounded-full bg-slate-200"></div>
+        </div>
+        <button
+            class="flex items-center gap-2 px-8 py-3 bg-slate-800 text-white rounded-full font-bold hover:bg-slate-700 transition-colors shadow-lg"
+            id="nextBtn">
+            Next: Number 2
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+    </footer>
+
+    <script>
+        // System logic for dynamic numbers
+        let currentNumber = 1;
+
+        // Check for level from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const levelParam = urlParams.get('level');
+        if (levelParam) currentNumber = parseInt(levelParam);
+
+        // Number Data
+        const numberData = {
+            1: { word: 'One', object: 'Sun', hint: 'Start at the orange dot, go up a little, then straight down!', path: "M150,120 L200,80 L200,320", dot: { x: 150, y: 120 } },
+            2: { word: 'Two', object: 'Apples', hint: 'Curve around the top, slide down, and make a line across!', path: "M120,150 C120,80 280,80 280,150 C280,220 120,320 120,320 L280,320", dot: { x: 120, y: 150 } },
+            3: { word: 'Three', object: 'Birds', hint: 'Curve around and around again!', path: "M120,100 C280,100 280,200 120,200 C280,200 280,300 120,300", dot: { x: 120, y: 100 } }
+        };
+
+        function updateUI() {
+            const data = numberData[currentNumber] || { word: currentNumber.toString(), object: 'Stars', hint: 'Trace the number carefully!', path: "M150,120 L200,80 L200,320", dot: { x: 150, y: 120 } };
+
+            document.getElementById('currentLevelNum').innerText = currentNumber;
+            document.getElementById('currentNumberText').innerText = currentNumber;
+            document.getElementById('traceNumberText').innerText = currentNumber;
+            document.getElementById('progressText').innerText = currentNumber;
+            document.getElementById('progressBar').style.width = currentNumber + '%';
+            document.getElementById('rewardTitle').innerText = `${currentNumber} is for ${data.object}!`;
+            document.getElementById('rewardSubtitle').innerText = `Can you say '${data.word}'?`;
+            document.getElementById('micTargetWord').innerText = data.word;
+            document.getElementById('hintText').innerText = data.hint;
+            document.getElementById('numberPath').setAttribute('d', data.path);
+            document.getElementById('startDot').setAttribute('cx', data.dot.x);
+            document.getElementById('startDot').setAttribute('cy', data.dot.y);
+            document.getElementById('startLabel').setAttribute('x', data.dot.x - 5);
+            document.getElementById('startLabel').setAttribute('y', data.dot.y + 5);
+            document.getElementById('startLabel').innerText = '1';
+
+            // Prev/Next buttons
+            document.getElementById('prevBtn').classList.toggle('cursor-not-allowed', currentNumber <= 1);
+            document.getElementById('prevBtn').classList.toggle('text-slate-300', currentNumber <= 1);
+            document.getElementById('nextBtn').innerHTML = `Next: Number ${currentNumber + 1} <span class="material-symbols-outlined">arrow_forward</span>`;
+
+            // Clear drawing
+            document.querySelectorAll('.drawing-dot').forEach(dot => dot.remove());
+        }
+
+        // Local speak function removed - now using global window.speak from voice-engine.js
+
+        document.getElementById('listenBtn').onclick = () => {
+            const data = numberData[currentNumber] || { word: currentNumber.toString(), object: 'Stars' };
+            speak(`${currentNumber} is for ${data.object}`);
+        };
+
+        // Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.onresult = (event) => {
+                const result = event.results[0][0].transcript.toUpperCase();
+                const data = numberData[currentNumber] || { word: currentNumber.toString() };
+                if (result.includes(data.word.toUpperCase()) || result.includes(currentNumber.toString())) {
+                    speak('Great job! You said ' + result);
+                } else {
+                    speak('I heard ' + result + '. Try saying ' + data.word + ' again!');
+                }
+            };
+            document.getElementById('micBtn').onclick = () => {
+                recognition.start();
+                speak('I am listening!');
+            };
+        }
+
+        // Tracing
+        const svg = document.getElementById('tracingSvg');
+        const pencil = document.getElementById('pencilCursor');
+        let isDrawing = false;
+
+        svg.addEventListener('mousedown', () => isDrawing = true);
+        svg.addEventListener('mouseup', () => isDrawing = false);
+        svg.addEventListener('mouseleave', () => { isDrawing = false; pencil.style.display = 'none'; });
+        svg.addEventListener('mouseenter', () => pencil.style.display = 'block');
+
+        svg.addEventListener('mousemove', (e) => {
+            const rect = svg.getBoundingClientRect();
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // Pencil cursor
+            pencil.style.left = x + 'px';
+            pencil.style.top = y + 'px';
+            pencil.style.position = 'fixed';
+            pencil.style.pointerEvents = 'none';
+
+            if (!isDrawing) return;
+
+            const pt = svg.createSVGPoint();
+            pt.x = x;
+            pt.y = y;
+            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", svgP.x);
+            circle.setAttribute("cy", svgP.y);
+            circle.setAttribute("r", "8");
+            circle.setAttribute("fill", "white");
+            circle.setAttribute("class", "drawing-dot");
+            svg.appendChild(circle);
+        });
+
+        document.getElementById('clearBoardBtn').onclick = () => {
+            document.querySelectorAll('.drawing-dot').forEach(dot => dot.remove());
+        };
+
+        // Navigation
+        document.getElementById('nextBtn').onclick = () => {
+            currentNumber++;
+            updateUI();
+        };
+
+        document.getElementById('prevBtn').onclick = () => {
+            if (currentNumber > 1) {
+                currentNumber--;
+                updateUI();
+            }
+        };
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+
+</html>

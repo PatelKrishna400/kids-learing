@@ -12,6 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="voice-engine.js"></script>
 </head>
 
 <body>
@@ -144,7 +145,7 @@
         </div>
     </section>
 
-    <footer>
+    <footer id="contact">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
@@ -189,7 +190,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 WonderKids Learning Platform. All rights reserved.</p>
+                <p>&copy; 2026 WonderKids Learning Platform. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -202,12 +203,18 @@
                     <i class="fa-solid fa-coins"></i> <span id="modalUserCoins">50</span>
                 </div>
                 <h2 id="modalTitle">Learning Games 🎮</h2>
+                <div class="game-count-badge" id="gameCountBadge">50 Games</div>
                 <button class="close-modal">&times;</button>
             </div>
 
             <div class="modal-body">
                 <!-- Main Category View -->
                 <div id="categoryView" class="modal-view active">
+                    <div class="game-tools">
+                        <input type="text" id="gameSearchInput" class="game-search-input"
+                            placeholder="Search among 50 games..." autocomplete="off">
+                        <div class="game-count" id="gameCount">50 Games</div>
+                    </div>
                     <div class="category-menu" id="mainGameGrid">
                         <!-- Games will be injected here by JavaScript -->
                     </div>
@@ -251,70 +258,199 @@
         </div>
     </div>
 
+    <script src="gamification.js"></script>
+    <script src="gamification-hud.js"></script>
     <script src="script.js"></script>
     <script>
-        // Game Logic - Persistent Coins & Daily Rewards
-        let coins = parseInt(localStorage.getItem('wonderKids_coins')) || 50;
-        const coinDisplay = document.getElementById('userCoins');
+        // Initialize Gamification System
+        const gamification = window.wonderKidsGamification;
 
-        function updateCoinDisplay() {
-            coinDisplay.innerText = coins;
-            if (document.getElementById('modalUserCoins')) document.getElementById('modalUserCoins').innerText = coins;
-            if (document.getElementById('storyUserCoins')) document.getElementById('storyUserCoins').innerText = coins;
-            localStorage.setItem('wonderKids_coins', coins);
+        // Sync coins from gamification system
+        function syncCoins() {
+            const coins = gamification.getCoins();
+            const coinDisplays = ['userCoins', 'modalUserCoins', 'storyUserCoins'];
+            coinDisplays.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = coins;
+            });
         }
 
-        // Daily Reward Logic
+        // Daily Reward Logic with enhanced gamification
         function checkDailyReward() {
-            const lastReward = localStorage.getItem('wonderKids_lastReward');
-            const today = new Date().toDateString();
+            const result = gamification.claimDailyBonus();
 
-            if (lastReward !== today) {
-                const dailyBonus = 20;
-                coins += dailyBonus;
-                localStorage.setItem('wonderKids_lastReward', today);
-                updateCoinDisplay();
+            if (result) {
+                syncCoins();
 
                 const rewardNotice = document.createElement('div');
                 rewardNotice.style.cssText = `
-                    position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; 
-                    padding: 15px 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                    z-index: 10000;
+                    position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; 
+                    padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    z-index: 10000; animation: slideIn 0.5s ease;
                 `;
-                rewardNotice.innerHTML = `🎁 <strong>Daily Reward!</strong> +${dailyBonus} Coins added!`;
+                rewardNotice.innerHTML = `
+                    <div style="font-size: 2rem;">🎁</div>
+                    <div><strong>Daily Bonus!</strong></div>
+                    <div style="font-size: 1.5rem; font-weight: 800;">+${result.coins} Coins</div>
+                    ${result.streak > 1 ? `<div style="font-size: 0.9rem; opacity: 0.9;">🔥 ${result.streak} Day Streak!</div>` : ''}
+                `;
                 document.body.appendChild(rewardNotice);
+
+                // Show streak info
+                if (result.streak > 1) {
+                    const streakPopup = document.createElement('div');
+                    streakPopup.style.cssText = `
+                        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                        font-size: 4rem; font-weight: 900; color: #e74c3c;
+                        text-shadow: 0 0 20px rgba(231, 76, 60, 0.5); z-index: 10001;
+                        animation: streakPop 1s ease forwards;
+                    `;
+                    streakPopup.textContent = `${result.streak}x STREAK!`;
+                    document.body.appendChild(streakPopup);
+                    setTimeout(() => streakPopup.remove(), 1000);
+                }
 
                 setTimeout(() => {
                     rewardNotice.style.opacity = '0';
                     rewardNotice.style.transition = '0.5s';
                     setTimeout(() => rewardNotice.remove(), 500);
-                }, 4000);
+                }, 5000);
             }
         }
 
-        updateCoinDisplay();
+        // Initialize
+        syncCoins();
         checkDailyReward();
 
+        // DEBUG: Validate DOM elements
+        console.log('--- Validating Required DOM Elements ---');
+        const requiredElements = [
+            'gameModal', 'gamifiedLearningCard', 'categoryView', 'numberLevelsView',
+            'numbersGrid', 'modalTitle', 'gameSearchInput', 'gameCount', 'gameCountBadge'
+        ];
+        requiredElements.forEach(id => {
+            const el = document.getElementById(id);
+            console.log(`Element #${id}: ${el ? 'FOUND' : 'MISSING'}`);
+        });
+
         // Modal Logic
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes streakPop {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
         const gameModal = document.getElementById('gameModal');
         const gamifiedCard = document.getElementById('gamifiedLearningCard');
-        const closeBtn = document.querySelector('.close-modal');
+        const closeBtn = document.querySelector('#gameModal .close-modal');
         const backBtn = document.getElementById('gameModalBack');
         const categoryView = document.getElementById('categoryView');
         const numberLevelsView = document.getElementById('numberLevelsView');
         const numbersGrid = document.getElementById('numbersGrid');
         const modalTitle = document.getElementById('modalTitle');
         const actualModal = document.querySelector('.game-modal');
+        const gameSearchInput = document.getElementById('gameSearchInput');
+        const gameCountLabel = document.getElementById('gameCount');
+        const gameCountBadge = document.getElementById('gameCountBadge');
+
+        // Game Category Mapping
+        const gameCategoryMap = {
+            'alphabet-game': 'language',
+            'alphabet-dance': 'language',
+            'balloon-pop': 'action',
+            'shape-builder': 'creative',
+            'color-match-train': 'creative',
+            'word-builder': 'language',
+            'number-fishing': 'math',
+            'science-lab': 'science',
+            'memory-game': 'memory',
+            'animal-sounds': 'science',
+            'time-clock': 'math',
+            'math-racing': 'math',
+            'sentence-builder': 'language',
+            'solar-system': 'science',
+            'multiplication-monster': 'math',
+            'puzzle-map-india': 'science',
+            'coding-robot': 'memory',
+            'treasure-hunt': 'memory',
+            'math-jump': 'math',
+            'plant-simulator': 'science',
+            'food-sorter': 'social',
+            'grammar-ninja': 'language',
+            'pizza-fractions': 'math',
+            'division-bowling': 'math',
+            'flag-match': 'science',
+            'money-shop': 'math',
+            'story-maker': 'language',
+            'brain-maze': 'memory',
+            'body-puzzle': 'science',
+            'weather-maker': 'science',
+            'recycling-game': 'science',
+            'rocket-math': 'math',
+            'pattern-detective': 'memory',
+            'magic-table': 'math',
+            'robot-coding': 'memory',
+            'word-search': 'language',
+            'count-stars': 'math',
+            'bridge-math': 'math',
+            'logic-escape': 'memory',
+            'opposite-battle': 'language',
+            'emoji-match': 'language',
+            'city-builder': 'creative',
+            'tutor-pet': 'social',
+            'ar-shapes': 'creative',
+            'classroom-sim': 'social',
+            'story-adventure': 'language',
+            'quiz-tournament': 'action',
+            'garden-builder': 'creative',
+            'game-maker': 'memory'
+        };
 
         function playGame(gameName, url) {
+            const gamification = window.wonderKidsGamification;
+            const coins = gamification.getCoins();
             const cost = 1;
+
             if (coins >= cost) {
-                coins -= cost;
-                updateCoinDisplay();
-                alert(`🪙 1 Coin deducted! Enjoy ${gameName}!`);
+                // Get game category from URL
+                const gameId = url.replace('.html', '');
+                const category = gameCategoryMap[gameId] || 'memory';
+
+                // Store current game info in sessionStorage for the game to use
+                sessionStorage.setItem('currentGameId', gameId);
+                sessionStorage.setItem('currentGameCategory', category);
+
+                // Deduct coin
+                const stats = gamification.getStats();
+                gamification.stats.coins -= cost;
+                gamification.saveStats();
+
+                // Update displays
+                syncCoins();
+
+                // Show encouraging message
+                const messages = [
+                    "Let's go! 🚀",
+                    "Have fun! 🎮",
+                    "Time to learn! 📚",
+                    "Adventure awaits! ⭐"
+                ];
+                const message = messages[Math.floor(Math.random() * messages.length)];
+                console.log(message);
+
                 window.location.href = url;
             } else {
-                alert("❌ Not enough coins! You need 1 coin to play.");
+                // Not enough coins - show earning options
+                alert("❌ Not enough coins!\n\nWays to earn coins:\n• Daily login bonus\n• Complete challenges\n• Get correct answers\n• Achieve high scores");
             }
         }
 
@@ -333,12 +469,12 @@
                 const card = document.createElement('div');
                 card.className = 'level-card';
                 card.innerHTML = `<i class="fa-solid fa-arrow-up-9-1"></i><span>${i}</span><div class="cost">1 🪙</div>`;
-                card.addEventListener('click', () => playGame(`Number ${i}`, 'alphabet-game.html'));
+                card.addEventListener('click', () => playGame(`Number ${i}`, `number-game.html?level=${i}`));
                 numbersGrid.appendChild(card);
             }
         }
 
-        const allGames = [
+        const gameCatalog = [
             { id: 'alphabet', title: 'Alphabet Master', type: 'special' },
             { id: 'number', title: 'Number Master', type: 'special' },
             { id: 'balloon-pop', title: 'Alphabet Balloon Pop', type: 'special', color: 'linear-gradient(135deg, #FF8C42, #FFB633)' },
@@ -383,7 +519,6 @@
             { id: 'city-builder', title: 'Build Your City', type: 'special', color: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
             { id: 'tutor-pet', title: 'AI Talking Tutor Pet', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #a29bfe)' },
             { id: 'ar-shapes', title: 'AR Shape Finder', type: 'special', color: 'linear-gradient(135deg, #00cec9, #0984e3)' },
-            { id: 'ar-shapes', title: 'AR Shape Finder', type: 'special', color: 'linear-gradient(135deg, #00cec9, #0984e3)' },
             { id: 'classroom-sim', title: 'Virtual Classroom Simulator', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #a29bfe)' },
             { id: 'story-adventure', title: 'Story Adventure RPG', type: 'special', color: 'linear-gradient(135deg, #e67e22, #d35400)' },
             { id: 'alphabet-dance', title: 'Dance with Alphabets', type: 'special', color: 'linear-gradient(135deg, #ff4757, #54a0ff)' },
@@ -392,11 +527,25 @@
             { id: 'game-maker', title: 'Build Your Own Game', type: 'special', color: 'linear-gradient(135deg, #6c5ce7, #fdcb6e)' }
         ];
 
-        function populateGameGrid() {
+        const allGames = gameCatalog.filter((game, index, catalog) => index === catalog.findIndex((item) => item.id === game.id));
+
+        // DEBUG: Log game catalog
+        console.log(`--- Game Catalog: ${allGames.length} games loaded ---`);
+        allGames.forEach(game => console.log(`Game: ${game.title} (ID: ${game.id})`));
+
+        function populateGameGrid(games = allGames) {
             const grid = document.getElementById('mainGameGrid');
             grid.innerHTML = '';
 
-            allGames.forEach(game => {
+            gameCountLabel.innerText = `${games.length} Games`;
+            gameCountBadge.innerText = `${allGames.length} Games`;
+
+            if (!games.length) {
+                grid.innerHTML = `<div class="empty-games">No games matched your search.</div>`;
+                return;
+            }
+
+            games.forEach(game => {
                 const banner = document.createElement('div');
 
                 if (game.id === 'alphabet') {
@@ -408,7 +557,7 @@
                     `;
                 } else if (game.id === 'number') {
                     banner.className = 'number-master-banner';
-                    banner.onclick = () => playGame('Number Master', 'alphabet-game.html');
+                    banner.onclick = showNumberLevels;
                     banner.innerHTML = `
                         <div class="kid-container" style="left: auto; right: 10px;"><div class="kid-illustration" style="background-image: url('https://illustrations.popsy.co/white/kid-with-tablet.svg'); transform: scaleX(-1);"></div></div>
                         <div class="banner-content"><h3>${game.title}</h3></div>
@@ -803,6 +952,23 @@
         }
         populateGameGrid();
 
+        function applyGameSearch() {
+            const query = gameSearchInput.value.trim().toLowerCase();
+            if (!query) {
+                populateGameGrid(allGames);
+                return;
+            }
+
+            const filteredGames = allGames.filter((game) => {
+                const normalizedId = game.id.replace(/-/g, ' ');
+                return game.title.toLowerCase().includes(query) || normalizedId.includes(query);
+            });
+
+            populateGameGrid(filteredGames);
+        }
+
+        gameSearchInput.addEventListener('input', applyGameSearch);
+
         backBtn.addEventListener('click', () => {
             numberLevelsView.classList.remove('active');
             categoryView.classList.add('active');
@@ -818,10 +984,18 @@
             backBtn.classList.remove('active');
             actualModal.classList.add('full-screen');
             modalTitle.innerText = "Learning Games 🎮";
+            gameSearchInput.value = '';
+            populateGameGrid(allGames);
         });
 
         closeBtn.addEventListener('click', () => gameModal.classList.remove('active'));
         gameModal.addEventListener('click', (e) => { if (e.target === gameModal) gameModal.classList.remove('active'); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                gameModal.classList.remove('active');
+                document.getElementById('storiesModal').classList.remove('active');
+            }
+        });
 
         // Other cards
         document.getElementById('colorFillCard').addEventListener('click', () => {

@@ -507,7 +507,15 @@
 
         function speakWord() {
             const utterance = new SpeechSynthesisUtterance(words[currentWordIndex].word);
-            utterance.rate = 0.8;
+
+            // Kid Voice settings
+            utterance.pitch = 1.6;
+            utterance.rate = 1.0;
+
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Female')) || voices[0];
+            if (preferredVoice) utterance.voice = preferredVoice;
+
             window.speechSynthesis.speak(utterance);
         }
 

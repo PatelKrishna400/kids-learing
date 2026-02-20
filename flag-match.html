@@ -503,7 +503,11 @@
         function speak(text) {
             if ('speechSynthesis' in window) {
                 const msg = new SpeechSynthesisUtterance(text);
-                msg.rate = 0.9;
+                msg.pitch = 1.6;
+                msg.rate = 1.0;
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Female')) || voices[0];
+                if (preferredVoice) msg.voice = preferredVoice;
                 window.speechSynthesis.speak(msg);
             }
         }
